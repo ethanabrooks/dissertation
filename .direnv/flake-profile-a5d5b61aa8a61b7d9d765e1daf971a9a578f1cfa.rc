@@ -15,7 +15,7 @@ export CONFIG_SHELL
 CXX='clang++'
 export CXX
 HOSTTYPE='x86_64'
-HOST_PATH='/nix/store/nmsw0hkkv5sk6vg8i9cq7b2nhlhv5j77-texlive-combined-full-2022-final/bin:/nix/store/54qlmniybjlzg5ydy3kp6vy5qnisiffr-typst-0.10.0/bin:/nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0/bin:/nix/store/a8xh3piwm15xhi9hjlxykb4cljbshags-typstfmt-0.2.7/bin:/nix/store/1dbgz6aq6apdlpdd0k97yg00k82mzx6v-typst-preview-0.9.2/bin:/nix/store/dsvdw81x1nzb0c2lr5shywmwffl8dw1s-coreutils-9.4/bin:/nix/store/dh1fgwya6795yv108p8dzjyzwl9m4lvj-findutils-4.9.0/bin:/nix/store/yc4jjs15gxnc4mrvjnp2ssziv5c0y48y-diffutils-3.10/bin:/nix/store/hjkvi2f3vnvm2b7yvnk5vya0fwn0cfb1-gnused-4.9/bin:/nix/store/i55qnx9sxzbgh9r10w8pwj7p5sxbxhzn-gnugrep-3.11/bin:/nix/store/75xmkd1pqfjgi8mr4awcmh7ijriw9bcw-gawk-5.2.2/bin:/nix/store/v3ghbbzjg8vxl3asgj5j5dxjmpbafbw8-gnutar-1.35/bin:/nix/store/pb25vsgpv195ix5ag55nbdkawm887lkn-gzip-1.13/bin:/nix/store/ybmwl2kgqwmabdj077pq8rwrlm47n49i-bzip2-1.0.8-bin/bin:/nix/store/jax0vsf5xg27vy4ga3940fkj3qkkhp96-gnumake-4.4.1/bin:/nix/store/d2khhk4xpwpk9khvhp8n6r3k9si03ax1-bash-5.2-p21/bin:/nix/store/2g6kdk6sr3milr1p6pi389s27qkgdz07-patch-2.7.6/bin:/nix/store/cp710cvyx694dy3lj59i9llm5s3p18ih-xz-5.4.5-bin/bin:/nix/store/g2qniscln5apisz3x1kc9cm3pfpsvk58-file-5.45/bin'
+HOST_PATH='/nix/store/54qlmniybjlzg5ydy3kp6vy5qnisiffr-typst-0.10.0/bin:/nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0/bin:/nix/store/a8xh3piwm15xhi9hjlxykb4cljbshags-typstfmt-0.2.7/bin:/nix/store/1dbgz6aq6apdlpdd0k97yg00k82mzx6v-typst-preview-0.9.2/bin:/nix/store/dsvdw81x1nzb0c2lr5shywmwffl8dw1s-coreutils-9.4/bin:/nix/store/dh1fgwya6795yv108p8dzjyzwl9m4lvj-findutils-4.9.0/bin:/nix/store/yc4jjs15gxnc4mrvjnp2ssziv5c0y48y-diffutils-3.10/bin:/nix/store/hjkvi2f3vnvm2b7yvnk5vya0fwn0cfb1-gnused-4.9/bin:/nix/store/i55qnx9sxzbgh9r10w8pwj7p5sxbxhzn-gnugrep-3.11/bin:/nix/store/75xmkd1pqfjgi8mr4awcmh7ijriw9bcw-gawk-5.2.2/bin:/nix/store/v3ghbbzjg8vxl3asgj5j5dxjmpbafbw8-gnutar-1.35/bin:/nix/store/pb25vsgpv195ix5ag55nbdkawm887lkn-gzip-1.13/bin:/nix/store/ybmwl2kgqwmabdj077pq8rwrlm47n49i-bzip2-1.0.8-bin/bin:/nix/store/jax0vsf5xg27vy4ga3940fkj3qkkhp96-gnumake-4.4.1/bin:/nix/store/d2khhk4xpwpk9khvhp8n6r3k9si03ax1-bash-5.2-p21/bin:/nix/store/2g6kdk6sr3milr1p6pi389s27qkgdz07-patch-2.7.6/bin:/nix/store/cp710cvyx694dy3lj59i9llm5s3p18ih-xz-5.4.5-bin/bin:/nix/store/g2qniscln5apisz3x1kc9cm3pfpsvk58-file-5.45/bin'
 export HOST_PATH
 IFS=' 	
 '
@@ -39,7 +39,7 @@ NIX_CC='/nix/store/4cxvdil6ap4xsgbrpn4jmhj5gp60l1rw-clang-wrapper-16.0.6'
 export NIX_CC
 NIX_CC_WRAPPER_TARGET_HOST_x86_64_apple_darwin='1'
 export NIX_CC_WRAPPER_TARGET_HOST_x86_64_apple_darwin
-NIX_CFLAGS_COMPILE=' -frandom-seed=d3dbhccl58 -isystem /nix/store/c7572j92n3fmh9b61s2aha8kn22fqkl5-libcxx-16.0.6-dev/include -isystem /nix/store/iwkxnny03rw9wfyywa8cdhvcvvw5chds-libcxxabi-16.0.6-dev/include -isystem /nix/store/6kdbz9vqxypclq3cpz973n8i841rr761-compiler-rt-libc-16.0.6-dev/include -iframework /nix/store/nqfm6k70ghrppd2ccdpdy6avc1dn5v49-apple-framework-CoreFoundation/Library/Frameworks -isystem /nix/store/c7572j92n3fmh9b61s2aha8kn22fqkl5-libcxx-16.0.6-dev/include -isystem /nix/store/iwkxnny03rw9wfyywa8cdhvcvvw5chds-libcxxabi-16.0.6-dev/include -isystem /nix/store/6kdbz9vqxypclq3cpz973n8i841rr761-compiler-rt-libc-16.0.6-dev/include -iframework /nix/store/nqfm6k70ghrppd2ccdpdy6avc1dn5v49-apple-framework-CoreFoundation/Library/Frameworks'
+NIX_CFLAGS_COMPILE=' -frandom-seed=aj4c895ydr -isystem /nix/store/c7572j92n3fmh9b61s2aha8kn22fqkl5-libcxx-16.0.6-dev/include -isystem /nix/store/iwkxnny03rw9wfyywa8cdhvcvvw5chds-libcxxabi-16.0.6-dev/include -isystem /nix/store/6kdbz9vqxypclq3cpz973n8i841rr761-compiler-rt-libc-16.0.6-dev/include -iframework /nix/store/nqfm6k70ghrppd2ccdpdy6avc1dn5v49-apple-framework-CoreFoundation/Library/Frameworks -isystem /nix/store/c7572j92n3fmh9b61s2aha8kn22fqkl5-libcxx-16.0.6-dev/include -isystem /nix/store/iwkxnny03rw9wfyywa8cdhvcvvw5chds-libcxxabi-16.0.6-dev/include -isystem /nix/store/6kdbz9vqxypclq3cpz973n8i841rr761-compiler-rt-libc-16.0.6-dev/include -iframework /nix/store/nqfm6k70ghrppd2ccdpdy6avc1dn5v49-apple-framework-CoreFoundation/Library/Frameworks'
 export NIX_CFLAGS_COMPILE
 NIX_DONT_SET_RPATH='1'
 export NIX_DONT_SET_RPATH
@@ -63,7 +63,7 @@ OLDPWD=''
 export OLDPWD
 OPTERR='1'
 OSTYPE='darwin22.6.0'
-PATH='/nix/store/4cxvdil6ap4xsgbrpn4jmhj5gp60l1rw-clang-wrapper-16.0.6/bin:/nix/store/bq8wmrpl5s9lknzyd62h98iyknny57a0-clang-16.0.6/bin:/nix/store/dsvdw81x1nzb0c2lr5shywmwffl8dw1s-coreutils-9.4/bin:/nix/store/6f4sgd3hxv9fmizyawjcadnbzgb87nyc-cctools-binutils-darwin-wrapper-16.0.6-973.0.1/bin:/nix/store/smgsr827r9qgg7sbknahsyx7146x38jf-cctools-binutils-darwin-16.0.6-973.0.1/bin:/nix/store/nmsw0hkkv5sk6vg8i9cq7b2nhlhv5j77-texlive-combined-full-2022-final/bin:/nix/store/54qlmniybjlzg5ydy3kp6vy5qnisiffr-typst-0.10.0/bin:/nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0/bin:/nix/store/a8xh3piwm15xhi9hjlxykb4cljbshags-typstfmt-0.2.7/bin:/nix/store/1dbgz6aq6apdlpdd0k97yg00k82mzx6v-typst-preview-0.9.2/bin:/nix/store/dsvdw81x1nzb0c2lr5shywmwffl8dw1s-coreutils-9.4/bin:/nix/store/dh1fgwya6795yv108p8dzjyzwl9m4lvj-findutils-4.9.0/bin:/nix/store/yc4jjs15gxnc4mrvjnp2ssziv5c0y48y-diffutils-3.10/bin:/nix/store/hjkvi2f3vnvm2b7yvnk5vya0fwn0cfb1-gnused-4.9/bin:/nix/store/i55qnx9sxzbgh9r10w8pwj7p5sxbxhzn-gnugrep-3.11/bin:/nix/store/75xmkd1pqfjgi8mr4awcmh7ijriw9bcw-gawk-5.2.2/bin:/nix/store/v3ghbbzjg8vxl3asgj5j5dxjmpbafbw8-gnutar-1.35/bin:/nix/store/pb25vsgpv195ix5ag55nbdkawm887lkn-gzip-1.13/bin:/nix/store/ybmwl2kgqwmabdj077pq8rwrlm47n49i-bzip2-1.0.8-bin/bin:/nix/store/jax0vsf5xg27vy4ga3940fkj3qkkhp96-gnumake-4.4.1/bin:/nix/store/d2khhk4xpwpk9khvhp8n6r3k9si03ax1-bash-5.2-p21/bin:/nix/store/2g6kdk6sr3milr1p6pi389s27qkgdz07-patch-2.7.6/bin:/nix/store/cp710cvyx694dy3lj59i9llm5s3p18ih-xz-5.4.5-bin/bin:/nix/store/g2qniscln5apisz3x1kc9cm3pfpsvk58-file-5.45/bin'
+PATH='/nix/store/4cxvdil6ap4xsgbrpn4jmhj5gp60l1rw-clang-wrapper-16.0.6/bin:/nix/store/bq8wmrpl5s9lknzyd62h98iyknny57a0-clang-16.0.6/bin:/nix/store/dsvdw81x1nzb0c2lr5shywmwffl8dw1s-coreutils-9.4/bin:/nix/store/6f4sgd3hxv9fmizyawjcadnbzgb87nyc-cctools-binutils-darwin-wrapper-16.0.6-973.0.1/bin:/nix/store/smgsr827r9qgg7sbknahsyx7146x38jf-cctools-binutils-darwin-16.0.6-973.0.1/bin:/nix/store/54qlmniybjlzg5ydy3kp6vy5qnisiffr-typst-0.10.0/bin:/nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0/bin:/nix/store/a8xh3piwm15xhi9hjlxykb4cljbshags-typstfmt-0.2.7/bin:/nix/store/1dbgz6aq6apdlpdd0k97yg00k82mzx6v-typst-preview-0.9.2/bin:/nix/store/dsvdw81x1nzb0c2lr5shywmwffl8dw1s-coreutils-9.4/bin:/nix/store/dh1fgwya6795yv108p8dzjyzwl9m4lvj-findutils-4.9.0/bin:/nix/store/yc4jjs15gxnc4mrvjnp2ssziv5c0y48y-diffutils-3.10/bin:/nix/store/hjkvi2f3vnvm2b7yvnk5vya0fwn0cfb1-gnused-4.9/bin:/nix/store/i55qnx9sxzbgh9r10w8pwj7p5sxbxhzn-gnugrep-3.11/bin:/nix/store/75xmkd1pqfjgi8mr4awcmh7ijriw9bcw-gawk-5.2.2/bin:/nix/store/v3ghbbzjg8vxl3asgj5j5dxjmpbafbw8-gnutar-1.35/bin:/nix/store/pb25vsgpv195ix5ag55nbdkawm887lkn-gzip-1.13/bin:/nix/store/ybmwl2kgqwmabdj077pq8rwrlm47n49i-bzip2-1.0.8-bin/bin:/nix/store/jax0vsf5xg27vy4ga3940fkj3qkkhp96-gnumake-4.4.1/bin:/nix/store/d2khhk4xpwpk9khvhp8n6r3k9si03ax1-bash-5.2-p21/bin:/nix/store/2g6kdk6sr3milr1p6pi389s27qkgdz07-patch-2.7.6/bin:/nix/store/cp710cvyx694dy3lj59i9llm5s3p18ih-xz-5.4.5-bin/bin:/nix/store/g2qniscln5apisz3x1kc9cm3pfpsvk58-file-5.45/bin'
 export PATH
 PATH_LOCALE='/nix/store/z4k6bqz70vna94iffrik6hvizhlpn93w-adv_cmds-119-locale/share/locale'
 export PATH_LOCALE
@@ -94,7 +94,7 @@ __sandboxProfile=''
 export __sandboxProfile
 __structuredAttrs=''
 export __structuredAttrs
-buildInputs='/nix/store/nmsw0hkkv5sk6vg8i9cq7b2nhlhv5j77-texlive-combined-full-2022-final /nix/store/54qlmniybjlzg5ydy3kp6vy5qnisiffr-typst-0.10.0 /nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0 /nix/store/a8xh3piwm15xhi9hjlxykb4cljbshags-typstfmt-0.2.7 /nix/store/1dbgz6aq6apdlpdd0k97yg00k82mzx6v-typst-preview-0.9.2'
+buildInputs='/nix/store/54qlmniybjlzg5ydy3kp6vy5qnisiffr-typst-0.10.0 /nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0 /nix/store/a8xh3piwm15xhi9hjlxykb4cljbshags-typstfmt-0.2.7 /nix/store/1dbgz6aq6apdlpdd0k97yg00k82mzx6v-typst-preview-0.9.2'
 export buildInputs
 buildPhase='{ echo "------------------------------------------------------------";
   echo " WARNING: the existence of this path is not guaranteed.";
@@ -150,7 +150,7 @@ name='nix-shell-env'
 export name
 nativeBuildInputs=''
 export nativeBuildInputs
-out='/Users/ethan/tex/dissertation/outputs/out'
+out='/Users/ethan/tex/dissertation-typst/outputs/out'
 export out
 outputBin='out'
 outputDev='out'
@@ -172,7 +172,7 @@ declare -a pkgsBuildBuild=()
 declare -a pkgsBuildHost=('/nix/store/h9lc1dpi14z7is86ffhl3ld569138595-audit-tmpdir.sh' '/nix/store/m54bmrhj6fqz8nds5zcj97w9s9bckc9v-compress-man-pages.sh' '/nix/store/wgrbkkaldkrlrni33ccvm3b6vbxzb656-make-symlinks-relative.sh' '/nix/store/5yzw0vhkyszf2d179m0qfkgxmp5wjjx4-move-docs.sh' '/nix/store/fyaryjvghbkpfnsyw97hb3lyb37s1pd6-move-lib64.sh' '/nix/store/kd4xwxjpjxi71jkm6ka0np72if9rm3y0-move-sbin.sh' '/nix/store/pag6l61paj1dc9sv15l7bm5c17xn5kyk-move-systemd-user-units.sh' '/nix/store/jivxp510zxakaaic7qkrb7v1dd2rdbw9-multiple-outputs.sh' '/nix/store/wzdsbnv2ba3nj91aql8jjdddfmkkdh7h-patch-shebangs.sh' '/nix/store/cickvswrvann041nqxb0rxilc46svw1n-prune-libtool-files.sh' '/nix/store/xyff06pkhki3qy1ls77w10s0v79c9il0-reproducible-builds.sh' '/nix/store/ngg1cv31c8c7bcm2n8ww4g06nq7s4zhm-set-source-date-epoch-to-latest.sh' '/nix/store/wmknncrif06fqxa16hpdldhixk95nds0-strip.sh' '/nix/store/4cxvdil6ap4xsgbrpn4jmhj5gp60l1rw-clang-wrapper-16.0.6' '/nix/store/6f4sgd3hxv9fmizyawjcadnbzgb87nyc-cctools-binutils-darwin-wrapper-16.0.6-973.0.1' )
 declare -a pkgsBuildTarget=()
 declare -a pkgsHostHost=('/nix/store/c7572j92n3fmh9b61s2aha8kn22fqkl5-libcxx-16.0.6-dev' '/nix/store/nx046ipkk8w0srkymfsv65zbsl10mfcn-libcxx-16.0.6' '/nix/store/iwkxnny03rw9wfyywa8cdhvcvvw5chds-libcxxabi-16.0.6-dev' '/nix/store/8k4dd4zjqd2r2chb63p0sc12yccnc7mw-libcxxabi-16.0.6' '/nix/store/6kdbz9vqxypclq3cpz973n8i841rr761-compiler-rt-libc-16.0.6-dev' '/nix/store/xxwd4zwbbs465097m2lzi4szhlrfkdw8-compiler-rt-libc-16.0.6' )
-declare -a pkgsHostTarget=('/nix/store/nmsw0hkkv5sk6vg8i9cq7b2nhlhv5j77-texlive-combined-full-2022-final' '/nix/store/54qlmniybjlzg5ydy3kp6vy5qnisiffr-typst-0.10.0' '/nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0' '/nix/store/a8xh3piwm15xhi9hjlxykb4cljbshags-typstfmt-0.2.7' '/nix/store/1dbgz6aq6apdlpdd0k97yg00k82mzx6v-typst-preview-0.9.2' '/nix/store/nqfm6k70ghrppd2ccdpdy6avc1dn5v49-apple-framework-CoreFoundation' )
+declare -a pkgsHostTarget=('/nix/store/54qlmniybjlzg5ydy3kp6vy5qnisiffr-typst-0.10.0' '/nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0' '/nix/store/a8xh3piwm15xhi9hjlxykb4cljbshags-typstfmt-0.2.7' '/nix/store/1dbgz6aq6apdlpdd0k97yg00k82mzx6v-typst-preview-0.9.2' '/nix/store/nqfm6k70ghrppd2ccdpdy6avc1dn5v49-apple-framework-CoreFoundation' )
 declare -a pkgsTargetTarget=()
 declare -a postFixupHooks=('_makeSymlinksRelativeInAllOutputs' '_multioutPropagateDev' )
 declare -a postUnpackHooks=('_updateSourceDateEpochFromSourceRoot' )
@@ -180,7 +180,7 @@ declare -a preConfigureHooks=('_multioutConfig' )
 declare -a preFixupHooks=('_moveToShare' '_multioutDocs' '_multioutDevs' )
 preferLocalBuild='1'
 export preferLocalBuild
-prefix='/Users/ethan/tex/dissertation/outputs/out'
+prefix='/Users/ethan/tex/dissertation-typst/outputs/out'
 declare -a propagatedBuildDepFiles=('propagated-build-build-deps' 'propagated-native-build-inputs' 'propagated-build-target-deps' )
 propagatedBuildInputs=''
 export propagatedBuildInputs
