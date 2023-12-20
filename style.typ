@@ -53,7 +53,7 @@
     #set align(center)
     #set text(12pt, weight: "bold")
     #v(72pt)
-    #block(smallcaps(it.body))
+    #it
     #v(18pt)
   ]
 
