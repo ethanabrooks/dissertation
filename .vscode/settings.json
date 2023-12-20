@@ -1,0 +1,21 @@
+
+{
+    "latex-workshop.latex.tools": [
+
+        {
+            "name": "latexmk",
+            "command": "/nix/store/nmsw0hkkv5sk6vg8i9cq7b2nhlhv5j77-texlive-combined-full-2022-final/bin/latexmk",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-pdf",
+                "%DOC%"
+            ]
+        }
+    ],
+    "cSpell.words": [
+        "LSTM"
+    ]
+}
+
