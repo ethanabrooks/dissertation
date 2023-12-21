@@ -40,8 +40,10 @@
 #set page(numbering: "1")
 #counter(page).update(1)
 
-= Introduction
+#include "introduction.typ"
 = In-Context Policy Iteration
 = Algorithm Distillation + Policy Iteration
 = Bellman Update Networks
 = Conclusion
+
+#bibliography("main.bib", style: "association-for-computing-machinery")

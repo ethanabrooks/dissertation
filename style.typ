@@ -1,6 +1,5 @@
 #let formatHeader(body: content) = [
   #set align(center)
-  #set text(12pt, weight: "bold")
   #body
   #v(18pt)
 ]
@@ -45,17 +44,22 @@
   pagebreak()
   set align(center + horizon)
   set par(leading: 1.5em)
+  show heading: set block(below: 1.5em)
+  show par: set block(above: 1.5em)
+
   [ #author \
     #email \
     ORCID iD: #orcid \
     \
     © #author #year ]
+
   set align(left + top)
   set par(justify: true)
   set page(numbering: "i")
-  show heading: it => {
+  show heading.where(level: 1): it => {
     pagebreak()
     formatHeader(body: it)
   }
+  set par(first-line-indent: .5in)
   doc
 }
