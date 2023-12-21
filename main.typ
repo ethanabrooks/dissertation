@@ -23,14 +23,7 @@
 
 #lorem(80)
 
-#outline(
-  title: [#formatHeader(body: "Table of Contents")],
-  target: heading.where(numbering: none),
-)
-\
-#text(12pt, weight: "bold")[Chapter]
-#outline(title: none, target: heading.where(numbering: "1.1"))
-
+#outline(title: [#formatHeader(body: "Table of Contents")], indent: auto)
 #outline(
   title: [#formatHeader(body: "List of Figures")],
   target: figure.where(kind: image),
@@ -39,7 +32,9 @@
 #set heading(numbering: "1.1")
 #set page(numbering: "1")
 #counter(page).update(1)
+#set par(first-line-indent: .5in)
 
+#include "abstract.typ"
 #include "introduction.typ"
 = In-Context Policy Iteration
 = Algorithm Distillation + Policy Iteration
