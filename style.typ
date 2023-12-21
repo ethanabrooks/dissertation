@@ -1,3 +1,9 @@
+#let formatHeader(body: content) = [
+  #set align(center)
+  #set text(12pt, weight: "bold")
+  #body
+  #v(18pt)
+]
 #let style(
   title: str,
   author: str,
@@ -11,8 +17,7 @@
   set document(title: title, author: author, date: date)
   set page(margin: (x: 1in))
   set align(center)
-  set text(font: "Times New Roman")
-
+  set text(font: "New Computer Modern")
   v(108pt)
   [*#title*]
   let year = date.year()
@@ -47,15 +52,10 @@
     © #author #year ]
   set align(left + top)
   set par(justify: true)
-
-  show heading: it => [
-    #pagebreak()
-    #set align(center)
-    #set text(12pt, weight: "bold")
-    #v(72pt)
-    #it
-    #v(18pt)
-  ]
-
+  set page(numbering: "i")
+  show heading: it => {
+    pagebreak()
+    formatHeader(body: it)
+  }
   doc
 }

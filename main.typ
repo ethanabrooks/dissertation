@@ -1,4 +1,4 @@
-#import "style.typ": style
+#import "style.typ": style, formatHeader
 #show: doc => style(
   title: "Explorations of In-Context Reinforcement Learning",
   author: "Ethan Brooks",
@@ -23,10 +23,25 @@
 
 #lorem(80)
 
-= Table of Contents
+#outline(
+  title: [#formatHeader(body: "Table of Contents")],
+  target: heading.where(numbering: none),
+)
+\
+#text(12pt, weight: "bold")[Chapter]
+#outline(title: none, target: heading.where(numbering: "1.1"))
 
-#outline(title: none)
+#outline(
+  title: [#formatHeader(body: "List of Figures")],
+  target: figure.where(kind: image),
+)
 
-= List of Figures
+#set heading(numbering: "1.1")
+#set page(numbering: "1")
+#counter(page).update(1)
 
-#outline(title: none, target: figure.where(kind: image))
+= Introduction
+= In-Context Policy Iteration
+= Algorithm Distillation + Policy Iteration
+= Bellman Update Networks
+= Conclusion
