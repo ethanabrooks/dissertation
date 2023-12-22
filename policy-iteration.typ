@@ -1,6 +1,7 @@
 #import "math.typ": *
 #import "style.typ": cites
 #import "algorithmic.typ": algorithm-figure, show-algorithms
+#import "@preview/tablex:0.0.7": tablex, rowspanx, colspanx
 
 #show: show-algorithms
 
@@ -391,6 +392,308 @@ Finally, the Q-value estimate is simply the discounted sum of rewards for the
 simulated episode. Given this description of Q-value estimation, we now return
 to the concept of policy improvement.
 
+=== Policy-Improvement
+The $arg max$ (line 5 of @algo:train) drives policy improvement in Algorithm.
+Critically this is not simply a one-step improvement but a mechanism that builds
+improvement on top of improvement. This occurs through a cycle in which the $arg max$
+improves behavior. The improved behavior is stored in the buffer $Buffer$, and
+then used to condition the rollout policy. This improves the returns generated
+by the LLM during planning rollouts. These improved rollouts improve the
+Q-estimates for each action. Completing the cycle, this improves the actions
+chosen by the $arg max$. Because this process feeds into itself, it can drive
+improvement without bound until optimality is achieved.
+
+Note that this process takes advantage of properties specific to in-context
+learning. In particular, it relies on the assumption that the rollout policy,
+when prompted with trajectories drawn from a mixture of policies, will
+approximate something like an average of these policies. Given this assumption,
+the rollout policy will improve with the improvement of the mixture of policies
+from which its prompt-trajectories are drawn. This results in a kind of rapid
+policy improvement that works without any use of gradients.
+
+paragraphPrompt-Format labelpara:prompt-format The LLM cannot take
+non-linguistic prompts, so our algorithm assumes access to a textual
+representation of the environment---of states, actions, terminations, and
+rewards---and some way to recover the original action, termination, and reward
+values from their textual representation (we do not attempt to recover states).
+Since our primary results use the Codex language model (see @tab:llms), we use
+Python code to represent these values (examples are available in
+@tab:promptformat in the appendix).
+
+In our experiments, we discovered that the LLM world-model was unable to
+reliably predict rewards, terminations, and next-states on some of the more
+difficult environments. We experimented with providing domain emphhints in the
+form of prompt formats that make explicit useful information --- similar to
+Chain of Thought Prompting <wei_chain_2022>. For example, for the emphchain
+domain, the hint includes an explicit comparison (`==` or `!=`) of the current
+state with the goal state. Note that while hints are provided in the initial
+context, the LLM must infer the hint content in rollouts generated from this
+context.
+
+We use a consistent idiom for rewards and terminations, namely `assert reward ==
+x` and `assert done` or `assert not done`. Some decisions had to be made when
+representing states and actions. In general, we strove to use simple, idiomatic,
+concise Python. On the more challenging environments, we did search over several
+options for the choice of hint. For examples, see @tab:promptformat. We
+anticipate that in the future, stronger foundation models will be increasingly
+robust to these decisions.
+
+#figure(
+  image("figures/policy-iteration/algorithm.png"),
+  caption: [
+    Comparison of ICPI with three baselines, "No ArgMax," "Tabular Q," and "Nearest
+    Neighbor." The $y$-axis depicts regret (normalized between 0 and 1), computed
+    relative to an optimal return with a discount-factor of 0.8. The $x$-axis
+    depicts time-steps during training. Error bars are standard errors from four
+    seeds.
+  ],
+) <fig:algorithms>
+
+== Experiments <sec:experiments>
+We have three main goals in our experiments: (1) Demonstrate that the agent
+algorithm can in fact quickly learn good policies, using pretrained LLMs, in a
+set of six simple illustrative domains of increasing challenge; (2) provide
+evidence through an ablation that the policy-improvement step---taking the
+$arg max$ over Q-values computed through LLM rollouts---accelerates learning;
+and (3) investigate the impact of using different LLMs (see
+@tab:llms)---different sizes and trained on different data, in particular,
+trained on (mostly) natural language (GPT-3 and GPT-J) vs.\ program code (Codex
+and InCoder). We next describe the six domains and their associated prompt
+formats, and then describe the experimental methodology and results.
+
 === Domains and prompt format <sec:domains-and-prompt-format>
+
+==== Chain
+In this environment, the agent occupies an 8-state chain. The agent has three
+actions: `Left`, `right`, and `try goal`. The `try goal` action always
+terminates the episode, conferring a reward of 1 on state 4 (the goal state) and
+0 on all other states.//Because this environment has simpler transitions than
+the other two, we see the//clearest evidence of learning here. Note that the
+initial batch of successful//trajectories collected from random behavior will
+usually be suboptimal, moving//inefficiently toward the goal state. We include a
+discount value of 0.8 in our//diagram to show the improvement in efficiency of
+the policy learned by the//agent over the course of training. `Prompt format.`
+Episodes also terminate after 8 time-steps. States are represented as numbers
+from 0 to 7, as in `assert state == n`, with the appropriate integer substituted
+for `n`. The actions are represented as functions `left()`, `right()`, and
+`try_goal()`. For the hint, we simply indicate whether or not the current state
+matches the goal state, 4.
+
+=== Distractor Chain
+This environment is an 8-state chain, identical to the _chain_ environment,
+except that the observation is a _pair_ of integers, the first indicating the
+true state of the agent and the second acting as a distractor which transitions
+randomly within ${0, dots, 7}$. The agent must therefore learn to ignore the
+distractor integer and base its inferrences on the information contained in the
+first integer. Aside from the addition of this distractor integer to the
+observation, all text representations and hints are identical to the _chain_ environment.
+
+=== Maze
+The agent navigates a small $3 times 3$ gridworld with obstacles. The agent can
+move `up`, `down`, `left`, or `right`. The episode terminates with a reward of 1
+once the agent navigates to the goal grid, or with a reward of 0 after 8
+time-steps. This environment tests our algorithms capacity to handle
+2-dimensional movement and obstacles, as well as a 4-action state-space. We
+represent the states as namedtuples --- `C(x, y)`, with integers substituted for
+`x` and `y`. Similar to _chain_, the hint indicates whether or not the state
+corresponds to the goal state.
+
+=== Mini Catch
+The agent operates a paddle to catch a falling ball. The ball falls from a
+height of 5 units, descending one unit per time step. The paddle can `stay` in
+place (not move), or move `left` or `right` along the bottom of the 4-unit wide
+plane. The agent receives a reward of 1 for catching the ball and 0 for other
+time-steps. The episode ends when the ball's height reaches the paddle
+regardless of whether or not the paddle catches the ball. We chose this
+environment specifically to challenge the action-inference/rollout-policy
+component of our algorithm. Specifically, note that the success condition in
+Mini Catch allows the paddle to meander before moving under the ball---as long
+as it gets there on the final time-step. Successful trajectories that include
+movement _away_ from the ball thus make a good rollout policies more challenging
+to learn (i.e., elicit from the LLM via prompts). Again, we represent both the
+paddle and the ball as namedtuples `C(x, y)` and we represent actions as methods
+of the `paddle` object: `paddle.stay()`, `paddle.left()`, and `paddle.right()`.
+For the hint, we call out the location of the paddle's $x$-position, the ball's $x$-position,
+the relation between these positions (which is larger than which, or whether
+they are equal) and the ball's $y$-position. @tab:promptformat in the appendix
+provides an example. We also include the text `ball.descend()` to account for
+the change in the ball's position between states.
+
+=== Mini Invaders
+The agent operates a ship that shoots down aliens which descend from the top of
+the screen. At the beginning of an episode, two aliens spawn at a random
+location in two of four columns. The episode terminates when an alien reaches
+the ground (resulting in 0 reward) or when the ship shoots down both aliens (the
+agent receives 1 reward per alien). The agent can move `left`, `right`, or
+`shoot`. This domain highlights ICPI's capacity to learn incrementally, rather
+than discovering an optimal policy through random exploration and then imitating
+that policy, which is how our "No ArgMax" baseline learns (see @para:baselines).
+ICPI initially learns to shoot down one alien, and then builds on this good but
+suboptimal policy to discover the better policy of shooting down both aliens. In
+contrast, random exploration takes much longer to discover the optimal policy
+and the "No ArgMax" baseline has only experienced one or two successful
+trajectories by the end of training.
+
+We represent the ship by its namedtuple coordinate (`C(x, y)`) and the aliens as
+a list of these namedtuples. When an alien is shot down, we substitute `None`
+for the tuple, as in `aliens == [C(x, y), None]`. We add the text: `for a in aliens: a.descend()`, // typstfmt::off
+in order to account for the change in the alien's position
+between states.
+
+=== Point-Mass
+A point-mass spawns at a random position on a
+continuous line between $-6$ and $+6$ with a velocity of 0. The agent can either
+`accelerate` the point-mass (increase velocity by 1) or `decelerate`
+it (decrease the velocity by 1). The point-mass position changes by the amount
+of its velocity each timestep. The episode terminates with a reward of 1
+once the point-mass is between $-2$ and $+2$ and its velocity is 0 once again.
+The episode also terminates after 8 time-steps. This domain tests the
+algorithm's ability to handle continuous states.
+
+States are represented as `assert pos == p and vel == v`, substituting
+floats rounded to two decimals for `p` and `v`. The actions
+are `accel(pos, vel)` and `decel(pos, vel)`. The hint
+indicates whether the success conditions are met, namely the relationship
+of `pos` to $-2$ and $+2$ and the whether or not `vel == 0`.
+The hint includes identification of the aliens' and the ship's $x$-positions
+as well as a comparison between them.
+
+== Methodology and Evaluation <para:methodology>
+
+For the results, we record the agent's regret over the course of training
+relative to an optimal policy computed with a discount factor of 0.8. For all
+experiments $Recency = 8$ (the number of most recent successful
+trajectories to include in the prompt). We did not have time for hyperparameter
+search and chose this number based on intuition. However the $Recency =
+  16$ baseline demonstrates results when this hyperparameter is doubled. All
+results use 4 seeds.
+
+For both versions of Codex, we used the OpenAI Beta under the API Terms of Use.
+For GPT-J~#cite(<wang_gpt-j-6b_2021>) , InCoder~#cite(<fried_incoder_2022>) and
+OPT-30B~#cite(<zhang_opt_2022>), we used the open-source implementations from
+Huggingface Transformers #cite(<wolf_transformers_2020>), each running on one
+Nvidia A40 GPU. All language models use a sampling temperature of 0.1. Code for our
+implementation is available at https://github.com/ethanabrooks/icpi.
+
+=== Comparison of ICPI with baseline algorithms. <para:baselines>
+  We compare ICPI with three
+baselines (Fig. @fig:algorithms).
+
+The "No ArgMax" baseline learns a good policy through random exploration and
+then imitates this policy. This baseline assumes access to a "success threshold"
+for each domain --- an undiscounted cumulative return greater than which a
+trajectory is considered successful. The action selection mechanism emulates
+ICPI's rollout policy: prompting the LLM with a set of trajectories and
+eliciting an action as output. For this baseline, we only include trajectories
+in the prompt whose cumulative return exceeds the success threshold. Thus the
+policy improves as the number of successful trajectories in the prompt increases
+over time. Note that at the start of learning, the agent will have experienced
+too few successful trajectories to effectively populate the policy prompt. In
+order to facilitate exploration, we act randomly until the agent experiences 3
+successes.
+
+"Tabular Q" is a standard tabular Q-learning algorithm, which uses a learning rate of $1.0$ and optimistically initializes the Q-values to $1.0$.
+
+"Matching Model" is a baseline which uses the trajectory history instead of an
+LLM to perform modelling. This baseline searches the trajectory buffer for the
+most recent instance of the current state, and in the case of
+transition/reward/termination prediction, the current action. If a match is
+found, the model outputs the historical value (e.g. the reward associated with
+the state-action pair found in the buffer). If no match is found, the modelling
+rollout is terminated. Recall that ICPI breaks ties randomly during action
+selection so this will often lead to random action selection.
+
+As our results demonstrate, only ICPI learns good policies on all
+domains. We attribute this advantage to ICPI's ability to generalize
+from its context to unseen states and state/action pairs (unlike "Tabular Q" and
+"Matching Model"). Unlike "No ArgMax" ICPI is able to learn progressively,
+improving the policy before experiencing good trajectories.
+
+#figure(
+  image("figures/policy-iteration/ablation.png"),
+  caption: [Comparison of ICPI with ablations. The $y$-axis depicts
+    regret (normalized between 0 and 1), computed relative to an optimal
+    return with a discount-factor of 0.8. The $x$-axis depicts time-steps
+    during training. Error bars are standard errors from four seeds.],
+) <fig:ablations>
+
+=== Ablation of ICPI components
+
+With these experiments, we
+ablate those components of the algorithm which are not, in principle, essential
+to learning (@fig:ablations). "No Hints" ablates the hints described in
+the <para:prompt-format> paragraph. "No Balance" removes the balancing
+of different kinds of time-steps described in the <para:q-values>
+paragraph (for example, $Buffer_Ter$ is allowed to contain an unequal number
+of terminal and non-terminal time-steps). The "No Constraints" baseline removes
+the constraints on these time-steps described in the same paragraph. For
+example,
+$Buffer_Rew$ is allowed to contain a mixture of terminal and non-terminal
+time-steps (regardless of the model's termination prediction). Finally, "$Recency=16$" baseline prompts the rollout
+policy with the last 16 trajectories (instead of the last 8, as in
+ICPI). We find that while some ablations match ICPI's
+performance in several domains, none match its performance on all six.
+
+
+=== Comparison of Different Language Models
+ While our lab lacks the
+resources to do a full study of scaling properties, we did compare several
+language models of varying size (Fig. <fig:language-models>). See Table @tab:llms for details about
+these models. Both `code-davinci-002` and `code-cushman-001` are
+variations of the Codex language model. The exact number of parameters in these
+models is proprietary according to OpenAI, but #cite(<chen_evaluating_2021>)
+describes Codex as fine-tuned from GPT-3 #cite(<brown_language_2020>), which
+contains 185 billion parameters. As for the distinction between the variations,
+the OpenAI website describes `code-cushman-001` as "almost as capable as
+Davinci Codex, but slightly faster."
+
+We found that the rate of learning and final performance of the smaller models fell significantly short of Codex on all but the simplest domein, _chain_.
+Examining the trajectories generated by agents trained using these models, we
+noted that in several cases, they seemed to struggle to apprehend the
+underlying "logic" of successful trajectories, which hampered the ability
+of the rollout policy to produce good actions.
+Since these smaller models were not trained on identical data, we are unable to
+isolate the role of size in these results. However, the failure of all of these
+smaller models to learn suggests that size has some role to play in performance.
+We conjecture that larger models developed in the future may demonstrate
+comparable improvements in performance over our Codex model.
+
+=== Limitations <para:limitations>
+ICPI can theoretically work on any control task with discrete actions, due to the
+guarantees associated with policy iteration.
+However, since our implementation uses Codex, the domains in our paper were limited by the ability to encode states as text and to fit these encodings in the model's context window. Moreover, Codex demonstrated a limited ability to
+predict transitions and actions in more complex domains. As sequence models
+mature, we anticipate that more domains will become tractable for ICPI. We also
+note that reliance on the proprietary OpenAPI API limits exact reproduction of these
+results.
+
+
+=== Societal Impacts <para:impacts>
+An extensive literature #cites(<tamkin2021understanding>,<abid2021persistent>,<liang2021towards>,<pan2023risk>)
+has explored the possible positive and negative impacts of LLMs. Some of this
+work has explored mitigation strategies. In extending LLMs to RL, our work
+inherits these benefits and challenges. We highlight two concerns: the use of
+LLMs to spread misinformation and the detrimental carbon cost of training and
+using these models.
+
+#figure(
+  image("figures/policy-iteration/language-model.png"),
+  caption: [Comparison of different language models used to implement ICPI. The $y$-axis depicts
+    regret (normalized between 0 and 1), computed relative to an optimal
+    return with a discount-factor of 0.8. The $x$-axis depicts time-steps of
+    training. Error bars are standard errors from four seeds.],
+) <fig:language-models>
+
+#figure(
+tablex(columns: 3, header-rows: 1, auto-vlines: false,
+[*Model*], [*Parameters*], [*Training Data*],
+      [GPT-J #cite(<wang_gpt-j-6b_2021>) ]  , [6 billion]           , ["The Pile" #cite(<gao_pile_2020>), an 825GB English corpus incl. Wikipedia, GitHub, academic pubs],
+    [InCoder cite(<fried_incoder_2022>) ] , [6.7 billion]         , [159 GB of open-source StackOverflow code],
+    [OPT-30B cite(<zhang_opt_2022>) ]     , [30 billion]          , [180B tokens of predominantly English data],
+    [Codex cite(<chen_evaluating_2021>) ] , [185 billion]         , [179 GB of GitHub code],
+)) <tab:llms>
+
+== dummy
+<tab:promptformat>
 
 #bibliography("main.bib", style: "association-for-computing-machinery")

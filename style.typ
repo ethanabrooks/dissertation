@@ -60,6 +60,7 @@
   set par(leading: space)
   show heading: set block(above: 2 * space, below: space)
   show par: set block(above: space, below: space)
+  show link: underline
 
   [ #author \
     #email \
