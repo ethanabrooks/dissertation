@@ -51,16 +51,17 @@
   pad(left: line.indent * 1em, line.words.map(render-word).join(" "))
 }
 
-#let render-line-number(line-number) = {
+#let render-line-number(line-number, line-label) = {
   set align(right + bottom)
   set text(size: .8em)
-  [#line-number:]
+  [#figure([#line-number:], kind: "line-number", supplement: "line")
+    #label(if line-label == none { "dummy-line-label" } else { str(line-label) })]
 }
 
 #let algorithm(..lines, line-numbers: true) = {
   let rows = lines.pos().enumerate(start: 1).map(((line-number, line)) => {
     (..if line-numbers {
-      (render-line-number(line-number),)
+      (render-line-number(line-number, line.label),)
     } else {
       ()
     }, render-line(line), render-comment(line.comment),)
@@ -75,7 +76,13 @@
 
 #let kw = word => (body: word, keyword: true, type: "word")
 #let nkw = word => (body: word, keyword: false, type: "word")
-#let line = (..words, indent: 0, comment: none) => (words: words.pos(), indent: indent, type: "line", comment: comment)
+#let line = (..words, indent: 0, comment: none, label: none) => (
+  words: words.pos(),
+  indent: indent,
+  type: "line",
+  comment: comment,
+  label: label,
+)
 
 #let indent = (line) => {
   assert(line.type == "line")
@@ -89,56 +96,59 @@
 }
 
 #let State(body, ..args) = line(nkw(body), ..args)
-#let Function(first-line, comment: none, ..body) = {
+#let Function(first-line, comment: none, label: none, ..body) = {
   check-lines(..body)
   (
-    line(kw("function"), nkw(first-line), comment: comment),
+    line(kw("function"), nkw(first-line), comment: comment, label: label),
     ..indent-many(..body),
     line(kw("end function")),
   )
 }
-#let Repeat(..body, cond, comment: none) = {
+#let Repeat(..body, cond, comment: none, label: none) = {
   check-lines(..body)
   (
     line(kw("repeat")),
     ..indent-many(..body),
-    line(kw("until"), nkw(cond), comment: comment),
+    line(kw("until"), nkw(cond), comment: comment, label: label),
   )
 }
-#let While(cond, comment: none, ..body) = {
+#let While(cond, comment: none, label: none, ..body) = {
   check-lines(..body)
   (
-    line(kw("while"), nkw(cond), kw("do"), comment: comment),
+    line(kw("while"), nkw(cond), kw("do"), comment: comment, label: label),
     ..indent-many(..body),
     line(kw("end while")),
   )
 }
-#let For(cond, comment: none, ..body) = {
+#let For(cond, comment: none, label: none, ..body) = {
   check-lines(..body)
   (
-    line(kw("for"), nkw(cond), kw("do")),
+    line(kw("for"), nkw(cond), kw("do"), comment: comment, label: label),
     ..indent-many(..body.pos()),
     line(kw("end for")),
   )
 }
 
-#let If(predicate, ..consequent, comment: none) = {
+#let If(predicate, ..consequent, comment: none, label: none) = {
   check-lines(..consequent)
   (
-    line(kw("if"), nkw(predicate), kw("then"), comment: comment),
+    line(kw("if"), nkw(predicate), kw("then"), comment: comment, label: label),
     ..indent-many(..consequent),
   )
 }
 
-#let Else(..consequent, comment: none) = {
-  check-lines(..consequent)
-  (line(kw("else"), comment: comment), ..indent-many(..consequent))
-}
-
-#let Elif(predicate, ..consequent, comment: none) = {
+#let Else(..consequent, comment: none, label: none) = {
   check-lines(..consequent)
   (
-    line(kw("else if"), nkw(predicate), comment: comment),
+    line(kw("else"), comment: comment, label: label),
+    ..indent-many(..consequent),
+  )
+}
+
+#let Elif(predicate, ..consequent, comment: none, label: none) = {
+  check-lines(..consequent)
+  (
+    line(kw("else if"), nkw(predicate), comment: comment, label: label),
     ..indent-many(..consequent),
   )
 }

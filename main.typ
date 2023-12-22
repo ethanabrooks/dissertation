@@ -38,8 +38,8 @@
 #include "abstract.typ"
 #include "introduction.typ"
 #include "policy-iteration.typ"
+#include "adpp.typ"
 
-= Algorithm Distillation + Policy Iteration
 = Bellman Update Networks
 = Conclusion
 

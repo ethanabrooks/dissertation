@@ -7,7 +7,7 @@
 
 #set heading(numbering: "1.1")
 
-= In-Context Policy Iteration
+= In-Context Policy Iteration <chap:pi>
 In the context of Large Language Models (LLMs), in-context learning describes
 the ability of these models to generalize to novel downstream tasks when
 prompted with a small number of exemplars
@@ -214,8 +214,9 @@ does.
         For(
           [each timestep $t$ in episode],
           State(
-            $formatAction(Act) gets arg max_Act QValue^Policy (Obs_t, Act) $,
+            [ $formatAction(Act) gets arg max_Act QValue^Policy (Obs_t, Act) $ ],
             comment: [ Choose #formatAction("action") with highest #formatValue("value") ],
+            label: <line:arg-max>,
           ),
           State(
             [ $Rew_t, Ter_t, Obs_(t+1) gets$ step environment with $Act$ ],
@@ -322,7 +323,7 @@ approximately tracks the behavior policy.
 
 How does the policy improve? When acting in the environment (as opposed to
 planning), we choose the action that maximizes the estimated Q-value from the
-current state (see @algo:train pseudocode, line 6). At time step $t$, the agent
+current state (see @algo:train pseudocode, @line:arg-max). At time step $t$, the agent
 observes the state of the environment (denoted $Obs_t$) and executes action $Act_t = arg max_(Act in Actions) QValue^(Policy_t)(Obs_t,Act)$,
 where $Actions = [Actions(1),dots,Actions(n)]$
 denotes the set of $n$ actions available, $Policy_t$ denotes the policy of the
@@ -765,4 +766,4 @@ assert not done`
 )<tab:promptformat>
 
 
-// #bibliography("main.bib", style: "association-for-computing-machinery")
+#bibliography("main.bib", style: "association-for-computing-machinery")
