@@ -40,6 +40,6 @@
 #include "policy-iteration.typ"
 // = Algorithm Distillation + Policy Iteration
 // = Bellman Update Networks
-// = Conclusion
+= Conclusion
 
 #bibliography("main.bib", style: "association-for-computing-machinery")
