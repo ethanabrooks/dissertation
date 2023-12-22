@@ -69,7 +69,7 @@
     (18pt,)
   } else {
     ()
-  }, auto, auto)
+  }, auto, 1fr)
   table(columns: columns, inset: 0.3em, stroke: none, ..rows)
 }
 
@@ -82,9 +82,15 @@
   line + (indent: line.indent + 1)
 }
 #let indent-many = (..lines) => lines.pos().map(indent)
+#let check-lines(..lines) ={
+  for line in lines.pos() {
+    assert(line.type == "line")
+  }
+}
 
 #let State(body, ..args) = line(nkw(body), ..args)
 #let Function(first-line, comment: none, ..body) = {
+  check-lines(..body)
   (
     line(kw("function"), nkw(first-line), comment: comment),
     ..indent-many(..body),
@@ -92,6 +98,7 @@
   )
 }
 #let Repeat(..body, cond, comment: none) = {
+  check-lines(..body)
   (
     line(kw("repeat")),
     ..indent-many(..body),
@@ -99,6 +106,7 @@
   )
 }
 #let While(cond, comment: none, ..body) = {
+  check-lines(..body)
   (
     line(kw("while"), nkw(cond), kw("do"), comment: comment),
     ..indent-many(..body),
@@ -106,6 +114,7 @@
   )
 }
 #let For(cond, comment: none, ..body) = {
+  check-lines(..body)
   (
     line(kw("for"), nkw(cond), kw("do")),
     ..indent-many(..body.pos()),
@@ -113,17 +122,26 @@
   )
 }
 
-#let If(predicate, ..consequent, comment: none) = (
-  line(kw("if"), nkw(predicate), kw("then"), comment: comment),
-  ..indent-many(..consequent),
-)
+#let If(predicate, ..consequent, comment: none) = {
+  check-lines(..consequent)
+  (
+    line(kw("if"), nkw(predicate), kw("then"), comment: comment),
+    ..indent-many(..consequent),
+  )
+}
 
-#let Else(..consequent, comment: none) = (line(kw("else"), comment: comment), ..indent-many(..consequent))
+#let Else(..consequent, comment: none) = {
+  check-lines(..consequent)
+  (line(kw("else"), comment: comment), ..indent-many(..consequent))
+}
 
-#let Elif(predicate, ..consequent, comment: none) = (
-  line(kw("else if"), nkw(predicate), comment: comment),
-  ..indent-many(..consequent),
-)
+#let Elif(predicate, ..consequent, comment: none) = {
+  check-lines(..consequent)
+  (
+    line(kw("else if"), nkw(predicate), comment: comment),
+    ..indent-many(..consequent),
+  )
+}
 
 #let EndIf(..args) = line(kw("end if"), ..args)
 

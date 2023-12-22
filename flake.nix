@@ -13,7 +13,7 @@
       pkgs = import nixpkgs {
         inherit system;
       };
-      my-typst-preview = import ./pkgs/typst-preview/pagkage.nix {
+      my-typst-preview = import ./pkgs/typst-preview/package.nix {
         inherit (pkgs) lib rustPlatform fetchFromGitHub mkYarnPackage fetchYarnDeps pkg-config libgit2 openssl zlib stdenv darwin;
       };
 

@@ -164,53 +164,107 @@ in-context learning depends on. #cite(<chen_relation_2022>) studies the
 sensitivity of in-context learning to small perturbations of the context. They
 propose a novel method that uses sensitivity as a proxy for model certainty.
 
-#let formatAction = (s) => text(fill: blue)[*#s*]
-#let formatReward = (s) => text(fill: orange)[*#s*]
-#let formatState = (s) => text(fill: green)[*#s*]
-#let formatValue = (s) => text(fill: purple)[*#s*]
-#let state = formatState("state")
-#let action = formatAction("action")
-#let value = formatValue("value")
+#let formatAction = (s) => text(fill: blue)[#s]
+#let formatReward = (s) => text(fill: orange)[#s]
+#let formatState = (s) => text(fill: green)[#s]
+#let formatTermination = (s) => text(fill: eastern)[#s]
+#let formatValue = (s) => text(fill: purple)[#s]
 
-#algorithm-figure({
-  import "algorithmic.typ": *
-  algorithm(State([Obs_0], comment: [ Observe #state ]), ..
-  State([ Observe #state ]), For(
-    "each step in episode",
-    State([ Observe #state ]),
-    ..
-    For(
-      [each #action in action space],
-      State([ Compute #value given #state and #action ]),
-    ),
-    State([ Choose #action with highest #value ]),
-    State([ Receive reward and next #state ]),
-    State([ Add interaction to replay buffer ]),
-  ))
-}, caption: [
-  Interacting with the Environment
-])
+#algorithm-figure(
+  {
+    import "algorithmic.typ": *
+    let Obs = formatState($Obs$)
+    let Reward = formatReward($Reward$)
+    let Action = formatAction($Action$)
+    let QValue = formatValue($QValue$)
+    let reward = formatReward("reward")
+    let state = formatState("state")
+    let termination = formatTermination("termination")
+    algorithm(
+      State([initialize $Buffer$], comment: [Replay Buffer]),
+      ..
+      While(
+        [training],
+        State([$Obs_0 gets$ Reset environment], comment: [Get initial #state]),
+        ..
+        For(
+          [each timestep $t$ in episode],
+          State(
+            $formatAction(Action) gets arg max_Action QValue^Policy (Obs_t, Action) $,
+            comment: [ Choose #formatAction("action") with highest #formatValue("value") ],
+          ),
+          State(
+            [ $Reward_t, Done_t, Obs_(t+1) gets$ step environment with $Action$ ],
+            comment: [ Receive #reward and next #state ],
+          ),
+          State(
+            $Buffer gets Buffer union (Obs_t, Action_t, Reward_t, Done_t)$,
+            comment: [ Add interaction to replay buffer ],
+          ),
+        ),
+      ),
+    )
+  },
+  caption: [
+    Training Loop
+  ],
+)
 
 #algorithm-figure(
   {
     import "algorithmic.typ": *
     import "math.typ"
+    let Action = formatAction($Action$)
+    let Done = formatTermination($Done$)
+    let Obs = formatState($Obs$)
+    let Reward = formatReward($Reward$)
+    let QValue = formatValue($QValue$)
+    let reward = formatReward("reward")
+    let state = formatState("state")
+    let termination = formatTermination("termination")
+    let value = formatValue("value")
     algorithm(
-      State(
-        [Given current #state $#formatState($math.State_t$)$ and chosen #action $formatAction(Action)$],
-      ),
-      ..Repeat(
-        State([ Use LLM to model transition ]),
-        State([ Use LLM to model policy ]),
-        "model predicts termination",
-      ),
-      State(
-        [ Estimate #value from rollout:
-          $#formatValue($QValue^Policy$) ( #formatState($math.State_t$), #formatAction(Action) ) = sum^T_(u=t) gamma^(u-t) #formatReward($r^u$) $ ],
+      ..Function(
+        $Q(Obs_t, Action, Buffer)$,
+        State($u gets t$),
+        State($Obs^1 gets Obs_t$),
+        State($Action^1 gets Action_t$),
+        ..Repeat(
+          State([$Buffer_Done sim$ time-steps with action $Action^u$]),
+          State(
+            [$Done^u sim Model(Buffer_Done, Obs^u, Action^u)$],
+            comment: [ model #termination ],
+          ),
+          State(
+            [$Buffer_Reward sim$ time-steps with action $Action^u$ and #termination $Done^u$],
+          ),
+          State(
+            [$Reward^u sim Model(Buffer_Done, Obs^u, Action^u)$],
+            comment: [ model #reward ],
+          ),
+          State(
+            [$Buffer_Obs sim$ time-steps with action $Action^u$ and #termination $Done^u$],
+          ),
+          State(
+            [$Obs^(u+1) sim Model(Buffer_Obs, Obs^u, Action^u)$],
+            comment: [ model #termination ],
+          ),
+          State([$Buffer_Action sim Recency$ recent trajectories]),
+          State(
+            [$Action^(u+1) sim Model(Buffer_Action, Obs^(u+1))$],
+            comment: [ model policy ],
+          ),
+          State($u gets u+1$),
+          [$Done^u$ is terminal],
+          comment: [model predicts #termination],
+        ),
+        State([
+          $QValue^Policy ( Obs_t, Action ) = sum^T_(u=t) gamma^(u-t) Reward^u $
+        ], comment: [Estimate #value from rollout]),
       ),
     )
   },
   caption: [
-    Estimating Value
+    Computing Q-values
   ],
 )
