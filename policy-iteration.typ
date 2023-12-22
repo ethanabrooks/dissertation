@@ -324,7 +324,7 @@ How does the policy improve? When acting in the environment (as opposed to
 planning), we choose the action that maximizes the estimated Q-value from the
 current state (see @algo:train pseudocode, line 6). At time step $t$, the agent
 observes the state of the environment (denoted $Obs_t$) and executes action $Act_t = arg max_(Act in Actions) QValue^(Policy_t)(Obs_t,Act)$,
-where $Actions = [1/2,Actions(1),dots,Actions(n)]$
+where $Actions = [Actions(1),dots,Actions(n)]$
 denotes the set of $n$ actions available, $Policy_t$ denotes the policy of the
 agent at time step $t$, and $QValue^Policy$ denotes the Q-estimate for policy $Policy$.
 Taking the greedy ($arg max$) actions with respect to $Q^(pi_t)$ implements a
@@ -709,7 +709,9 @@ powerful.
 
 
 #figure(
-  tablex(columns: 2, auto-vlines: false,
+  {
+    set par(leading: 1em)
+  tablex(columns: 2, auto-vlines: false, breakable: true,
   [*Chain*], [
     `assert state == 6` _`and state != 4`_\
 `state = left()
@@ -755,7 +757,7 @@ assert not done`
 assert reward == 0
 assert not done`
  ]
-   ),
+   )},
   caption: [
     This table provides example prompts for each domain, showcasing the text format
     and hints. Hints are in italics.
@@ -763,4 +765,4 @@ assert not done`
 )<tab:promptformat>
 
 
-#bibliography("main.bib", style: "association-for-computing-machinery")
+// #bibliography("main.bib", style: "association-for-computing-machinery")

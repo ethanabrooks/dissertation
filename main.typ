@@ -24,22 +24,23 @@
 
 // #lorem(80)
 
-// #outline(title: [#formatHeader(body: "Table of Contents")], indent: auto)
-// #outline(
-//   title: [#formatHeader(body: "List of Figures")],
-//   target: figure.where(kind: image),
-// )
+#outline(title: [#formatHeader(body: "Table of Contents")], indent: auto)
+#outline(
+  title: [#formatHeader(body: "List of Figures")],
+  target: figure.where(kind: image),
+)
 
 #set heading(numbering: "1.1", supplement: "Chapter")
 #set page(numbering: "1")
 #counter(page).update(1)
 #set par(first-line-indent: .5in)
 
-// #include "abstract.typ"
-// #include "introduction.typ"
+#include "abstract.typ"
+#include "introduction.typ"
 #include "policy-iteration.typ"
-// = Algorithm Distillation + Policy Iteration
-// = Bellman Update Networks
+
+= Algorithm Distillation + Policy Iteration
+= Bellman Update Networks
 = Conclusion
 
 #bibliography("main.bib", style: "association-for-computing-machinery")

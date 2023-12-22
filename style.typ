@@ -61,6 +61,7 @@
   show heading: set block(above: 2 * space, below: space)
   show par: set block(above: space, below: space)
   show link: underline
+  show figure: set block(breakable: true)
 
   [ #author \
     #email \
