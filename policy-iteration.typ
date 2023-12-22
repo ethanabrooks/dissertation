@@ -67,7 +67,7 @@ as InCoder. On our six domains, we find that only the largest model (the
     change the prompts that the LLM receives, allowing the model to improve its
     behavior over time.
   ],
-) <fig:q-rollouts>
+) <fig:q>
 
 == Related Work <sec:related>
 
@@ -173,7 +173,7 @@ showing that label distribution is more % important than label correctness.
 #cite(<chan_data_2022>) and #cite(<garg_what_2022>) provide analyses of the
 properties that drive in-context learning, the first in the context of image
 classification, the second in the context of regression onto a continuous
-function. These papers identify various properties, including ``burstiness,''
+function. These papers identify various properties, including "burstiness,"
 model-size, and model-architecture, that in-context learning depends on.
 #cite(<chen_relation_2022>) studies the sensitivity of in-context learning to
 small perturbations of the context. They propose a novel method that uses
@@ -195,8 +195,8 @@ does.
   {
     import "algorithmic.typ": *
     let Obs = formatState($Obs$)
-    let Reward = formatReward($Reward$)
-    let Action = formatAction($Action$)
+    let Rew = formatReward($Rew$)
+    let Act = formatAction($Act$)
     let QValue = formatValue($QValue$)
     let reward = formatReward("reward")
     let state = formatState("state")
@@ -211,15 +211,15 @@ does.
         For(
           [each timestep $t$ in episode],
           State(
-            $formatAction(Action) gets arg max_Action QValue^Policy (Obs_t, Action) $,
+            $formatAction(Act) gets arg max_Act QValue^Policy (Obs_t, Act) $,
             comment: [ Choose #formatAction("action") with highest #formatValue("value") ],
           ),
           State(
-            [ $Reward_t, Done_t, Obs_(t+1) gets$ step environment with $Action$ ],
+            [ $Rew_t, Done_t, Obs_(t+1) gets$ step environment with $Act$ ],
             comment: [ Receive #reward and next #state ],
           ),
           State(
-            $Buffer gets Buffer union (Obs_t, Action_t, Reward_t, Done_t)$,
+            $Buffer gets Buffer union (Obs_t, Act_t, Rew_t, Done_t)$,
             comment: [ Add interaction to replay buffer ],
           ),
         ),
@@ -229,16 +229,16 @@ does.
   caption: [
     Training Loop
   ],
-)
+) <algo:train>
 
 #algorithm-figure(
   {
     import "algorithmic.typ": *
     import "math.typ"
-    let Action = formatAction($Action$)
+    let Act = formatAction($Act$)
     let Done = formatTermination($Done$)
     let Obs = formatState($Obs$)
-    let Reward = formatReward($Reward$)
+    let Rew = formatReward($Rew$)
     let QValue = formatValue($QValue$)
     let reward = formatReward("reward")
     let state = formatState("state")
@@ -246,33 +246,33 @@ does.
     let value = formatValue("value")
     algorithm(
       ..Function(
-        $Q(Obs_t, Action, Buffer)$,
+        $Q(Obs_t, Act, Buffer)$,
         State($u gets t$),
         State($Obs^1 gets Obs_t$),
-        State($Action^1 gets Action_t$),
+        State($Act^1 gets Act_t$),
         ..Repeat(
-          State([$Buffer_Done sim$ time-steps with action $Action^u$]),
+          State([$Buffer_Done sim$ time-steps with action $Act^u$]),
           State(
-            [$Done^u sim Model(Buffer_Done, Obs^u, Action^u)$],
+            [$Done^u sim Model(Buffer_Done, Obs^u, Act^u)$],
             comment: [ model #termination ],
           ),
           State(
-            [$Buffer_Reward sim$ time-steps with action $Action^u$ and #termination $Done^u$],
+            [$Buffer_Rew sim$ time-steps with action $Act^u$ and #termination $Done^u$],
           ),
           State(
-            [$Reward^u sim Model(Buffer_Done, Obs^u, Action^u)$],
+            [$Rew^u sim Model(Buffer_Done, Obs^u, Act^u)$],
             comment: [ model #reward ],
           ),
           State(
-            [$Buffer_Obs sim$ time-steps with action $Action^u$ and #termination $Done^u$],
+            [$Buffer_Obs sim$ time-steps with action $Act^u$ and #termination $Done^u$],
           ),
           State(
-            [$Obs^(u+1) sim Model(Buffer_Obs, Obs^u, Action^u)$],
+            [$Obs^(u+1) sim Model(Buffer_Obs, Obs^u, Act^u)$],
             comment: [ model #termination ],
           ),
-          State([$Buffer_Action sim Recency$ recent trajectories]),
+          State([$Buffer_Act sim Recency$ recent trajectories]),
           State(
-            [$Action^(u+1) sim Model(Buffer_Action, Obs^(u+1))$],
+            [$Act^(u+1) sim Model(Buffer_Act, Obs^(u+1))$],
             comment: [ model policy ],
           ),
           State($u gets u+1$),
@@ -280,7 +280,7 @@ does.
           comment: [model predicts #termination],
         ),
         State([
-          $QValue^Policy ( Obs_t, Action ) = sum^T_(u=t) gamma^(u-t) Reward^u $
+          $QValue^Policy ( Obs_t, Act ) = sum^T_(u=t) gamma^(u-t) Rew^u $
         ], comment: [Estimate #value from rollout]),
       ),
     )
@@ -288,4 +288,56 @@ does.
   caption: [
     Computing Q-values
   ],
-)
+) <algo:q>
+
+== Method <sec:method>
+How can standard policy iteration make use of in-context learning? Policy
+iteration is either _model-based_---using a world-model to plan future
+trajectories in the environment---or _model-free_---inferring value-estimates
+without explicit planning. Both methods can be realized with in-context
+learning. We choose model-based learning because planned trajectories make the
+underlying logic of value-estimates explicit to our foundation model backbone,
+providing a concrete instantiation of a trajectory that realizes the values.
+This ties into recent work #cites(<wei_chain_2022>, <nye_show_2021>)
+demonstrating that "chains of thought" can significantly improve few-shot
+performance of foundation models.
+
+Model-based RL requires two ingredients, a rollout-policy used to act during
+planning and a world-model used to predict future rewards, terminations, and
+states. Since our approach avoids any mutation of the foundation model's
+parameters (this would require gradients), we must instead induce the
+rollout-policy and the world-model using in-context learning, i.e. by selecting
+appropriate prompts. We induce the rollout-policy by prompting the foundation
+model with trajectories drawn from the current (or recent) behavior policy
+(distinct from the rollout-policy). Similarly, we induce the world-model by
+prompting the foundation models with transitions drawn from the agent's history
+of experience. Note that our approach assumes access to some translation between
+the state-space of the environment and the medium (language, images, etc.) of
+the foundation models. This explains how an algorithm might plan and estimate
+values using a foundation model. It also explains how the rollout-policy
+approximately tracks the behavior policy.
+
+How does the policy improve? When acting in the environment (as opposed to
+planning), we choose the action that maximizes the estimated Q-value from the
+current state (see @algo:train pseudocode, line 6). At time step $t$, the agent
+observes the state of the environment (denoted $Obs_t$) and executes action $Act_t = arg max_(Act in Actions) QValue^(Policy_t)(Obs_t,Act)$,
+where $Actions = [1/2,Actions(1),dots,Actions(n)]$
+denotes the set of $n$ actions available, $Policy_t$ denotes the policy of the
+agent at time step $t$, and $QValue^Policy$ denotes the Q-estimate for policy $Policy$.
+Taking the greedy ($arg max$) actions with respect to $Q^(pi_t)$ implements a
+new and improved policy.
+
+=== Computing Q-values <para:q-values>
+This section provides details on the prompts that we use in our computation of
+Q-values (see @algo:q pseudocode & Figure @fig:q rollout). During training, we
+maintain a buffer $Buffer$ of transitions experienced by the agent. To compute// $QValue^(Policy_t)(Obs_t, Act)$ at time step $t$ in the real-world we rollout a
+// simulated trajectory $Obs^1=Obs_t$, $Act^1 = Act$, $Rew^{1}$,
+// $\Obs^{2}$, $\Act^{2}$, $\Rew^{2}$, $\cdots$, $\Obs^{T}$, $\Act^{T}$,
+// $\Rew^{T}$, $\Obs^{T+1}$ by predicting, at each simulation time step $u$: reward
+// $\Rew^{u} \sim \LLM\left(\Buffer_{\Rew}, \Obs^{u}, \Act^{u} \right)$;
+// termination
+// $\Ter^{u} \sim \LLM\left(\Buffer_{\Ter}, \Obs^{u}, \Act^{u} \right)$;
+// observation
+// $\Obs^{u+1} \sim \LLM\left(\Buffer_{\Obs}, \Obs^{u}, \Act^{u} \right)$; action
+// $\Act^{1} \sim \LLM\left(\BestTrajectories, \Obs^{u} \right)$. Termination
+// $\Ter^{u}$ decides whether the simulated trajectory ends at step $u$.
