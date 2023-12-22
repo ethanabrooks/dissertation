@@ -174,8 +174,8 @@ propose a novel method that uses sensitivity as a proxy for model certainty.
 
 #algorithm-figure({
   import "algorithmic.typ": *
-  algorithm(..
-  For(
+  algorithm(State([Obs_0], comment: [ Observe #state ]), ..
+  State([ Observe #state ]), For(
     "each step in episode",
     State([ Observe #state ]),
     ..

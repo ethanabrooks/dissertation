@@ -13,12 +13,17 @@
       pkgs = import nixpkgs {
         inherit system;
       };
+      my-typst-preview = import ./pkgs/typst-preview/pagkage.nix {
+        inherit (pkgs) lib rustPlatform fetchFromGitHub mkYarnPackage fetchYarnDeps pkg-config libgit2 openssl zlib stdenv darwin;
+      };
+
       buildInputs = with pkgs; [
+        my-typst-preview
         pdf2svg
         typst
         typstfmt
         typst-lsp
-        typst-preview
+        wget
       ];
     in rec {
       devShell = pkgs.mkShell rec {
