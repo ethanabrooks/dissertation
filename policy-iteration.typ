@@ -4,6 +4,8 @@
 
 #show: show-algorithms
 
+#set heading(numbering: "1.1")
+
 = In-Context Policy Iteration
 In the context of Large Language Models (LLMs), in-context learning describes
 the ability of these models to generalize to novel downstream tasks when
@@ -215,11 +217,11 @@ does.
             comment: [ Choose #formatAction("action") with highest #formatValue("value") ],
           ),
           State(
-            [ $Rew_t, Done_t, Obs_(t+1) gets$ step environment with $Act$ ],
+            [ $Rew_t, Ter_t, Obs_(t+1) gets$ step environment with $Act$ ],
             comment: [ Receive #reward and next #state ],
           ),
           State(
-            $Buffer gets Buffer union (Obs_t, Act_t, Rew_t, Done_t)$,
+            $Buffer gets Buffer union (Obs_t, Act_t, Rew_t, Ter_t)$,
             comment: [ Add interaction to replay buffer ],
           ),
         ),
@@ -236,7 +238,7 @@ does.
     import "algorithmic.typ": *
     import "math.typ"
     let Act = formatAction($Act$)
-    let Done = formatTermination($Done$)
+    let Ter = formatTermination($Ter$)
     let Obs = formatState($Obs$)
     let Rew = formatReward($Rew$)
     let QValue = formatValue($QValue$)
@@ -251,32 +253,32 @@ does.
         State($Obs^1 gets Obs_t$),
         State($Act^1 gets Act_t$),
         ..Repeat(
-          State([$Buffer_Done sim$ time-steps with action $Act^u$]),
+          State([$Buffer_Ter sim$ time-steps with action $Act^u$]),
           State(
-            [$Done^u sim Model(Buffer_Done, Obs^u, Act^u)$],
+            [$Ter^u sim LLM(Buffer_Ter, Obs^u, Act^u)$],
             comment: [ model #termination ],
           ),
           State(
-            [$Buffer_Rew sim$ time-steps with action $Act^u$ and #termination $Done^u$],
+            [$Buffer_Rew sim$ time-steps with action $Act^u$ and #termination $Ter^u$],
           ),
           State(
-            [$Rew^u sim Model(Buffer_Done, Obs^u, Act^u)$],
+            [$Rew^u sim LLM(Buffer_Ter, Obs^u, Act^u)$],
             comment: [ model #reward ],
           ),
           State(
-            [$Buffer_Obs sim$ time-steps with action $Act^u$ and #termination $Done^u$],
+            [$Buffer_Obs sim$ time-steps with action $Act^u$ and #termination $Ter^u$],
           ),
           State(
-            [$Obs^(u+1) sim Model(Buffer_Obs, Obs^u, Act^u)$],
+            [$Obs^(u+1) sim LLM(Buffer_Obs, Obs^u, Act^u)$],
             comment: [ model #termination ],
           ),
           State([$Buffer_Act sim Recency$ recent trajectories]),
           State(
-            [$Act^(u+1) sim Model(Buffer_Act, Obs^(u+1))$],
+            [$Act^(u+1) sim LLM(Buffer_Act, Obs^(u+1))$],
             comment: [ model policy ],
           ),
           State($u gets u+1$),
-          [$Done^u$ is terminal],
+          [$Ter^u$ is terminal],
           comment: [model predicts #termination],
         ),
         State([
@@ -330,14 +332,65 @@ new and improved policy.
 === Computing Q-values <para:q-values>
 This section provides details on the prompts that we use in our computation of
 Q-values (see @algo:q pseudocode & Figure @fig:q rollout). During training, we
-maintain a buffer $Buffer$ of transitions experienced by the agent. To compute// $QValue^(Policy_t)(Obs_t, Act)$ at time step $t$ in the real-world we rollout a
-// simulated trajectory $Obs^1=Obs_t$, $Act^1 = Act$, $Rew^{1}$,
-// $\Obs^{2}$, $\Act^{2}$, $\Rew^{2}$, $\cdots$, $\Obs^{T}$, $\Act^{T}$,
-// $\Rew^{T}$, $\Obs^{T+1}$ by predicting, at each simulation time step $u$: reward
-// $\Rew^{u} \sim \LLM\left(\Buffer_{\Rew}, \Obs^{u}, \Act^{u} \right)$;
-// termination
-// $\Ter^{u} \sim \LLM\left(\Buffer_{\Ter}, \Obs^{u}, \Act^{u} \right)$;
-// observation
-// $\Obs^{u+1} \sim \LLM\left(\Buffer_{\Obs}, \Obs^{u}, \Act^{u} \right)$; action
-// $\Act^{1} \sim \LLM\left(\BestTrajectories, \Obs^{u} \right)$. Termination
-// $\Ter^{u}$ decides whether the simulated trajectory ends at step $u$.
+maintain a buffer $Buffer$ of transitions experienced by the agent. To compute
+$QValue^(Policy_t)(Obs_t, Act)$ at time step $t$ in the real-world we rollout a
+simulated trajectory $Obs^1=Obs_t$, $Act^1 = Act$, $Rew^1$,
+$Obs^2$, $Act^2$, $Rew^2$, $dots$, $Obs^T$, $Act^T$,
+$Rew^T$, $Obs^(T+1)$ by predicting, at each simulation time step $u$: reward
+$Rew^u sim LLM(Buffer_Rew, Obs^u, Act^u)$; termination
+$Ter^u sim LLM(Buffer_Ter, Obs^u, Act^u)$; observation
+$Obs^(u+1) sim LLM(Buffer_Obs, Obs^u, Act^u)$; action
+$Act^1 sim LLM(Buffer_Act, Obs^u)$. Termination
+$Ter^u$ decides whether the simulated trajectory ends at step $u$.
+
+The prompts $Buffer_Rew$, $Buffer_Ter$ contain data sampled from the replay
+buffer. For each prompt, we choose some subset of replay buffer transitions,
+shuffle them, convert them to text (examples are provided in table
+@sec:domains-and-prompt-format) and clip the prompt at the 4000-token Codex
+context limit. We use the same method for $Buffer_Act$, except that we use
+random trajectory subsequences.
+
+In order to maximize the relevance of the prompt contents to the current
+inference we select transitions using the following criteria. $Buffer_Ter$
+contains $(Obs_k, Act_k, Ter_k)$ tuples such that $Act_k$ equals
+$Act^u$, the action for which the LLM must infer termination.
+$Buffer_Rew$ contains $(Obs_k, Act_k, Rew_k)$ tuples, again constraining $Act_k = Act^u$ but
+also constraining $Ter_k = Ter^k$---that the tuple corresponds to a terminal
+time-step if the LLM inferred
+$Ter^u =$ true, and to a non-terminal time-step if $Ter^u =$ false. For
+$Buffer_Obs$, the prompt includes $(Obs_k, Act_k Obs_k+1)$ tuples with $Act_k = Act^u$ and $Ter_k = $ false
+(only non-terminal states need to be modelled).
+
+We also maintain a balance of certain kinds of transitions in the prompt. For
+termination prediction, we balance terminal and non-terminal time-steps. Since
+non-terminal time-steps far outnumber terminal time-steps, this eliminates a
+situation wherein the randomly sampled prompt time-steps are entirely
+non-terminal, all but ensuring that the LLM will predict non-termination.
+Similarly, for reward prediction, we balance the number of time-steps
+corresponding to each reward value stored in $Buffer$. In order to balance two
+collections of unequal size, we take the smaller and duplicate randomly chosen
+members until the sizes are equal.
+
+In contrast to the other predictions, we condition the rollout policy on
+trajectory subsequences, not individual time-steps. Prompting with sequences
+better enables the foundation model to apprehend the logic behind a policy.
+Trajectory subsequences consist of $(Obs_k, Act_k)$ pairs, randomly clipped from
+the $Recency$ most recent trajectories. More recent trajectories will, in
+general demonstrate higher performance, since they come from policies that have
+benefited from more rounds of improvement.
+
+In contrast to the other predictions, we condition the rollout policy on
+trajectory subsequences, not individual time-steps. Prompting with sequences
+better enables the foundation model to apprehend the logic behind a policy.
+Trajectory subsequences consist of $(Obs_k, Act_k)$ pairs, randomly clipped from
+the $Recency$ most recent trajectories. More recent trajectories will, in
+general demonstrate higher performance, since they come from policies that have
+benefited from more rounds of improvement.
+
+Finally, the Q-value estimate is simply the discounted sum of rewards for the
+simulated episode. Given this description of Q-value estimation, we now return
+to the concept of policy improvement.
+
+=== Domains and prompt format <sec:domains-and-prompt-format>
+
+#bibliography("main.bib", style: "association-for-computing-machinery")
