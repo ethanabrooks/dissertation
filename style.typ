@@ -1,8 +1,15 @@
+#import "@preview/anti-matter:0.1.1": anti-matter, fence, set-numbering
+
 #let formatHeader(body: content) = [
   #set align(center)
   #body
   #v(18pt)
 ]
+
+#let cites(..labels) = {
+  labels.pos().map(cite).join()
+}
+
 #let style(
   title: str,
   author: str,
@@ -17,6 +24,8 @@
   set page(margin: (x: 1in))
   set align(center)
   set text(font: "New Computer Modern")
+  show heading.where(level: 1): it => pagebreak(weak: true) + formatHeader(body: it)
+
   v(108pt)
   [*#title*]
   let year = date.year()
@@ -57,9 +66,6 @@
   set align(left + top)
   set par(justify: true)
   set page(numbering: "i")
-  show heading.where(level: 1): it => {
-    pagebreak()
-    formatHeader(body: it)
-  }
+
   doc
 }

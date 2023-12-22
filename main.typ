@@ -1,4 +1,5 @@
 #import "style.typ": style, formatHeader
+
 #show: doc => style(
   title: "Explorations of In-Context Reinforcement Learning",
   author: "Ethan Brooks",
@@ -15,30 +16,30 @@
   doc: doc,
 )
 
-= Dedication
+// = Dedication
 
-#lorem(80)
+// #lorem(80)
 
-= Acknowledgements
+// = Acknowledgements
 
-#lorem(80)
+// #lorem(80)
 
-#outline(title: [#formatHeader(body: "Table of Contents")], indent: auto)
-#outline(
-  title: [#formatHeader(body: "List of Figures")],
-  target: figure.where(kind: image),
-)
+// #outline(title: [#formatHeader(body: "Table of Contents")], indent: auto)
+// #outline(
+//   title: [#formatHeader(body: "List of Figures")],
+//   target: figure.where(kind: image),
+// )
 
 #set heading(numbering: "1.1")
 #set page(numbering: "1")
 #counter(page).update(1)
 #set par(first-line-indent: .5in)
 
-#include "abstract.typ"
-#include "introduction.typ"
-= In-Context Policy Iteration
-= Algorithm Distillation + Policy Iteration
-= Bellman Update Networks
-= Conclusion
+// #include "abstract.typ"
+// #include "introduction.typ"
+#include "policy-iteration.typ"
+// = Algorithm Distillation + Policy Iteration
+// = Bellman Update Networks
+// = Conclusion
 
 #bibliography("main.bib", style: "association-for-computing-machinery")

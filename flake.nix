@@ -14,9 +14,10 @@
         inherit system;
       };
       buildInputs = with pkgs; [
+        pdf2svg
         typst
-        typst-lsp
         typstfmt
+        typst-lsp
         typst-preview
       ];
     in rec {
