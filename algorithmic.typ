@@ -33,11 +33,17 @@
   }
 }
 
-#let render-line(expr) = {
-  assert(expr.type == "line")
-  pad(left: expr.indent * 1em)[
-    #expr.words.map(render-word).join(" ")
-  ]
+#let render-comment(comment) = {
+  if comment != none {
+    set text(size: .7em, fill: gray)
+    h(.001fr)
+    sym.triangle.stroked.r + sym.space + comment
+  }
+}
+
+#let render-line(line) = {
+  assert(line.type == "line")
+  pad(left: line.indent * 1em, line.words.map(render-word).join(" "))
 }
 
 #let render-line-number(line-number) = {
@@ -46,52 +52,55 @@
   [#line-number:]
 }
 
-#let render-with-line-numbers = (..lines) => {
-  let rows = lines.pos().enumerate(start: 1).map(((line-number, line)) => {
-    (render-line-number(line-number), render-line(line))
-  }).flatten()
-  table(columns: (18pt, 100%), inset: 0.3em, stroke: none, ..rows)
-}
-
-#let render-without-line-numbers = (..lines) => {
-  let rows = lines.pos().map(render-line)
-  table(columns: (100%), inset: 0.3em, stroke: none, ..rows)
-}
-
 #let algorithm(..lines, line-numbers: true) = {
-  if line-numbers {
-    render-with-line-numbers(..lines)
+  let rows = lines.pos().enumerate(start: 1).map(((line-number, line)) => {
+    (..if line-numbers {
+      (render-line-number(line-number),)
+    } else {
+      ()
+    }, render-line(line), render-comment(line.comment),)
+  }).flatten()
+  let columns = (..if line-numbers {
+    (18pt,)
   } else {
-    render-without-line-numbers(..lines)
-  }
+    ()
+  }, auto, auto)
+  table(columns: columns, inset: 0.3em, stroke: none, ..rows)
 }
 
 #let kw = word => (body: word, keyword: true, type: "word")
 #let nkw = word => (body: word, keyword: false, type: "word")
-#let line = (..words, indent: 0) => (words: words.pos(), indent: indent, type: "line")
+#let line = (..words, indent: 0, comment: none) => (words: words.pos(), indent: indent, type: "line", comment: comment)
 
-#let indent = (line) => line + (indent: line.indent + 1)
+#let indent = (line) => {
+  assert(line.type == "line")
+  line + (indent: line.indent + 1)
+}
 #let indent-many = (..lines) => lines.pos().map(indent)
 
-#let State(body) = line(nkw(body), indent: 0)
-#let Function(first-line, ..body) = {
+#let State(body, ..args) = line(nkw(body), ..args)
+#let Function(first-line, comment: none, ..body) = {
   (
-    line(kw("function"), nkw(first-line)),
+    line(kw("function"), nkw(first-line), comment: comment),
     ..indent-many(body),
     line(kw("end function")),
   )
 }
-#let Repeat(..body, cond) = {
-  (line(kw("repeat")), ..indent-many(body), line(kw("until"), nkw(cond)),)
-}
-#let While(cond, ..body) = {
+#let Repeat(..body, cond, comment: none) = {
   (
-    line(kw("while"), nkw(cond), kw("do")),
+    line(kw("repeat")),
+    ..indent-many(body),
+    line(kw("until"), nkw(cond), comment: comment),
+  )
+}
+#let While(cond, comment: none, ..body) = {
+  (
+    line(kw("while"), nkw(cond), kw("do"), comment: comment),
     ..indent-many(body),
     line(kw("end while")),
   )
 }
-#let For(cond, ..body) = {
+#let For(cond, comment: none, ..body) = {
   (
     line(kw("for"), nkw(cond), kw("do")),
     ..indent-many(..body.pos()),
@@ -99,20 +108,18 @@
   )
 }
 
-#let If(cond, body, ..elseif, els: none) = {
-  let elseif-lines = elseif.pos().map(e =>
-  (line(kw("else if"), nkw(e), kw("then")), ..indent-many(e)))
-  let else-line = if els == none {
-    ()
-  } else {
-    (line(kw("else")), ..indent-many(els))
-  }
-  (
-    line(kw("if"), nkw(cond), kw("then")),
-    ..indent-many(body),
-    ..elseif-lines,
-    ..else-line,
-    line(kw("end if")),
-  )
-}
-#let Return(arg) = line(kw("return"), nkw(args))
+#let If(predicate, ..consequent, comment: none) = (
+  line(kw("if"), nkw(predicate), kw("then"), comment: comment),
+  ..indent-many(..consequent),
+)
+
+#let Else(..consequent, comment: none) = (line(kw("else"), comment: comment), ..indent-many(..consequent))
+
+#let Elif(predicate, ..consequent, comment: none) = (
+  line(kw("else if"), nkw(predicate), comment: comment),
+  ..indent-many(..consequent),
+)
+
+#let EndIf(..args) = line(kw("end if"), ..args)
+
+#let Return(arg, ..args) = line(kw("return"), nkw(args), ..args)

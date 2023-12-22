@@ -171,29 +171,6 @@ propose a novel method that uses sensitivity as a proxy for model certainty.
 #let action = formatAction("action")
 #let value = formatValue("value")
 
-#show figure.where(kind: "algorithm"): it => {
-  let booktabbed = block(stroke: (y: 1.3pt), inset: 0pt, breakable: true, width: 100%, {
-    set align(left)
-    block(inset: (y: 5pt), width: 100%, stroke: (bottom: .8pt), {
-      strong({
-        it.supplement
-        sym.space.nobreak
-        counter(figure.where(kind: "lovelace")).display(it.numbering)
-        [: ]
-      })
-      it.caption
-    })
-    block(inset: (bottom: 5pt), breakable: true, it.body)
-  })
-  let centered = pad(x: 5%, it)
-  set align(left)
-  if it.placement in (auto, top, bottom) {
-    place(it.placement, float: true, centered)
-  } else {
-    centered
-  }
-}
-
 #algorithm-figure({
   import "algorithmic.typ": *
   algorithm(..
@@ -205,9 +182,7 @@ propose a novel method that uses sensitivity as a proxy for model certainty.
       [each #action in action space],
       State([ Compute #value given #state and #action ]),
     ),
-    State([
-      Choose #action with highest #value
-    ]),
+    State([ Choose #action with highest #value ]),
     State([ Receive reward and next #state ]),
     State([ Add interaction to replay buffer ]),
   ))
