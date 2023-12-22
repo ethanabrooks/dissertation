@@ -30,7 +30,7 @@
 //   target: figure.where(kind: image),
 // )
 
-#set heading(numbering: "1.1")
+#set heading(numbering: "1.1", supplement: "Chapter")
 #set page(numbering: "1")
 #counter(page).update(1)
 #set par(first-line-indent: .5in)

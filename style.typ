@@ -25,6 +25,10 @@
   set align(center)
   set text(font: "New Computer Modern")
   show heading.where(level: 1): it => pagebreak(weak: true) + formatHeader(body: it)
+  show figure: it => box[
+    #it.body
+    #pad(x: 1cm)[#it.caption]
+  ]
 
   v(108pt)
   [*#title*]

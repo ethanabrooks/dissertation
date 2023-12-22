@@ -21,8 +21,8 @@ downstream task-distributions
 #cites(<brown_language_2020>, <wei_emergent_2022>). A litany of existing work
 has explored methods for applying this remarkable capability to downstream tasks
 (see @sec:related), including Reinforcement Learning (RL). Most work in this
-area either (1) assumes access to expert demonstrations --- collected either
-from human experts
+area either (1) assumes access to expert demonstrations---collected either from
+human experts
 #cites(<huang_language_2022>, <baker_video_2022>), or domain-specific
 pre-trained RL agents
 #cites(
@@ -31,7 +31,7 @@ pre-trained RL agents
   <janner_offline_2021>,
   <reed_generalist_2022>,
   <xu_prompting_2022>,
-). --- or (2) relies on gradient-based methods --- e.g. fine-tuning of the
+).---or (2) relies on gradient-based methods---e.g. fine-tuning of the
 foundation models parameters as a whole
 #cites(<lee_multi-game_2022>, <reed_generalist_2022>, <baker_video_2022>) or
 newly training an adapter layer or prefix vectors while keeping the original
@@ -46,8 +46,8 @@ itself rather than the model parameters, we are able to avoid gradient methods.
 Furthermore, the use of policy iteration frees us from expert demonstrations
 because suboptimal prompts can be improved over the course of training.
 
-We illustrate the algorithm empirically on six small illustrative RL tasks---
-_chain, distractor-chain, maze, mini-catch, mini-invaders_, and
+We illustrate the algorithm empirically on six small illustrative RL
+tasks---_chain, distractor-chain, maze, mini-catch, mini-invaders_, and
 _point-mass_---in which the algorithm very quickly finds good policies. We also
 compare five pretrained Large Language Models (LLMs), including two different
 size models trained on natural language---OPT-30B and GPT-J---and three
@@ -56,9 +56,9 @@ as InCoder. On our six domains, we find that only the largest model (the
 `code-davinci-001` variant of Codex) consistently demonstrates learning.
 
 #figure(
-  image("figures/policy-iteration/action-selection-fig-final.svg"),
+  image("figures/policy-iteration/action-selection.svg"),
   caption: [
-    For each possible action $Action(1), dots.h, Action(n)$, the LLM generates a
+    For each possible action $Actions(1), dots.h, Actions(n)$, the LLM generates a
     rollout by alternately predicting transitions and selecting actions. Q-value
     estimates are discounted sums of rewards. The action is chosen greedily with
     respect to Q-values. Both state/reward prediction and next action selection use
@@ -126,7 +126,7 @@ other approaches reviewed above). Secondly, ICPI relies primarily on in-context
 learning rather than in-weights learning to achieve generalization (like
 #cite(<xu_prompting_2022>), but unlike #cite(<chen_decision_2021>) \&
 #cite(<lee_multi-game_2022>)). For discussion about in-weights vs. in-context
-learning see #cite(<chan_data_2022>). % see the next section.
+learning see #cite(<chan_data_2022>).
 
 === Gradient-based Training \& Finetuning on RL Tasks
 Most approaches involve training or fine-tuning foundation models on RL tasks.
@@ -164,8 +164,9 @@ in-context learning depends on. #cite(<chen_relation_2022>) studies the
 sensitivity of in-context learning to small perturbations of the context. They
 propose a novel method that uses sensitivity as a proxy for model certainty.
 
-#let formatState = (s) => text(fill: green)[*#s*]
 #let formatAction = (s) => text(fill: blue)[*#s*]
+#let formatReward = (s) => text(fill: orange)[*#s*]
+#let formatState = (s) => text(fill: green)[*#s*]
 #let formatValue = (s) => text(fill: purple)[*#s*]
 #let state = formatState("state")
 #let action = formatAction("action")
@@ -187,5 +188,29 @@ propose a novel method that uses sensitivity as a proxy for model certainty.
     State([ Add interaction to replay buffer ]),
   ))
 }, caption: [
-  ICPI
+  Interacting with the Environment
 ])
+
+#algorithm-figure(
+  {
+    import "algorithmic.typ": *
+    import "math.typ"
+    algorithm(
+      State(
+        [Given current #state $#formatState($math.State_t$)$ and chosen #action $formatAction(Action)$],
+      ),
+      ..Repeat(
+        State([ Use LLM to model transition ]),
+        State([ Use LLM to model policy ]),
+        "model predicts termination",
+      ),
+      State(
+        [ Estimate #value from rollout:
+          $#formatValue($QValue^Policy$) ( #formatState($math.State_t$), #formatAction(Action) ) = sum^T_(u=t) gamma^(u-t) #formatReward($r^u$) $ ],
+      ),
+    )
+  },
+  caption: [
+    Estimating Value
+  ],
+)

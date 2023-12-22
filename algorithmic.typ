@@ -13,7 +13,12 @@
           [*Algorithm #alg-counter.display()*] + { if title != none [*:* #title] },
         )
         #v(-1em) // Unfortunately, typst inserts a space here that we have to remove
-        #block(inset: (y: .5em), stroke: (top: .7pt), align(left)[#it.body])
+        #block(
+          inset: (y: .5em),
+          width: 100%,
+          stroke: (top: .7pt),
+          align(left)[#it.body],
+        )
       ],
     )
   }
@@ -82,21 +87,21 @@
 #let Function(first-line, comment: none, ..body) = {
   (
     line(kw("function"), nkw(first-line), comment: comment),
-    ..indent-many(body),
+    ..indent-many(..body),
     line(kw("end function")),
   )
 }
 #let Repeat(..body, cond, comment: none) = {
   (
     line(kw("repeat")),
-    ..indent-many(body),
+    ..indent-many(..body),
     line(kw("until"), nkw(cond), comment: comment),
   )
 }
 #let While(cond, comment: none, ..body) = {
   (
     line(kw("while"), nkw(cond), kw("do"), comment: comment),
-    ..indent-many(body),
+    ..indent-many(..body),
     line(kw("end while")),
   )
 }
