@@ -205,7 +205,7 @@ requires the model to capture not only the current policy but also the
 improvements to that policy by the source algorithm. Auto-regressive rollouts of
 the distilled model, in which actions predicted by the model are actually used
 to interact with the environment and then cycled back into the model input,
-demonstrate improvement of the policy without any adjustment to the model’s
+demonstrate improvement of the policy without any adjustment to the model's
 parameters, indicating that the model does, in fact, capture some policy
 improvement logic from the source algorithm.
 
@@ -254,37 +254,46 @@ $Rew^n_(i-1) Ter^n_(i-1) Obs^n_(i-1) Act^n_i$.
 
 == Downstream Evaluation
 <downstream-evaluation>
-#algorithm-figure(
-  {
-    import "algorithmic.typ": *
-    algorithm(State("Hello"), ..Function($QValue(History, Act)$, State("x")))
-  },
-  caption: [ Estimating Q-values with monte-carlo rollouts. ],
-)//   State($t gets 0$, comment: "Rollout time step"),
+#algorithm-figure({
+  import "algorithmic.typ": *
+  algorithm(State("Hello"), ..Function(
+    $QValue(History_t, Act)$,
+    State($u gets 1$, comment: "time step for rollout"),
+    State($Act^u gets Act$),
+    ..While("termination condition not met", State(
+      $Rew^u, Ter^u, Obs^(u+1) sim Prob_theta (dot.c|History_t, Act^u)$,
+      comment: "Model reward, termination, next observation",
+    ), State(
+      $a^(u+1) sim Prob_theta (dot.c|History_t, Rew_t, Ter_t, Obs_(t+1))$,
+      comment: "Model action",
+    ), State($u gets u + 1$, comment: "Append predictions to history.")),
+    Return($sum_(u=0)^t gamma^(u-1) Rew_u$),
+  ))
+}, caption: [ Estimating Q-values with monte-carlo rollouts. ])
+//   State($t gets 0$, comment: "Rollout time step"),
 //   // State($a^1 gets a$),
 //   // ..While("termination condition not met", State($x$)),
 
 Our approach to choosing actions during the downstream evaluation is as follows.
-For each action \$\\Act\$ in a set of candidate actions \(either our complete
-action space or some subset thereof), we compute a state-action value estimate
-\$\\Q\*\[\\History\_t\]\[\\Act\]\$, where \$\\History\_t\$ is the history
-defined in \(). We do this by modeling a rollout from the current state
-\(conditioned on the history \$\\History\_t\$) and from \$\\Act\$. Modelling the
-rollout is a cycle of sampling values from the model and feeding them back into
-the model auto-regressively. First we sample
-\$\\Tuple{\\Rew\*\_t}{\\Ter\*\_t}{\\Obs\*\_{t+1}}\$. Based on this prediction,
-we sample \$\\Act\*\_{t+1}\$. Adding this to the input allows us to sample
-\$\\Tuple{\\Rew\*\_{t+1}}{\\Ter\*\_{t+1}}{\\Obs\*\_{t+2}}\$, repeating this
-cycle until some termination condition is reached. For example, we might
-terminate the process once \$\\Ter\*\_{i}\$ is true, or once the rollout reaches
-some maximum length.
+For each action $Act$ in a set of candidate actions (either our complete action
+space or some subset thereof), we compute a state-action value estimate
+$QValue(History_t, Act)$, where $History_t$ is the history defined in
+@eq:history. We do this by modeling a rollout from the current state
+(conditioned on the history $History_t$) and from $Act$. Modelling the rollout
+is a cycle of sampling values from the model and feeding them back into the
+model auto-regressively. First we sample
+$(Rew_t, Ter_t, Obs_(t+1))$. Based on this prediction, we sample
+$Act_(t+1)$. Adding this to the input allows us to sample
+$(Rew_(t+1), Ter_(t+1), Obs_(t+2))$, repeating this cycle until some termination
+condition is reached. For example, we might terminate the process once
+$Ter_i$ is true, or once the rollout reaches some maximum length.
 
 The final step is to choose an action. Having modelled the rollout, we compute
 the value estimate as the discounted sum of rewards in the rollout. See
 Algorithm for a pseudocode implementation. Repeating this process of modelling
 rollouts and computing value estimates for each action in pool of candidate
 actions, we simply choose the action with the highest value estimate:
-\$\\arg\\max\_{\\Act \\in \\Actions} \\Q\*\[\\History\_t\]\[\\Act\]\$.
+$arg max_(Act in Actions) QValue(History_t, Act)$.
 
 == Policy improvement
 <policy-improvement>
@@ -294,7 +303,6 @@ is unlikely that the procedure described above will initially yield an optimal
 policy. Some method for policy improvement will be necessary.
 
 ==== Policy Iteration
-<policy-iteration-1>
 Our method satisfies this requirement by implementing a form a policy iteration.
 To see this, first observe that our model is always trained to map a behavior
 history drawn from a single policy to actions drawn from the same policy. A
@@ -303,38 +311,35 @@ its output to the distribution of actions in its input. Since our rollouts are
 conditioned on histories drawn from our behavior policy, the rollout policy will
 approximately match this policy. Our value estimates will therefore be
 conditioned on the current behavior policy. However, by choosing the action
-corresponding to \$\\arg\\max\_{\\Act \\in \\Actions}
-\\Q\*\[\\History\_{t}\]\[\\Act\]\$, our behavior policy always improves on the
-policy on which \$\\Q\*\[\\History\_{t}\]\[\\Act\]\$ is conditioned, a
-consequence of the policy improvement theorem. Thus, each time an action is
-chosen using this $arg max$ method, our behavior policy improves on itself.
+corresponding to $arg max_(Act in Actions)
+QValue(History_t, Act)$, our behavior policy always improves on the policy on
+which $QValue(History_t, Act)$ is conditioned, a consequence of the policy
+improvement theorem. Thus, each time an action is chosen using this $arg max$ method,
+our behavior policy improves on itself.
 
-Walking through this process step by step, suppose \$\\Policy^n\$ is some policy
+Walking through this process step by step, suppose $Policy^n$ is some policy
 that we use to behave. We collect a trajectory containing actions drawn from
 this policy. When we perform rollouts, we condition on this trajectory and the
-rollout policy simulates \$\\Policy^n\$. Assuming that this simulation is
-accurate as well as the world model, our value estimate will be an unbiased
-monte carlo estimate of \$\\Q\*\[\\History\_{t}\]\[\\Act\]\$ for any action
-\$\\Act\$. Then we act with policy \$\\Policy^{n+1} :\= \\arg\\max\_{\\Act \\in
-\\Actions} \\Q\*\[\\History\_{t}\]\[\\Act\]\$. But \$\\Policy^{n+1}\$ is at
-least as good as \$\\Policy\(n)\$. Using the same reasoning, \$\\Policy^{n+2}\$
-will be at least as good as \$\\Policy^{n+1}\$, and so on. Note that in our
-implementation, we perform the $arg max$ at each step, rather than first
-collecting a full trajectory with a single policy.
+rollout policy simulates $Policy^n$. Assuming that this simulation is accurate
+as well as the world model, our value estimate will be an unbiased monte carlo
+estimate of $QValue(History_t, Act)$ for any action $Act$. Then we act with
+policy $Policy^(n+1) := arg max_(Act in Actions)
+QValue(History_t, Act)$. But $Policy^(n+1)$ is at least as good as $Policy^n$.
+Using the same reasoning, $Policy^(n+2)$ will be at least as good as $Policy^(n+1)$,
+and so on. Note that in our implementation, we perform the $arg max$ at each
+step, rather than first collecting a full trajectory with a single policy.
 
 ==== Algorithm Distillation
-<algorithm-distillation-1>
-Our setting is almost identical to Algorithm Distillation \(AD), if we include
+Our setting is almost identical to Algorithm Distillation (AD), if we include
 the assumption that trajectories include a full learning history. Rather than
 competing with AD, our method is actually complementary to it. If the input to
 our transformer is a sufficiently long history of behavior, then the rollout
 policy will not only match the input policy but actually improve upon it, as
-demonstrated in that paper. Then \$\\Q\*\$ will actually estimate values for a
-policy \$\\Policy\*\(n)\$ that is at least as good as the input policy
-\$\\Policy\(n)\$. Then \$\$\\V^{\\Policy^{n+1}} \\ge \\V^{\\Policy\*^{n}} \\ge
-\\V^{\\Policy^{n}}\$\$ Therefore each step of improvement actually superimposes
-the two improvement operators, one from the $arg max$ operator, the other from
-AD.
+demonstrated in that paper. Then $QValue$ will actually estimate values for a
+policy $Policy'_n$ that is at least as good as the input policy
+$Policy_n$. Then $V^(Policy_(n+1)) >= V^(Policy'_n) >=
+V^(Policy_n)$ Therefore each step of improvement actually superimposes the two
+improvement operators, one from the $arg max$ operator, the other from AD.
 
 = Experiments
 <experiments>
@@ -372,27 +377,41 @@ metrics that we record.
 
 == Results
 <results>
-#figure([#figure([#box(image("figures/adpp/no-walls.svg"))], caption: [
-    Evaluation on withheld location pairs.
-  ])
 
-  #figure([#box(image("figures/adpp/unseen-goals.svg"))], caption: [
-    Evaluation on fully withheld locations.
-  ])
-
-], caption: [
-  Evaluation on fully withheld locations.
+#figure(image("figures/adpp/no-walls.png"), caption: [
+  Evaluation on withheld location pairs.
 ])
+#grid(columns: (auto, auto), {
+  show figure: it => [
+    #align(center)[#it.body]
+    #set align(left)
+    #pad(x: .5cm)[#it.caption ]
+  ]
+  figure(
+    image("figures/adpp/model-accuracy.png", height: 100pt),
+    caption: [dummy],
+  )
+}, {
+  show figure: it => [
+    #align(center)[#it.body]
+    #set align(left)
+    #pad(x: 1.1cm)[#it.caption ]
+  ]
+  figure(
+    image("figures/adpp/unseen-goals.png", height: 100pt),
+    caption: [ Evaluation on fully withheld locations. ],
+  )
+})
 
 ==== Evaluation on Withheld Goals
 <evaluation-on-withheld-goals>
 In our first experiment, we evaluate the agent on a set of withheld key-door
-pairs, which we sample uniformly at random \(10% of all possible pairs) and
+pairs, which we sample uniformly at random (10% of all possible pairs) and
 remove from the training set. As figure indicates, our algorithm outperforms the
 AD baseline both in time to converge and final performance. We attribute this to
-the fact that our method’s downstream policy directly optimize expected return,
+the fact that our method's downstream policy directly optimize expected return,
 choosing actions that correspond to the highest value estimate. In contrast,
-AD’s policy only maximizes return by proxy — maximizing the probability of the
+AD's policy only maximizes return by proxy — maximizing the probability of the
 actions of a source algorithm which in turn maximizes expected return. This
 indirection contributes noise to the downstream policy through modeling error.
 Moreover, we note that our method completely recovers the performance of the
@@ -407,13 +426,13 @@ exclusively within this region during downstream evaluation. As figure
 demonstrates, AD generalizes poorly in this setting, on average discovering only
 one of the two goals. In contrast, our method maintains relatively high
 performance. We attribute this to the fact that our method learns low-level
-planning primitives \(the reward function), which generalize better than
+planning primitives (the reward function), which generalize better than
 high-level abstractions like a policy. As we argued in section , higher-level
 abstractions are prone to memorization since they do not always distill the
 logic which produced them.
 
 #figure(
-  [#box(image("figures/adpp/generalization-to-more-walls-timestep.svg"))],
+  [#box(image("figures/adpp/generalization-to-more-walls-timestep.png"))],
   caption: [
     Generalization to higher percentages of walls.
   ],
@@ -422,17 +441,17 @@ logic which produced them.
 ==== Evaluation on Withheld Wall Configurations
 <evaluation-on-withheld-wall-configurations>
 In addition to evaluating generalization to novel reward functions, we also
-evaluated our method’s ability to generalize to novel dynamics. We did this by
-adding walls to the grid world, which obstruct the agent’s movement. During
+evaluated our method's ability to generalize to novel dynamics. We did this by
+adding walls to the grid world, which obstruct the agent's movement. During
 training we placed the walls at all possible locations, sampled IID, with 10%
 probability. During evaluation, we tested the agent on equal or higher
 percentages of wall placement. As indicated by figure , out method maintains
-performance and nearly matches the ground-truth version, while AD’s performance
+performance and nearly matches the ground-truth version, while AD's performance
 rapidly degrades. Again we attribute this to the tendency of lower-level
 primitives to generalize better than higher-level abstractions.
 
 #figure(
-  [#box(image("figures/adpp/more-walls-achievable-timestep.svg"))],
+  [#box(image("figures/adpp/more-walls-achievable-timestep.png"))],
   caption: [
     Generalization to higher percentages of walls with guaranteed achievability.
   ],
@@ -449,17 +468,13 @@ method and the AD baseline.
 
 ==== Model Accuracy
 <model-accuracy>
-In order to acquire a better understanding of the model’s ability to in-context
+In order to acquire a better understanding of the model's ability to in-context
 learn, we plotted model accuracy in the generalization to 10% walls setting.
 Note that while the percentages of walls in the training and evaluation setting
 are the same, the exact wall placements are varied during training and the
 evaluation wall placements are withheld, so that the model must infer them from
-context. In figure , we measure the model’s
+context. In figure , we measure the model's
 
-#block[
-  l0.6 #box(width: 60%, image("figures/adpp/model-accuracy.svg", width: 60%))
-
-]
 prediction accuracy of termination signals \(labeled "done / not done"), of next
 observations \(labeled "observation"), and of rewards \(labeled
 "reward"). These predictions start near optimal, since the agent can rely on
@@ -469,49 +484,49 @@ measure prediction accuracy for these rare events: the line labeled "done"
 measures termination-prediction accuracy exclusively on terminal timesteps; the "positive
 reward" line measures reward-prediction accuracy exclusively on timesteps with
 positive reward; and the "wall" line measures accuracy on timesteps when the
-agent’s movement is obstructed by a random wall. As figure demonstrates, even
+agent's movement is obstructed by a random wall. As figure demonstrates, even
 for these rare events, the model rapidly recovers accuracy near 100%.
 
 ==== Contribution of Model Error to Performance
 <contribution-of-model-error-to-performance>
 #figure(
-  [#box(image("figures/adpp/model-noise.svg"))],
+  [#box(image("figures/adpp/model-noise.png"))],
   caption: [
     Impact of model error on performance, measured by introducing noise into each
-    component of the model’s predictions.
+    component of the model's predictions.
   ],
 )
 
 While figure indicates that our model generally achieves high accuracy in these
 simple domains, we nevertheless wish to understand the impact of a suboptimal
 model on RL performance. To test this, we introduced noise into different
-component of the model’s predictions. In figure , we note that performance is
+component of the model's predictions. In figure , we note that performance is
 fairly robust to noise in the termination predictions, but very sensitive to
 noise in the reward predictions. Encouragingly, the model is demonstrates
 reasonable performance with as much as 20% noise in the observation predictions.
 Also, as indicates, the method is quite robust to noise in the action model. We
-also note that AD’s sensitivity to noise in the policy explains its lower
+also note that AD's sensitivity to noise in the policy explains its lower
 performance in many of the settings previously discussed.
 
 #figure(
-  [#box(image("figures/adpp/policy-noise-timestep.svg"))],
+  [#box(image("figures/adpp/policy-noise-timestep.png"))],
   caption: [
     Impact of model error on performance, measured by introducing noise into each
-    component of the model’s predictions.
+    component of the model's predictions.
   ],
 )
 
 ==== Data Scaling Properties
 <data-scaling-properties>
 #figure([#figure(
-    [#box(image("figures/adpp/less-source-data-iid-dimension.svg"))],
+    [#box(image("figures/adpp/less-source-data-time-timestep.png"))],
     caption: [
       Impact of scaling the training data along the IID dimension.
     ],
   )
 
   #figure(
-    [#box(image("figures/adpp/less-source-data-time-timestep.svg"))],
+    [#box(image("figures/adpp/less-source-data-iid-timestep.png"))],
     caption: [
       Impact of scaling the length of training of the source algorithm.
     ],

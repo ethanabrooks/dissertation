@@ -18,6 +18,7 @@
       };
 
       buildInputs = with pkgs; [
+        imagemagick
         my-typst-preview
         pandoc
         pdf2svg

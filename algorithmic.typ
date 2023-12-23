@@ -84,23 +84,20 @@
   label: label,
 )
 
-// #let check-line(line) = {
-//   let line-type = if type(line) == "dictionary" {
-//     line.at("type", default: type(line))
-//   } else {
-//     type(line)
-//   }
-//   assert(
-//     line-type == "line",
-//     message: "Expected line, but got " + line-type + {
-//       if line-type == "array" {
-//         "\nMake sure to add `..` before algorithm expressions that take multiple lines."
-//       } else { "" }
-//     },
-//   )
-// }
 #let check-line(line) = {
-  assert(line.type == "line")
+  let line-type = if type(line) == "dictionary" {
+    line.at("type", default: type(line))
+  } else {
+    type(line)
+  }
+  assert(
+    line-type == "line",
+    message: "Expected line, but got " + line-type + {
+      if line-type == "array" {
+        "\nMake sure to add `..` before algorithm expressions that take multiple lines."
+      } else { "" }
+    },
+  )
 }
 #let indent = (line) => {
   check-line(line)
@@ -173,4 +170,4 @@
 
 #let EndIf(..args) = line(kw("end if"), ..args)
 
-#let Return(arg, ..args) = line(kw("return"), nkw(args), ..args)
+#let Return(body, ..args) = line(kw("return"), nkw(body), ..args)
