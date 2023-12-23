@@ -464,7 +464,7 @@ formats, and then describe the experimental methodology and results.
 
 === Domains and prompt format <sec:domains-and-prompt-format>
 
-==== Chain
+*Chain:*
 In this environment, the agent occupies an 8-state chain. The agent has three
 actions: `Left`, `right`, and `try goal`. The `try goal` action always
 terminates the episode, conferring a reward of 1 on state 4 (the goal state) and
@@ -480,7 +480,7 @@ for `n`. The actions are represented as functions `left()`, `right()`, and
 `try_goal()`. For the hint, we simply indicate whether or not the current state
 matches the goal state, 4.
 
-=== Distractor Chain
+*Distractor Chain:*
 This environment is an 8-state chain, identical to the _chain_ environment,
 except that the observation is a _pair_ of integers, the first indicating the
 true state of the agent and the second acting as a distractor which transitions
@@ -489,7 +489,7 @@ distractor integer and base its inferrences on the information contained in the
 first integer. Aside from the addition of this distractor integer to the
 observation, all text representations and hints are identical to the _chain_ environment.
 
-=== Maze
+*Maze:*
 The agent navigates a small $3 times 3$ gridworld with obstacles. The agent can
 move `up`, `down`, `left`, or `right`. The episode terminates with a reward of 1
 once the agent navigates to the goal grid, or with a reward of 0 after 8
@@ -499,7 +499,7 @@ represent the states as namedtuples --- `C(x, y)`, with integers substituted for
 `x` and `y`. Similar to _chain_, the hint indicates whether or not the state
 corresponds to the goal state.
 
-=== Mini Catch
+*Mini Catch:*
 The agent operates a paddle to catch a falling ball. The ball falls from a
 height of 5 units, descending one unit per time step. The paddle can `stay` in
 place (not move), or move `left` or `right` along the bottom of the 4-unit wide
@@ -520,7 +520,7 @@ they are equal) and the ball's $y$-position. @tab:promptformat in the appendix
 provides an example. We also include the text `ball.descend()` to account for
 the change in the ball's position between states.
 
-=== Mini Invaders
+*Mini Invaders:*
 The agent operates a ship that shoots down aliens which descend from the top of
 the screen. At the beginning of an episode, two aliens spawn at a random
 location in two of four columns. The episode terminates when an alien reaches
@@ -541,7 +541,7 @@ for the tuple, as in `aliens == [C(x, y), None]`. We add the text: `for a in ali
 in order to account for the change in the alien's position
 between states.
 
-=== Point-Mass
+*Point-Mass:*
 A point-mass spawns at a random position on a
 continuous line between $-6$ and $+6$ with a velocity of 0. The agent can either
 `accelerate` the point-mass (increase velocity by 1) or `decelerate`
@@ -580,7 +580,7 @@ implementation is available at https://github.com/ethanabrooks/icpi.
   We compare ICPI with three
 baselines (Fig. @fig:algorithms).
 
-The "No ArgMax" baseline learns a good policy through random exploration and
+*The "No ArgMax" baseline* learns a good policy through random exploration and
 then imitates this policy. This baseline assumes access to a "success threshold"
 for each domain --- an undiscounted cumulative return greater than which a
 trajectory is considered successful. The action selection mechanism emulates
@@ -593,9 +593,9 @@ too few successful trajectories to effectively populate the policy prompt. In
 order to facilitate exploration, we act randomly until the agent experiences 3
 successes.
 
-"Tabular Q" is a standard tabular Q-learning algorithm, which uses a learning rate of $1.0$ and optimistically initializes the Q-values to $1.0$.
+*"Tabular Q"* is a standard tabular Q-learning algorithm, which uses a learning rate of $1.0$ and optimistically initializes the Q-values to $1.0$.
 
-"Matching Model" is a baseline which uses the trajectory history instead of an
+*"Matching Model"* is a baseline which uses the trajectory history instead of an
 LLM to perform modelling. This baseline searches the trajectory buffer for the
 most recent instance of the current state, and in the case of
 transition/reward/termination prediction, the current action. If a match is

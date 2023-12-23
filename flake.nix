@@ -19,6 +19,7 @@
 
       buildInputs = with pkgs; [
         my-typst-preview
+        pandoc
         pdf2svg
         typst
         typstfmt

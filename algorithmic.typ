@@ -84,14 +84,32 @@
   label: label,
 )
 
-#let indent = (line) => {
+// #let check-line(line) = {
+//   let line-type = if type(line) == "dictionary" {
+//     line.at("type", default: type(line))
+//   } else {
+//     type(line)
+//   }
+//   assert(
+//     line-type == "line",
+//     message: "Expected line, but got " + line-type + {
+//       if line-type == "array" {
+//         "\nMake sure to add `..` before algorithm expressions that take multiple lines."
+//       } else { "" }
+//     },
+//   )
+// }
+#let check-line(line) = {
   assert(line.type == "line")
+}
+#let indent = (line) => {
+  check-line(line)
   line + (indent: line.indent + 1)
 }
 #let indent-many = (..lines) => lines.pos().map(indent)
 #let check-lines(..lines) ={
   for line in lines.pos() {
-    assert(line.type == "line")
+    check-line(line)
   }
 }
 
