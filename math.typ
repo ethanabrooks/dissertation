@@ -14,8 +14,11 @@
 #let Policy = $pi$
 #let Prob = $P$
 #let QValue = $Q$
+#let QValue = $Q$
 #let Recency = $c$
 #let Rew = $r$
 #let State = $s$
 #let Task = $cal(T)$
 #let Ter = $b$
+
+#let Highlight(s) = text("red", body: s)

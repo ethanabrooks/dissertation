@@ -24,7 +24,11 @@
 
 // #lorem(80)
 
-#outline(title: [#formatHeader(body: "Table of Contents")], indent: auto)
+#outline(
+  title: [#formatHeader(body: "Table of Contents")],
+  depth: 2,
+  indent: auto,
+)
 #outline(
   title: [#formatHeader(body: "List of Figures")],
   target: figure.where(kind: image),
@@ -39,6 +43,7 @@
 #include "introduction.typ"
 #include "policy-iteration.typ"
 #include "adpp.typ"
+#include "bellman-update-networks.typ"
 
 = Bellman Update Networks
 = Conclusion

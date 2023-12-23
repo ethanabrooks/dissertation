@@ -209,7 +209,7 @@ demonstrate improvement of the policy without any adjustment to the model's
 parameters, indicating that the model does, in fact, capture some policy
 improvement logic from the source algorithm.
 
-= Method
+== Method
 <method>
 In this section, we describe the details of our proposed algorithm, which we
 call #ADPP-full-name (#ADPP). We assume a dataset of $N$ trajectories generated
@@ -238,7 +238,7 @@ Given such a dataset, we may train a world-model with a negative log likelihood
 \(NLL) loss:
 
 $ Loss_theta := -sum_(n=1)^N sum_(t=1)^(T-1) log Prob_theta (Act^n_t |
-History^n_t) + log Prob_theta (Rew^n_t, Ter^n_t, Obs^n_t+1 | History^n_t,
+History^n_t) + log Prob_theta (Rew^n_t, Ter^n_t, Obs^n_(t+1) | History^n_t,
 Act^n_t) $
 
 In this work we implement $Prob_theta$ as a causal transformer. For
@@ -270,9 +270,6 @@ $Rew^n_(i-1) Ter^n_(i-1) Obs^n_(i-1) Act^n_i$.
     Return($sum_(u=0)^t gamma^(u-1) Rew_u$),
   ))
 }, caption: [ Estimating Q-values with monte-carlo rollouts. ])
-//   State($t gets 0$, comment: "Rollout time step"),
-//   // State($a^1 gets a$),
-//   // ..While("termination condition not met", State($x$)),
 
 Our approach to choosing actions during the downstream evaluation is as follows.
 For each action $Act$ in a set of candidate actions (either our complete action
@@ -341,7 +338,7 @@ $Policy_n$. Then $V^(Policy_(n+1)) >= V^(Policy'_n) >=
 V^(Policy_n)$ Therefore each step of improvement actually superimposes the two
 improvement operators, one from the $arg max$ operator, the other from AD.
 
-= Experiments
+== Experiments
 <experiments>
 ==== Domains
 <domains>
@@ -547,7 +544,7 @@ the same equation. This result was surprising, as we expected AD to be
 dependent on demonstration of the optimal policy. Nevertheless we note that our
 method outperforms AD in all data regimes.
 
-= Conclusion
+== Conclusion
 <conclusion>
 This chapter presents an approach for combining ICPI with AD. The resulting
 method scales to more complex settings than those explored in the previous
@@ -557,5 +554,5 @@ this method on more complex domains, especially those involving simulated
 robotics. We also intend to evaluate more baselines, especially those from the
 traditional meta-learning literature like RL$""^2$ #cite(<duan_rl2_2016>).
 
-= Dummy <chap:pi>
-#bibliography("main.bib", style: "association-for-computing-machinery")
+// = Dummy <chap:pi>
+// #bibliography("main.bib", style: "association-for-computing-machinery")

@@ -234,7 +234,6 @@ does.
     Training Loop
   ],
 ) <algo:train>
-
 #algorithm-figure(
   {
     import "algorithmic.typ": *
