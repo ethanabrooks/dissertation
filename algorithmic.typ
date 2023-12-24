@@ -171,3 +171,4 @@
 #let EndIf(..args) = line(kw("end if"), ..args)
 
 #let Return(body, ..args) = line(kw("return"), nkw(body), ..args)
+#let Input(body, ..args) = line(kw("input"), nkw(body), ..args)

@@ -1,6 +1,7 @@
 #import "math.typ": *
 #import "style.typ": cites
 #import "algorithmic.typ": algorithm-figure, show-algorithms
+#import "@preview/big-todo:0.2.0": todo
 #import "@preview/tablex:0.0.7": tablex, rowspanx, colspanx
 
 #show: show-algorithms
@@ -247,6 +248,7 @@ does.
     let state = formatState("state")
     let termination = formatTermination("termination")
     let value = formatValue("value")
+
     algorithm(
       ..Function(
         $Q(Obs_t, Act, Buffer)$,
@@ -322,7 +324,12 @@ approximately tracks the behavior policy.
 
 How does the policy improve? When acting in the environment (as opposed to
 planning), we choose the action that maximizes the estimated Q-value from the
-current state (see @algo:train pseudocode, @line:arg-max). At time step $t$, the agent
+current state (see
+#todo("fix")
+// @algo:train
+// pseudocode,
+// @line:arg-max
+). At time step $t$, the agent
 observes the state of the environment (denoted $Obs_t$) and executes action $Act_t = arg max_(Act in Actions) QValue^(Policy_t)(Obs_t,Act)$,
 where $Actions = [Actions(1),dots,Actions(n)]$
 denotes the set of $n$ actions available, $Policy_t$ denotes the policy of the
@@ -765,4 +772,4 @@ assert not done`
 )<tab:promptformat>
 
 
-#bibliography("main.bib", style: "association-for-computing-machinery")
+// #bibliography("main.bib", style: "association-for-computing-machinery")

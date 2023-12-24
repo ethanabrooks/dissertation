@@ -256,7 +256,7 @@ $Rew^n_(i-1) Ter^n_(i-1) Obs^n_(i-1) Act^n_i$.
 <downstream-evaluation>
 #algorithm-figure({
   import "algorithmic.typ": *
-  algorithm(State("Hello"), ..Function(
+  algorithm(..Function(
     $QValue(History_t, Act)$,
     State($u gets 1$, comment: "time step for rollout"),
     State($Act^u gets Act$),

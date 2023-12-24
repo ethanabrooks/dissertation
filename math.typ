@@ -14,11 +14,15 @@
 #let Policy = $pi$
 #let Prob = $P$
 #let QValue = $Q$
-#let QValue = $Q$
+#let QEst = $accent(QValue, tilde)$
+#let QTar = $accent(QValue, hat)$
 #let Recency = $c$
 #let Rew = $r$
 #let State = $s$
 #let Task = $cal(T)$
 #let Ter = $b$
+#let Traj = $tau$
+#let Value = $V$
+#let VEst = $accent(Value, tilde)$
 
-#let Highlight(s) = text("red", body: s)
+#let Highlight(s) = text(fill: red, s)

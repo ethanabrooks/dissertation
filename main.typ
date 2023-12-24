@@ -37,15 +37,13 @@
 #set heading(numbering: "1.1", supplement: "Chapter")
 #set page(numbering: "1")
 #counter(page).update(1)
-#set par(first-line-indent: .5in)
 
-#include "abstract.typ"
-#include "introduction.typ"
+// #include "abstract.typ"
+// #include "introduction.typ"
 #include "policy-iteration.typ"
-#include "adpp.typ"
-#include "bellman-update-networks.typ"
+// #include "adpp.typ"
+// #include "bellman-update-networks.typ"
 
-= Bellman Update Networks
 = Conclusion
 
 #bibliography("main.bib", style: "association-for-computing-machinery")
