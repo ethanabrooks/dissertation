@@ -55,10 +55,10 @@
   set align(right)
   set text(size: .8em)
   [#box(
-      figure([#line-number:], kind: "line-number", supplement: "line"),
+      [#figure([#line-number:], kind: "line-number", supplement: "line")
+        #label(if line-label == none { "dummy-line-label" } else { str(line-label) })],
       height: .6em,
-    )
-    #label(if line-label == none { "dummy-line-label" } else { str(line-label) })]
+    )]
 }
 
 #let algorithm(..lines, line-numbers: true) = {
