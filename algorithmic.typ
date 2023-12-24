@@ -52,9 +52,12 @@
 }
 
 #let render-line-number(line-number, line-label) = {
-  set align(right + bottom)
+  set align(right)
   set text(size: .8em)
-  [#figure([#line-number:], kind: "line-number", supplement: "line")
+  [#box(
+      figure([#line-number:], kind: "line-number", supplement: "line"),
+      height: .6em,
+    )
     #label(if line-label == none { "dummy-line-label" } else { str(line-label) })]
 }
 
@@ -71,7 +74,13 @@
   } else {
     ()
   }, auto, 1fr)
-  table(columns: columns, inset: 0.3em, stroke: none, ..rows)
+  table(
+    align: horizon,
+    columns: columns,
+    inset: (y: .3em),
+    stroke: none,
+    ..rows,
+  )
 }
 
 #let kw = word => (body: word, keyword: true, type: "word")
