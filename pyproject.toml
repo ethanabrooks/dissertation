@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "dissertation"
+version = "0.1.0"
+description = ""
+authors = ["ethanabrooks <ethanabrooks@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.6.0"
+ipdb = "^0.13.9"
+ipython = "^8.4.0"
+flake8 = "^5.0.4"
+pre-commit = "^3.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
