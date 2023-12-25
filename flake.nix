@@ -32,13 +32,14 @@
       buildInputs = with pkgs; [
         imagemagick
         my-typst-preview
+        nodejs_21 # required for vg2pdf
         pandoc
         pdf2svg
+        poetryEnv
         typst
         typstfmt
         typst-lsp
         wget
-        nodejs_21 # required for vg2pdf
         yarn
       ];
     in rec {
