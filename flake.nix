@@ -40,7 +40,6 @@
         typstfmt
         typst-lsp
         wget
-        yarn
       ];
     in rec {
       devShell = pkgs.mkShell rec {
