@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 wandb = "^0.16.1"
+vega = "^4.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.6.0"
@@ -15,6 +16,9 @@ ipdb = "^0.13.9"
 ipython = "^8.4.0"
 flake8 = "^5.0.4"
 pre-commit = "^3.2.2"
+jupyterlab = "^4.0.9"
+jupytext = "^1.16.0"
+ipyflow = "^0.0.192"
 
 
 [build-system]
