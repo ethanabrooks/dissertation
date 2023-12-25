@@ -4,6 +4,7 @@
   show figure.caption.where(kind: "algorithm"): it => it.body
   show figure.where(kind: "algorithm"): it => {
     alg-counter.step()
+    counter(figure.where(kind: "line-number")).update(0)
     let title = it.caption
     block(
       stroke: (y: 1pt),

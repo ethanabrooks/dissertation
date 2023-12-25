@@ -38,12 +38,12 @@
 #set page(numbering: "1")
 #counter(page).update(1)
 
-// #include "abstract.typ"
-// #include "introduction.typ"
+#include "abstract.typ"
+#include "introduction.typ"
 #include "policy-iteration.typ"
-// #include "adpp.typ"
-// #include "bellman-update-networks.typ"
+#include "adpp.typ"
+#include "bellman-update-networks.typ"
 
 = Conclusion
 
-#bibliography("main.bib", style: "association-for-computing-machinery")
+#bibliography("main.bib", style: "american-society-of-civil-engineers")
