@@ -25,9 +25,21 @@
         projectDir = ./.;
         preferWheels = true;
       };
+      my-typst-preview = import ./pkgs/typst-preview/package.nix {
+        inherit (pkgs) lib rustPlatform fetchFromGitHub mkYarnPackage fetchYarnDeps pkg-config libgit2 openssl zlib stdenv darwin;
+      };
 
       buildInputs = with pkgs; [
-        poetryEnv
+        imagemagick
+        my-typst-preview
+        pandoc
+        pdf2svg
+        typst
+        typstfmt
+        typst-lsp
+        wget
+        nodejs_21 # required for vg2pdf
+        yarn
       ];
     in rec {
       devShell = pkgs.mkShell rec {
