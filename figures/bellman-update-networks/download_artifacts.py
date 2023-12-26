@@ -2,9 +2,9 @@ import wandb
 
 api = wandb.Api()
 
-ids = ["m1z0boc7", "404l91sm", "p1eilz3l"]
+group_name = "Sweep num_updates for 2:1 and CQL"
 
-for id in ids:
-    run = api.run(f"rldl/icvi/{id}")
+runs = api.runs("rldl/icvi", {"$and": [{"group": group_name}]})
+for run in runs:
     for artifact in run.logged_artifacts():
         path = artifact.download()
