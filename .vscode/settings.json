@@ -23,6 +23,12 @@
     "cSpell.ignoreRegExpList": [
         "/#cite([^\\s]*)/g",
     ],
-    "typst-lsp.rootPath": "/nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0/bin/typst-lsp"
+    "typst-lsp.rootPath": "/nix/store/1qgy7gxs82yqzvwfprhl62pxmi22sz1r-typst-lsp-0.12.0/bin/typst-lsp",
+    "black-formatter.path": [
+        "/nix/store/rcjn03z3crqzv1h3c7kj95v3gsjwsggi-python3-3.11.6-env/bin/black"
+    ],
+    "black-formatter.interpreter": [
+        "/nix/store/rcjn03z3crqzv1h3c7kj95v3gsjwsggi-python3-3.11.6-env/bin/python"
+    ]
 }
 
