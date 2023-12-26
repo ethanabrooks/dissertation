@@ -393,73 +393,22 @@ we set $delta = delta_max$ (recall @sec:multi-step) and train the network on
 of achievement. In this idealized setting, we provide the network with the full
 cross-product of states and actions, so that perfect estimation is possible. We
 evaluate the network in an identical setting but with 20,000 heldout policies.
-As @fig:delta-max-omit-0, illustrates, we observe a significant gap between
-training accuracy and test accuracy, as measured by root mean-square error. In
-addition, we observe that test error mostly plateaus after update 100,000, even
-as train error continues to decrease, indicating that all learning after this
-point entails memorization. In Figures @fig:delta-max-omit-quarter[] and
-@fig:delta-max-omit-half[], we randomly omit $1/4$ and $1/2$ of the state-action
+As the upper-left graph of @fig:root-mean-sq-error, illustrates, we observe a
+significant gap between training accuracy and test accuracy, as measured by root
+mean-square error. In addition, we observe that test error mostly plateaus after
+update 100,000, even as train error continues to decrease, indicating that all
+learning after this point entails memorization. In the right two graphs of
+@fig:root-mean-sq-error, we randomly omit $1/4$ and $1/2$ of the state-action
 pairs from the input. As the figures demonstrate, the gap between training and
-testing widens and the extent of memorization increases. In figures
-@fig:1-omit-0[], @fig:1-omit-quarter[], and @fig:1-omit-half[], we compare
-values estimated by the Bellman Update Network. As the figure demonstrates, test
-error continues to diminish along with the training error, long after the test
-error for the $delta_max$ model has plateaued.
+testing widens and the extent of memorization increases. In the lower half of
+@fig:root-mean-sq-error, we compare values estimated by the Bellman Update
+Network. As the figure demonstrates, test error continues to diminish along with
+the training error, long after the test error for the $delta_max$ model has
+plateaued.
 
 #figure(
-  grid(
-    columns: (33%, 33%, 33%),
-    rows: (auto, auto),
-    gutter: 1em,
-    [
-      #figure(
-        square(size: 5em, stroke: 2pt),
-        kind: "subfigure",
-        supplement: "Figure",
-        caption: [$delta=delta_max$\ full cross-product of states and actions.],
-      )<fig:delta-max-omit-0>
-    ],
-    [
-      #figure(
-        square(size: 5em, stroke: 2pt),
-        kind: "subfigure",
-        supplement: "Figure",
-        caption: [$delta=delta_max$\ omit 1/4 cross-product of states and actions.],
-      )<fig:delta-max-omit-quarter>
-    ],
-    [
-      #figure(
-        square(size: 5em, stroke: 2pt),
-        kind: "subfigure",
-        supplement: "Figure",
-        caption: [$delta=delta_max$\ omit 1/2 of states and actions.],
-      )<fig:delta-max-omit-half>
-    ],
-    [
-      #figure(
-        square(size: 5em, stroke: 2pt),
-        kind: "subfigure",
-        supplement: "Figure",
-        caption: [$delta=1$\ full cross-product of states and actions.],
-      )<fig:1-omit-0>
-    ],
-    [
-      #figure(
-        square(size: 5em, stroke: 2pt),
-        kind: "subfigure",
-        supplement: "Figure",
-        caption: [$delta=1$\ omit 1/4 cross-product of states and actions.],
-      )<fig:1-omit-quarter>
-    ],
-    [
-      #figure(
-        square(size: 5em, stroke: 2pt),
-        kind: "subfigure",
-        supplement: "Figure",
-        caption: [$delta=1$\ omit 1/2 of states and actions.],
-      )<fig:1-omit-half>
-    ],
-  ),
+  image("figures/bellman-update-networks/rmse.png"),
+  placement: top,
   caption: [Comparison of root mean-square error for training vs. testing.],
 ) <fig:root-mean-sq-error>
 
