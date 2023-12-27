@@ -18,6 +18,7 @@
         "huggingface",
         "LSTM",
         "Miniworld",
+        "rmse",
         "subfigure"
     ],
     "cSpell.ignoreRegExpList": [

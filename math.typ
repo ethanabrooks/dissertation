@@ -13,6 +13,7 @@
 #let Obs = $x$
 #let Policy = $pi$
 #let Prob = $P$
+#let ProbTar = $accent(P, hat)$
 #let QValue = $Q$
 #let QEst = $accent(QValue, tilde)$
 #let QTar = $accent(QValue, hat)$

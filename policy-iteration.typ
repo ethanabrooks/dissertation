@@ -701,7 +701,7 @@ tablex(columns: 3, header-rows: 1, auto-vlines: false,
 )) <tab:llms>
 
 == Conclusion
-Our main contribution is a method for implementing policy iteration algorithm
+Our main contribution in this chapter is a method for implementing policy iteration algorithm
 using Large Language Models and the mechanism of in-context learning. The
 algorithm uses a foundation models as both a world model and policy to compute
 Q-values via rollouts. Although we presented the method here as text-based, it
