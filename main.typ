@@ -16,13 +16,13 @@
   doc: doc,
 )
 
-// = Dedication
+= Dedication
 
-// #lorem(80)
+#lorem(80)
 
-// = Acknowledgements
+= Acknowledgements
 
-// #lorem(80)
+#lorem(80)
 
 #outline(
   title: [#formatHeader(body: "Table of Contents")],
@@ -43,7 +43,6 @@
 #include "policy-iteration.typ"
 #include "adpp.typ"
 #include "bellman-update-networks.typ"
-
-= Conclusion
+#include "conclusion.typ"
 
 #bibliography("main.bib", style: "american-society-of-civil-engineers")

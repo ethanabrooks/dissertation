@@ -58,7 +58,7 @@
   ]
   pagebreak()
   set align(center + horizon)
-  let space = 1.5em
+  let space = 2em
   set par(leading: space, first-line-indent: 0.5in)
   show heading: set block(above: 2 * space, below: space)
   show par: set block(above: space, below: space)

@@ -18,6 +18,7 @@
         "huggingface",
         "LSTM",
         "Miniworld",
+        "rasa",
         "rmse",
         "subfigure"
     ],
