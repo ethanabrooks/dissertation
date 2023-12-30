@@ -45,16 +45,16 @@ possible when using a foundation model trained on a large, opaque dataset.
 
 One possible rationale for our hypothesis, that planning with an adapted model
 will generalize better than direct policy adaptation, is that a model relies
-only on local information whereas a policy relies on non-local information.
-However, model-based planning gains this advantage at the cost of compound
-error---the tendency for any approximate model to accumulate error in an
-auto-regressive chain, compounding the errors of new predictions with the errors
-of prior predictions on which they are conditioned. Why should we expect the
-benefit to outweigh the cost?
+only on local information whereas a policy relies on non-local information. It
+is worth noting that model-based planning gains this advantage at the cost of
+compound error --- the tendency for any approximate model to accumulate error in
+an auto-regressive chain, compounding the errors of new predictions with the
+errors of prior predictions on which they are conditioned. Why should we expect
+the benefit to outweigh the cost?
 
 We argue that a function approximator can only learn a policy one of two ways:
 either it learns the underlying logic of the policy, or it memorizes the policy
-without distilling this logic---a strategy which does not generalize. However,
+without distilling this logic --- a strategy which does not generalize. However,
 this underlying logic entails some kind of implicit value estimation, which
 entails implicit modeling of the environment. In principle, these implicit
 operations are susceptible to compound error accumulation in much the same way
@@ -65,74 +65,12 @@ since actions and values are not inferred directly but computed. Our conclusion
 is that the net benefit of model-based planning for generalization is positive.
 
 We tested this hypothesis in two sets of domains, a gridworld with randomly
-spawned walls, and a simulated robotics domain implemented in Brax
-#cites(<freeman2021brax>). In the gridworld setting, we found that the
+spawned walls, and a simulated robotics domain implemented in Mujoco
+#cites(<todorov2012mujoco>). In the gridworld setting, we found that the
 model-based approach consistently outperformed a direct policy adaptation
-approach, even as we varied the difficulty of generalization and varied the
-quantity of training data. In the robotics domain, our results were
-inconclusive, with the model-based approach outperforming the direct policy
-adaptation approach on some domains, but not others.Generalization to novel
-tasks is an important challenge in multitask reinforcement learning (RL). This
-setting entails a training regime that includes a diversity of dynamics or
-reward functions, and a test regime that evaluates the agent on unseen dynamics
-or reward functions. A typical approach to this challenge is as follows: train a
-policy on the training tasks and use various mechanisms to adapt the policy to
-the novel setting. In this work, we explore the benefits of focusing instead on
-adapting a _model_ as a means to adapt a policy, as opposed to adapting the
-policy directly. If the model successfully adapts to the evaluation setting, we
-may use a variety of planning methods to recover a good policy.
-
-Our approach builds on the previous chapter, @chap:pi[Chapter], using a similar
-methodology to choose actions on the downstream evaluation task. Concretely, at
-each state, we use our learned model to perform multiple rollouts, each starting
-from a different action in the action space. We use these rollouts to estimate
-state-action values. Our behavior policy (as opposed to the policy used in the
-rollouts) chooses the action corresponding to the highest estimate. As we
-demonstrated in that work, this approach implements a form of policy iteration,
-an algorithm proven to eventually converge to the optimal policy.
-
-Our previous work used generic foundation models, namely Codex
-#cites(<chen2021evaluating>), to implement both a world model and a policy
-during the aforementioned rollouts. In contrast, our present work assumes access
-to a dataset of RL trajectories and uses this data to train a causal transformer
-#cites(<vaswani2017attention>) as a world model. Because the transformer is
-trained on RL data and the evaluation task is similarly distributed to the
-training tasks, the transformer is capable of modeling more complex domains than
-the general-purpose foundation models from which we elicited world-model
-predictions using a variety of prompting techniques. Another advantage of
-training the model from scratch is that we can more easily assess generalization
-by comparing training tasks with evaluation tasks. Such comparisons are not
-possible when using a foundation model trained on a large, opaque dataset.
-
-One possible rationale for our hypothesis, that planning with an adapted model
-will generalize better than direct policy adaptation, is that a model relies
-only on local information whereas a policy relies on non-local information.
-However, model-based planning gains this advantage at the cost of compound error
----the tendency for any approximate model to accumulate error in an
-auto-regressive chain, compounding the errors of new predictions with the errors
-of prior predictions on which they are conditioned. Why should we expect the
-benefit to outweigh the cost?
-
-We argue that a function approximator can only learn a policy one of two ways:
-either it learns the underlying logic of the policy, or it memorizes the policy
-without distilling this logic---a strategy which does not generalize. However,
-this underlying logic entails some kind of implicit value estimation, which
-entails implicit modeling of the environment. In principle, these implicit
-operations are susceptible to compound error accumulation in much the same way
-as explicit model-based planning methods. Therefore the switch to model-based
-planning does not actually introduce compound error as a new cost. Meanwhile,
-model-based planning does eliminate the possibility of policy memorization,
-since actions and values are not inferred directly but computed. Our conclusion
-is that the net benefit of model-based planning for generalization is positive.
-
-We tested this hypothesis in two sets of domains, a gridworld with randomly
-spawned walls, and a simulated robotics domain implemented in Brax
-#cites(<freeman2021brax>). In the gridworld setting, we found that the
-model-based approach consistently outperformed a direct policy adaptation
-approach, even as we varied the difficulty of generalization and varied the
-quantity of training data. In the robotics domain, our results were
-inconclusive, with the model-based approach outperforming the direct policy
-adaptation approach on some domains, but not others.
+approach, even as we varied the difficulty of generalization and the quantity of
+training data. We reach a similar conclusion in the robotics domain, though the
+results are less extensive.
 
 == Background
 <background>
@@ -164,19 +102,19 @@ consequences of an action before taking it in the environment.
 <transformers>
 Transformers #cite(<vaswani2017attention>) are a class of neural networks which
 map an input sequence to an output sequence of the same length and utilize a
-mechanism known as "self-attention." Self-attention maps the \$i^\\Th\$ element
-of the input sequence to a key vector $k_i$, a value vector $v_i$, and query
-vector $q_i$. The output of self-attention is a weighted sum of the value
-vectors:
-$ upright("Attention") lr((q_i comma k comma v)) eq sum_j upright("softmax") lr((q_i k_j slash sqrt(D))) v_j $
+mechanism known as "self-attention." Self-attention maps the $i^"th"$ element of
+the input sequence to a key vector $k_i$, a value vector $v_i$, and query vector $q_i$.
+The output of self-attention is a weighted sum of the value vectors:
+$ upright("Attention") lr((q_i comma k comma v)) eq sum_j upright("softmax")
+lr((q_i k_j slash sqrt(D))) v_j $
 where $D$ is the dimensionality of the vectors. The softmax is applied accross
 the inputs so that
 $sum_j upright("softmax") lr((q_i k_j slash sqrt(D))) eq 1$. A typical
 transformer applies this self-attention operation multiple times, interspersing
 linear projections and layer-norm operations between each application. A #emph[causal] transformer
 applies a mask to the attention operation which prevents the model from
-attending from the \$i^\\Th\$ element to the \$j^\\Th\$ element if $i lt j$,
-that is, if the \$j^\\Th\$ element appears later in the sequence.
+attending from the $i^"th"$ element to the $j^"th"$ element if $i < j$, that is,
+if the $j^"th"$ element appears later in the sequence.
 
 ==== Policy Iteration
 <policy-iteration>
@@ -215,8 +153,7 @@ In this section, we describe the details of our proposed algorithm, which we
 call #ADPP-full-name (#ADPP). We assume a dataset of $N$ trajectories generated
 by interactions with an environment:
 
-$ Dataset := (
-(Obs^n_0, Act^n_0, Rew^n_0, Ter^n_0, dots, Obs^n_T, Act^n_T,
+$ Dataset := ( (Obs^n_0, Act^n_0, Rew^n_0, Ter^n_0, dots, Obs^n_T, Act^n_T,
 Rew^n_T, Ter^n_T) sim Policy_n )_(n=1)^N $
 
 with $Obs^n_t$ referring to the $t^"th"$ observation in the $n^"th"$
@@ -226,9 +163,8 @@ trajectory corresponds with a single task $Task$ and a single policy
 $Policy$, but the dataset contains as many as $N$ tasks and policies. We also
 introduce the following nomenclature for trajectory histories:
 
-$ History^n_t := (Act^n_(t-Recency),
-Rew^n_(t-Recency), Ter^n_(t-Recency), Obs^n_(t-Recency+1), dots,
-Act^n_(t-1), Rew^n_(t-1), Ter^n_(t-1), Obs^n_t) $ <eq:history>
+$ History^n_t := (Act^n_(t-Recency), Rew^n_(t-Recency), Ter^n_(t-Recency),
+Obs^n_(t-Recency+1), dots, Act^n_(t-1), Rew^n_(t-1), Ter^n_(t-1), Obs^n_t) $ <eq:history>
 
 where $Recency$ is a fixed hyperparameter.
 
@@ -308,11 +244,11 @@ its output to the distribution of actions in its input. Since our rollouts are
 conditioned on histories drawn from our behavior policy, the rollout policy will
 approximately match this policy. Our value estimates will therefore be
 conditioned on the current behavior policy. However, by choosing the action
-corresponding to $arg max_(Act in Actions)
-QValue(History_t, Act)$, our behavior policy always improves on the policy on
-which $QValue(History_t, Act)$ is conditioned, a consequence of the policy
-improvement theorem. Thus, each time an action is chosen using this $arg max$ method,
-our behavior policy improves on itself.
+corresponding to $arg max_(Act in Actions) QValue(History_t, Act)$, our behavior
+policy always improves on the policy on which $QValue(History_t, Act)$ is
+conditioned, a consequence of the policy improvement theorem. Thus, each time an
+action is chosen using this $arg max$ method, our behavior policy improves on
+itself.
 
 Walking through this process step by step, suppose $Policy^n$ is some policy
 that we use to behave. We collect a trajectory containing actions drawn from
@@ -320,11 +256,11 @@ this policy. When we perform rollouts, we condition on this trajectory and the
 rollout policy simulates $Policy^n$. Assuming that this simulation is accurate
 as well as the world model, our value estimate will be an unbiased monte carlo
 estimate of $QValue(History_t, Act)$ for any action $Act$. Then we act with
-policy $Policy^(n+1) := arg max_(Act in Actions)
-QValue(History_t, Act)$. But $Policy^(n+1)$ is at least as good as $Policy^n$.
-Using the same reasoning, $Policy^(n+2)$ will be at least as good as $Policy^(n+1)$,
-and so on. Note that in our implementation, we perform the $arg max$ at each
-step, rather than first collecting a full trajectory with a single policy.
+policy $Policy^(n+1) := arg max_(Act in Actions) QValue(History_t, Act)$. But
+$Policy^(n+1)$ is at least as good as $Policy^n$. Using the same reasoning, $Policy^(n+2)$ will
+be at least as good as
+$Policy^(n+1)$, and so on. Note that in our implementation, we perform the $arg max$ at
+each step, rather than first collecting a full trajectory with a single policy.
 
 ==== Algorithm Distillation
 Our setting is almost identical to Algorithm Distillation (AD), if we include
@@ -334,9 +270,9 @@ our transformer is a sufficiently long history of behavior, then the rollout
 policy will not only match the input policy but actually improve upon it, as
 demonstrated in that paper. Then $QValue$ will actually estimate values for a
 policy $Policy'_n$ that is at least as good as the input policy
-$Policy_n$. Then $V^(Policy_(n+1)) >= V^(Policy'_n) >=
-V^(Policy_n)$ Therefore each step of improvement actually superimposes the two
-improvement operators, one from the $arg max$ operator, the other from AD.
+$Policy_n$. Then $V^(Policy_(n+1)) >= V^(Policy'_n) >= V^(Policy_n)$ Therefore
+each step of improvement actually superimposes the two improvement operators,
+one from the $arg max$ operator, the other from AD.
 
 == Experiments
 <experiments>
@@ -345,13 +281,12 @@ improvement operators, one from the $arg max$ operator, the other from AD.
 In this work, we chose to focus on partially observable domains. This ensures
 that both the initial policy and the initial model in our downstream domain will
 be suboptimal, since the true dynamics or reward function cannot be inferred
-until the agent has gathered experience. Recovering the optimal policy will
-require policy improvement along side model improvement. Model improvement will
-occur as the agent collects experience and the transformer context is populated
-with transitions drawn from the current dynamics and reward functions. Policy
-improvement relies on the mechanisms detailed in the previous sections. One
-hypothesis that our experiments test is whether these learning processes can
-successfully happen concurrently.
+until the agent has gathered experience. Recovering the optimal policy will side
+model improvement. Model improvement will occur as the agent collects experience
+and the transformer context is populated with transitions drawn from the current
+dynamics and reward functions. Policy improvement relies on the mechanisms
+detailed in the previous sections. One hypothesis that our experiments test is
+whether these learning processes can successfully happen concurrently.
 
 All of our experiments occur within a discrete, partially observable,
 $5 times 5$ grid world. The agent has four actions, up, left, down, right. For
@@ -378,62 +313,66 @@ metrics that we record.
 #figure(image("figures/adpp/no-walls.png"), caption: [
   Evaluation on withheld location pairs.
 ])
-#grid(columns: (auto, auto), {
-  show figure: it => [
-    #align(center)[#it.body]
-    #set align(left)
-    #pad(x: .5cm)[#it.caption ]
-  ]
-  figure(
-    image("figures/adpp/model-accuracy.png", height: 100pt),
-    caption: [dummy],
-  )
-}, {
-  show figure: it => [
-    #align(center)[#it.body]
-    #set align(left)
-    #pad(x: 1.1cm)[#it.caption ]
-  ]
-  figure(
-    image("figures/adpp/unseen-goals.png", height: 100pt),
-    caption: [ Evaluation on fully withheld locations. ],
-  )
-})
+#grid(
+  columns: (auto, auto),
+  {
+    show figure: it => [
+      #align(center)[#it.body]
+      #set align(left)
+      #pad(x: .5cm)[#it.caption ]
+    ]
+    [#figure(
+        image("figures/adpp/model-accuracy.png", height: 100pt),
+        caption: [Accuracy of model predictions over the course of an evaluation rollout.],
+      ) <fig:model-accuracy>]
+  },
+  {
+    show figure: it => [
+      #align(center)[#it.body]
+      #set align(left)
+      #pad(x: 1.1cm)[#it.caption ]
+    ]
+    [#figure(
+        image("figures/adpp/unseen-goals.png", height: 100pt),
+        caption: [ Evaluation on fully withheld locations. ],
+      ) <fig:unseen-goals>]
+  },
+)
 
 ==== Evaluation on Withheld Goals
 <evaluation-on-withheld-goals>
 In our first experiment, we evaluate the agent on a set of withheld key-door
 pairs, which we sample uniformly at random (10% of all possible pairs) and
-remove from the training set. As figure indicates, our algorithm outperforms the
-AD baseline both in time to converge and final performance. We attribute this to
-the fact that our method's downstream policy directly optimize expected return,
-choosing actions that correspond to the highest value estimate. In contrast,
-AD's policy only maximizes return by proxy — maximizing the probability of the
-actions of a source algorithm which in turn maximizes expected return. This
-indirection contributes noise to the downstream policy through modeling error.
-Moreover, we note that our method completely recovers the performance of the
-ground-truth baseline, though its speed of convergence lags behind slightly, due
-to the initial exploration phase in which the model learns the reward function
-through trial and error.
+remove from the training set. As @fig:unseen-goals indicates, our algorithm
+outperforms the AD baseline both in time to converge and final performance. We
+attribute this to the fact that our method's downstream policy directly optimize
+expected return, choosing actions that correspond to the highest value estimate.
+In contrast, AD's policy only maximizes return by proxy — maximizing the
+probability of the actions of a source algorithm which in turn maximizes
+expected return. This indirection contributes noise to the downstream policy
+through modeling error. Moreover, we note that our method completely recovers
+the performance of the ground-truth baseline, though its speed of convergence
+lags behind slightly, due to the initial exploration phase in which the model
+learns the reward function through trial and error.
 
 Next, we increase the generalization challenge by holding out key and door
 locations entirely, never training the agent source algorithm on keys or doors
 in the upper-left four cells of the grid and then placing both keys and doors
-exclusively within this region during downstream evaluation. As figure
-demonstrates, AD generalizes poorly in this setting, on average discovering only
-one of the two goals. In contrast, our method maintains relatively high
-performance. We attribute this to the fact that our method learns low-level
-planning primitives (the reward function), which generalize better than
-high-level abstractions like a policy. As we argued in section , higher-level
-abstractions are prone to memorization since they do not always distill the
-logic which produced them.
+exclusively within this region during downstream evaluation. As
+@fig:unseen-goals demonstrates, AD generalizes poorly in this setting, on
+average discovering only one of the two goals. In contrast, our method maintains
+relatively high performance. We attribute this to the fact that our method
+learns low-level planning primitives (the reward function), which generalize
+better than high-level abstractions like a policy. As we argued in section ,
+higher-level abstractions are prone to memorization since they do not always
+distill the logic which produced them.
 
 #figure(
   [#box(image("figures/adpp/generalization-to-more-walls-timestep.png"))],
   caption: [
     Generalization to higher percentages of walls.
   ],
-)
+) <fig:generalization-to-more-walls>
 
 ==== Evaluation on Withheld Wall Configurations
 <evaluation-on-withheld-wall-configurations>
@@ -442,17 +381,18 @@ evaluated our method's ability to generalize to novel dynamics. We did this by
 adding walls to the grid world, which obstruct the agent's movement. During
 training we placed the walls at all possible locations, sampled IID, with 10%
 probability. During evaluation, we tested the agent on equal or higher
-percentages of wall placement. As indicated by figure , out method maintains
-performance and nearly matches the ground-truth version, while AD's performance
-rapidly degrades. Again we attribute this to the tendency of lower-level
-primitives to generalize better than higher-level abstractions.
+percentages of wall placement. As indicated by
+@fig:generalization-to-more-walls, our method maintains performance and nearly
+matches the ground-truth version, while AD's performance rapidly degrades. Again
+we attribute this to the tendency of lower-level primitives to generalize better
+than higher-level abstractions.
 
 #figure(
   [#box(image("figures/adpp/more-walls-achievable-timestep.png"))],
   caption: [
     Generalization to higher percentages of walls with guaranteed achievability.
   ],
-)
+) <fig:generalization-to-more-walls-with-guaranteed-achievability>
 
 Because walls are chosen from all possible positions IID, some configurations
 may wall off either the key or the door. In order to remove this confounder, we
@@ -470,13 +410,12 @@ learn, we plotted model accuracy in the generalization to 10% walls setting.
 Note that while the percentages of walls in the training and evaluation setting
 are the same, the exact wall placements are varied during training and the
 evaluation wall placements are withheld, so that the model must infer them from
-context. In figure , we measure the model's
-
-prediction accuracy of termination signals \(labeled "done / not done"), of next
-observations \(labeled "observation"), and of rewards \(labeled
+context. In @fig:model-accuracy, we measure the accuracy of the model's
+prediction of termination signals (labeled "done / not done"), of next
+observations (labeled "observation"), and of rewards (labeled
 "reward"). These predictions start near optimal, since the agent can rely on
 priors, that most timesteps do not terminate, that most transitions result in
-successful movement \(no wall), and that the reward is 0. However, we also
+successful movement (no wall), and that the reward is 0. However, we also
 measure prediction accuracy for these rare events: the line labeled "done"
 measures termination-prediction accuracy exclusively on terminal timesteps; the "positive
 reward" line measures reward-prediction accuracy exclusively on timesteps with
@@ -492,18 +431,18 @@ for these rare events, the model rapidly recovers accuracy near 100%.
     Impact of model error on performance, measured by introducing noise into each
     component of the model's predictions.
   ],
-)
+) <fig:model-noise>
 
-While figure indicates that our model generally achieves high accuracy in these
-simple domains, we nevertheless wish to understand the impact of a suboptimal
-model on RL performance. To test this, we introduced noise into different
-component of the model's predictions. In figure , we note that performance is
-fairly robust to noise in the termination predictions, but very sensitive to
-noise in the reward predictions. Encouragingly, the model is demonstrates
-reasonable performance with as much as 20% noise in the observation predictions.
-Also, as indicates, the method is quite robust to noise in the action model. We
-also note that AD's sensitivity to noise in the policy explains its lower
-performance in many of the settings previously discussed.
+While @fig:model-noise indicates that our model generally achieves high accuracy
+in these simple domains, we nevertheless wish to understand the impact of a
+suboptimal model on RL performance. To test this, we introduced noise into
+different component of the model's predictions. In figure , we note that
+performance is fairly robust to noise in the termination predictions, but very
+sensitive to noise in the reward predictions. Encouragingly, the model
+demonstrates reasonable performance with as much as 20% noise in the observation
+predictions. Also, as indicated, the method is quite robust to noise in the
+action model. We also note that AD's sensitivity to noise in the policy explains
+its lower performance in many of the settings previously discussed.
 
 #figure(
   [#box(image("figures/adpp/policy-noise-timestep.png"))],
@@ -531,16 +470,18 @@ performance in many of the settings previously discussed.
 
 ], outlined: false)
 
-Finally, we examined the impacts of scaling the quantity of data that our model
-was trained on. In figure , we scale the quantity of the training data along the
-IID dimension, with the $x$-axis measuring the number of source algorithm
-histories in the training data scaled according to the equation $256 times 2^x$.
-In figure , we scale the length for which each source algorithm is trained, with
-the $x$-axis measuring the number of timesteps of training scaled according to
-the same equation. This result was surprising, as we expected AD to be
+We also examined the impacts of scaling the quantity of data that our model was
+trained on. In figure , we scale the quantity of the training data along the IID
+dimension, with the $x$-axis measuring the number of source algorithm histories
+in the training data scaled according to the equation $256 times 2^x$. In figure
+, we scale the length for which each source algorithm is trained, with the $x$-axis
+measuring the number of timesteps of training scaled according to the same
+equation. This result was surprising, as we expected AD to be
 #emph[more] sensitive to reduced training time, since that algorithm is more
-dependent on demonstration of the optimal policy. Nevertheless we note that our
+dependent on demonstration of the optimal policy. Nevertheless, we note that our
 method outperforms AD in all data regimes.
+
+=== Continuous-State and Continuous-Action Domains
 
 == Conclusion
 <conclusion>
@@ -552,5 +493,5 @@ this method on more complex domains, especially those involving simulated
 robotics. We also intend to evaluate more baselines, especially those from the
 traditional meta-learning literature like RL$""^2$ #cite(<duan_rl2_2016>).
 
-// = Dummy <chap:pi>
-// #bibliography("main.bib", style: "association-for-computing-machinery")
+= Dummy <chap:pi>
+#bibliography("main.bib", style: "american-society-of-civil-engineers")

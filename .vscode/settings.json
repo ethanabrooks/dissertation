@@ -31,6 +31,7 @@
     ],
     "black-formatter.interpreter": [
         "/nix/store/rcjn03z3crqzv1h3c7kj95v3gsjwsggi-python3-3.11.6-env/bin/python"
-    ]
+    ],
+    "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?"
 }
 

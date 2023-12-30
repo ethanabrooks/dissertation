@@ -205,11 +205,11 @@ estimates of value at different numbers of Bellman updates $k$, although we
 defer the explanation of how to acquire these to @sec:train-bellman-network.
 
 As @fig:architecture illustrates, the inputs to the network are a sequence of
-transitions from the dataset. In principle, these transitions need not need be
-chronological except in a partially observed setting. Each transition gets
+transitions from the dataset. In principle, these transitions need not be
+chronological, except in a partially observed setting. Each transition gets
 encoded and summarized into a single fixed-size vector. We compared several
 methods for doing this, including small positional transformers, and found that
-Gated Recurrent Unit #cite(<cho2014learning>) demonstrated the strongest
+Gated Recurrent Unit (GRU) #cite(<cho2014learning>) demonstrated the strongest
 performance. Each of these transition vectors gets passed through a transformer
 network (one vector per transformer index) and the final outputs are projected
 to scalars.
@@ -217,7 +217,7 @@ to scalars.
 You will note that we provide $Value_k$ and not $QValue_k$ to the model, as in
 @eq:loss. We found that computing
 
-$ Value_k (Obs_t) := sum_Act Policy(Act | dot.c) QValue_k (Obs_t, Act) $ <eq:value>
+$ Value_k (Obs_t) := sum_Act Policy(Act | Obs_t) QValue_k (Obs_t, Act) $ <eq:value>
 
 and providing this as input to the network, rather than providing the full array
 of Q-values, improved the speed and stability of learning.
@@ -312,9 +312,9 @@ the network produces estimates, we use them both to train the network (see
 === Implementation Details <sec:implementation>
 We implement the Bellman Network as a causal transformer, using the GPT2 #cite(<radford2019language>)
 implementation from #link("https://huggingface.co/", [www.huggingface.co]). Why
-is causal masking is necessary, given that the target does not appear in the
-input to the model? To answer this question, we must draw attention to a
-disparity between the outputs from the model on @line:forward of
+is causal masking necessary, given that the target does not appear in the input
+to the model? To answer this question, we must draw attention to a disparity
+between the outputs from the model on @line:forward of
 @alg:train-bellman-network and the targets used to train the model on
 @line:optimize. For each input state $Obs_t$, we require the model to infer a
 vector of values, *$QValue(Obs_t, dot.c)$*, one for each action in the action
@@ -491,7 +491,7 @@ conditioned on many policies are prone to overfitting. We therefore set $delta =
 with a single goal of achievement. In this idealized setting, we provide the
 network with the full cross-product of states and actions, so that perfect
 estimation is possible. We evaluate the network in an identical setting but with
-20,000 heldout policies. As the upper-left graph of @fig:root-mean-sq-error,
+20,000 heldout policies. As the upper-left graph of @fig:root-mean-sq-error
 illustrates, we observe a significant gap between training accuracy and test
 accuracy, as measured by root mean-square error. In addition, we observe that
 test error mostly plateaus after update 100,000, even as train error continues
@@ -571,10 +571,10 @@ fails to move into an adjacent grid, this indicates the presence of a wall.
 
 During testing, we evaluate the model on a randomly generated maze. This ensures
 that all grids are reachable, unlike the training setting in which grids may be
-walled off in some cases. As the results in @fig:walls-regret indicates, the
-model achieves better generalization performance when trained with lower values
-of $delta$. We also observe a similar generalization gap in @fig:walls-rmse as
-in @fig:root-mean-sq-error.
+walled off in some cases. As @fig:walls-regret indicates, the model achieves
+better generalization performance when trained with lower values of $delta$. We
+also observe a similar generalization gap in @fig:walls-rmse as in
+@fig:root-mean-sq-error.
 
 === Training without ground-truth targets
 

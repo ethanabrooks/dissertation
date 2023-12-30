@@ -1,6 +1,7 @@
 #import "style.typ": cites
 
 #set heading(numbering: "1.1")
+== Dummy <sec:introduction>
 = Conclusion
 
 Since beginning of this work, the science of artificial intelligence has
@@ -11,11 +12,12 @@ aligns with these shifts. The thesis anticipates a world in which RL algorithms
 acquire most of their knowledge through supervised training on offline datasets,
 as we discussed in the Introduction (@sec:introduction[Chapter]). In this
 paradigm, learning does not happen in a single unbroken arc, from tabula-rasa
-random weights to expert behavior, all driven by end-to-end gradient-descent
-based deep RL algorithms. Instead, learning happens in _two_ stages: an initial
-stage in which the model soaks up large quantities of information using strong
-supervised signals from offline datasets, and a second stage in which the model
-adapts to its specific setting using some form of in-context learning.
+random weights to expert behavior, all driven by end-to-end
+gradient-descent-based deep RL algorithms. Instead, learning happens in _two_ stages:
+an initial stage in which the model soaks up large quantities of information
+using strong supervised signals from offline datasets, and a second stage in
+which the model adapts to its specific setting using some form of in-context
+learning.
 
 However, in some ways, this thesis is out of step with the current trajectory of
 AI research. In particular, it focuses on two concerns which have fallen out of
@@ -37,10 +39,10 @@ rather than optimizing those skills directly. One of the most appealing aspects
 of this program was its rigorous economy in aligning objectives: all learning
 would serve the accumulation of reward. An agent might acquire language, for
 example, but only to the extent necessary for communicating concepts essential
-to its mission (e.g. "Sarah Conner?"). This ethos dictated that RL would
-gradually shed crutches like reward shaping #cite(<hu2020learning>) and
-auxiliary losses #cite(<burda2018exploration>) as research matured and
-discovered new pathways between short-term behavior and long-term reward.
+to its mission. This ethos dictated that RL would gradually shed crutches like
+reward shaping #cite(<hu2020learning>) and auxiliary losses #cite(<burda2018exploration>) as
+research matured and discovered new pathways between short-term behavior and
+long-term reward.
 
 In Yann LeCun's 2016 NeurIPS keynote #cite(<lecun2016predictive>), he laid out a
 paradigm that came to be known as "LeCake":
@@ -77,8 +79,8 @@ etc.) and others are cagey about the details of RLHF #cite(<lieber2021jurassic>)
 it is clear that models increasingly ignore the credit-assignment problem by
 maximizing one-step reward #cite(<touvron2023llama>) -- and despite this,
 achieve state-of-the-art performance. Direct Preference Optimization #cite(<rafailov2023direct>),
-an increasingly dominant technique for optimizing learned reward actually brands
-itself as "RL-free" and completely disregards credit-assignment.
+an increasingly dominant technique for optimizing learned reward, actually
+brands itself as "RL-free" and completely disregards credit-assignment.
 
 What explains the precipitous shift in the role of RL in modern AI systems? In
 short, a tradeoff: between the kind of rigorous alignment that RL prioritizes
@@ -105,11 +107,12 @@ Another significant shift in thinking is the attitude toward memorization, once
 thought to be synonymous with generalization. Classical frameworks like the
 bias-variance tradeoff #cite(<franklin2005elements>) imply that modeling noise
 will lead to overfitting --- failure to generalize from training data to
-out-of-distribution test data --- and that regularization of some kind, or
+out-of-distribution test data --- and that regularization of some kind or
 truncation of training is necessary to prevent this. However, an extensive
 literature has documented the mismatch between these predictions and empirical
-reality #cites(<zhang2021understanding>, <brown2021memorization>). Some work has
-also presented theoretical frameworks for understanding this mismatch #cite(<feldman2020does>).
+reality #cites(<zhang2021understanding>, <brown2021memorization>) TODO: find one
+more. Some work has also presented theoretical frameworks for understanding this
+mismatch #cite(<feldman2020does>).
 
 In general, there has been a movement away from classical regularization
 techniques that effectively limit model expressivity in order to discourage
@@ -141,7 +144,7 @@ LLM acquires language understanding from human datasets, it must overcome a
 significant problem of transfer.
 
 Zero-shot transfer of the kind exhibited by LLMs is not likely for robots,
-especially if they learn through extensive memorization. Instead some period of
+especially if they learn through extensive memorization. Instead, some period of
 fine-tuning or in-context learning will be necessary to adapt fundamental skills
 acquired from offline data to specific embodiments and settings. Unlike language
 models, which acquire credit-assignment strategies whole-cloth from their source
@@ -198,9 +201,11 @@ RL data. Through the incorporation of Algorithm Distillation, we highlight the
 fact that such a model can not only distill the dynamics and policies in the
 source data but also the _learning operator_ of the source algorithm. In the
 final chapter, we argue that such a model can benefit from the idea of value and
-can learn representations that generalizes. Many questions remain --- about
-credit-assignment, generalization, and the challenges of scale. However, the
-community of researchers is vibrant and undaunted, the future of RL foundation
-models is surely promising.
+can learn representations that generalizes.
 
-// #bibliography("main.bib", style: "american-society-of-civil-engineers") 
+The broader questions remain --- about credit-assignment, generalization, and
+the challenges of scale. However, given the history and magnitude of innovations
+in this vibrant community of researchers, we confidently anticipate
+revolutionary developments in the science of RL foundation models.
+
+#bibliography("main.bib", style: "american-society-of-civil-engineers") 

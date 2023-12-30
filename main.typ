@@ -31,6 +31,9 @@
   title: [#formatHeader(body: "List of Figures")],
   target: figure.where(kind: image),
 )
+
+// TODO: abbreviations
+
 #set page(numbering: "1")
 #counter(page).update(1)
 
