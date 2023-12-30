@@ -11,13 +11,13 @@ language models, come to dominate the field, but priorities and expectations
 around research have shifted dramatically. In some ways, the work in this thesis
 aligns with these shifts. The thesis anticipates a world in which RL algorithms
 acquire most of their knowledge through supervised training on offline datasets,
-as we discussed in the Introduction (@sec:introduction). In this paradigm,
-learning does not happen in a single unbroken arc, from tabula-rasa random
-weights to expert behavior, all driven by end-to-end gradient-descent based deep
-RL algorithms. Instead, learning happens in _two_ stages: an initial stage in
-which the model soaks up large quantities of information using strong supervised
-signals from offline datasets, and a second stage in which the model adapts to
-its specific setting using some form of in-context learning.
+as we discussed in the Introduction (@sec:introduction[Chapter]). In this
+paradigm, learning does not happen in a single unbroken arc, from tabula-rasa
+random weights to expert behavior, all driven by end-to-end gradient-descent
+based deep RL algorithms. Instead, learning happens in _two_ stages: an initial
+stage in which the model soaks up large quantities of information using strong
+supervised signals from offline datasets, and a second stage in which the model
+adapts to its specific setting using some form of in-context learning.
 
 However, in some ways, this thesis is out of step with the current trajectory of
 AI research. In particular, it focuses on two concerns which have fallen out of
@@ -29,23 +29,23 @@ We will begin by describing the ways in which attitudes towards these concerns
 have changed, and make the case for their continued relevance.
 
 === Reinforcement Learning as a Method of Exploration and Discovery
-Reinforcement learning remains a critical component of modern AI systems, but
-it's role has fundamentally changed from what its pioneers envisioned. Early
-deep RL researchers imagined agents that would explore their world with very
-little learning signal, progressively acquire knowledge and skills, and slowly
-but surely improve their behavior until optimal. Agents would acquire auxiliary
+Reinforcement learning remains a component of modern AI systems, but it's role
+has fundamentally changed from what its pioneers envisioned. Early deep RL
+researchers imagined agents that would explore their world with very little
+learning signal, progressively acquire knowledge and skills, and slowly but
+surely improve their behavior until optimal. Agents would acquire auxiliary
 skills as necessary in the service of a simple, sparse reward #cite(<silver2021reward>),
 rather than optimizing those skills directly. One of the most appealing aspects
 of this program was its rigorous economy in aligning objectives: all learning
 would serve the accumulation of reward. An agent might acquire language, for
 example, but only to the extent necessary for communicating concepts essential
-to its mission, e.g. "Sarah Conner?." This ethos dictated that RL would
+to its mission (e.g. "Sarah Conner?"). This ethos dictated that RL would
 gradually shed crutches like reward shaping #cite(<hu2020learning>) and
 auxiliary losses #cite(<burda2018exploration>) as research matured and
 discovered new pathways between short-term behavior and long-term reward.
 
-In Yann LeCun's 2016 NeurIPS keynote #cite(<lecun2016predictive>), he laid out
-an paradigm that came to be known as "LeCake":
+In Yann LeCun's 2016 NeurIPS keynote #cite(<lecun2016predictive>), he laid out a
+paradigm that came to be known as "LeCake":
 - Unsupervised learning is the "filling" of the cake, accounting for millions of
   bits of learning per sample.
 - Supervised learning is the "icing," accounting for 10-10,000 bits per sample.
@@ -69,9 +69,10 @@ which was once the very raison d'etre of reinforcement learning is "credit
 assignment." This is the problem of determining which actions, in a temporally
 extended sequence, are responsible for a final outcome, good or bad. It is
 through credit assignment, for example, that we learn that losing our queen on
-the 20th step of a 100-step chess game is to our detriment. Technically,
-language entails credit-assignment, since a particular conclusion may only be
-reachable through a long sequence of thoughts, calculations or questions.
+the 20th step of a chess game is detrimental, even though we might not actually
+lose the game for another 80 turns. Technically, language entails
+credit-assignment, since a particular conclusion may only be reachable through a
+long sequence of thoughts, calculations or questions.
 
 While many state-of-the-art models are not publicly documented (GPT-4, Gemini,
 etc.) and others are cagey about the details of RLHF #cite(<lieber2021jurassic>),
@@ -95,11 +96,11 @@ Another important shift is that in many practical settings, imitation is enough.
 To reiterate, many natural language tasks do entail credit assignment,
 especially when multi-step, exploratory reasoning is involved #cite(<wei_chain_2022>).
 However, language models inherit a kind of imperfect credit assignment through
-imitation of the humans who wrote their data, and who have somehow acquired the
-ability to perform credit assignment in language by other means. RL provides a
+imitation of the humans who wrote their data, and who already somehow posssess
+the ability to perform credit assignment in their decisions. RL provides a
 framework for learning optimal credit assignment, but this framework does not
-empirically work in realistic language settings. Practitioners will favor an
-unprincipled solution that works to a principled solution that doesn't.
+empirically work in realistic language settings. Of course, an unprincipled
+solution that works is better than a principled solution that doesn't.
 
 === Generalization and Memorization
 Another significant shift in thinking is the attitude toward memorization, once
@@ -146,18 +147,18 @@ especially if they learn through extensive memorization. Instead some period of
 fine-tuning or in-context learning will be necessary to adapt fundamental skills
 acquired from offline data to specific embodiments and settings. Unlike language
 models, which acquire credit-assignment strategies whole-cloth from their source
-data, robots will need to adapt these strategies and learn new ones. This will
-require a framework like RL, capable of evaluating and improving credit
-assignment. #cite(<andrychowicz2020learning>, form: "prose") offer a compelling
-early approach to this problem.
+data, robots will need to adapt these strategies and learn new ones. Some
+framework like RL, capable of evaluating and improving credit assignment, will
+be necessary. #cite(<andrychowicz2020learning>, form: "prose") offer a
+compelling early approach to this problem.
 
 === Credit assignment is necessary for expertise
 Advances in the technologies that power LLMs have been rapid and difficult to
-predict. However, a general trend is to improve the ability of models to imitate
-their sources, not their ability to outperform them by any significant margin.
-As a rule, LLMs do not outperform top experts in any field. This stands in stark
-contrast to agents trained using reinforcement learning which, to date, stand at
-or near the top of their class in several domains including Go #cite(<silver2016mastering>),
+predict. However, a general trend is that they improve the ability of models to
+imitate their sources, not their ability to outperform them by any significant
+margin. As a rule, LLMs do not outperform top experts in any field. This stands
+in stark contrast to agents trained using reinforcement learning which, to date,
+stand at or near the top of their class in several domains including Go #cite(<silver2016mastering>),
 Starcraft #cite(<vinyals2019grandmaster>), and DoTA #cite(<berner2019dota>).
 
 Many areas of expertise entail reasoning or decision-making over multiple steps.
@@ -199,9 +200,9 @@ RL data. Through the incorporation of Algorithm Distillation, we highlight the
 fact that such a model can not only distill the dynamics and policies in the
 source data but also the _learning operator_ of the source algorithm. In the
 final chapter, we argue that such a model can benefit from the idea of value and
-can learn value in a way that generalizes. The broader questions remain ---
-about credit-assignment, generalization, and the challenges of scale. However,
-the community of researchers is vibrant and undaunted, the future of RL
-foundation models is surely promising.
+can learn representations that generalizes. Many questions remain --- about
+credit-assignment, generalization, and the challenges of scale. However, the
+community of researchers is vibrant and undaunted, the future of RL foundation
+models is surely promising.
 
-// #bibliography("main.bib", style: "american-society-of-civil-engineers") 
+#bibliography("main.bib", style: "american-society-of-civil-engineers") 
