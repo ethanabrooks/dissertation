@@ -32,7 +32,7 @@
   target: figure.where(kind: image),
 )
 
-// TODO: abbreviations
+#include "acronyms.typ"
 
 #set page(numbering: "1")
 #counter(page).update(1)

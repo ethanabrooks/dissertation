@@ -155,24 +155,28 @@ $Rew^n_(i-1) Ter^n_(i-1) Obs^n_(i-1) Act^n_i$.
 
 == Downstream Evaluation
 <sec:downstream-evaluation>
-#algorithm-figure({
-  import "algorithmic.typ": *
-  algorithm(..Function(
-    $QValue(History_t, Act)$,
-    State($u gets 1$, comment: "time step for rollout"),
-    State($Act^u gets Act$),
-    ..While("termination condition not met", State(
-      $Rew^u, Ter^u, Obs^(u+1) sim Prob_theta (dot.c|History_t, Act^u)$,
-      comment: "Model reward, termination, next observation",
-      label: <line:model-world>,
-    ), State(
-      $a^(u+1) sim Prob_theta (dot.c|History_t, Rew_t, Ter_t, Obs_(t+1))$,
-      comment: "Model policy",
-      label: <line:model-policy>,
-    ), State($u gets u + 1$, comment: "Append predictions to history.")),
-    Return($sum_(u=0)^t gamma^(u-1) Rew_u$, label: <line:return>),
-  ))
-}, caption: [ Estimating Q-values with monte-carlo rollouts. ]) <alg:downstream-evaluation>
+#algorithm-figure(
+  {
+    import "algorithmic.typ": *
+    algorithm(..Function(
+      $QValue(History_t, Act)$,
+      State($u gets 1$, comment: "time step for rollout"),
+      State($Act^u gets Act$),
+      ..While("termination condition not met", State(
+        $Rew^u, Ter^u, Obs^(u+1) sim Prob_theta (dot.c|History_t, Act^u)$,
+        comment: "Model reward, termination, next observation",
+        label: <line:model-world>,
+      ), State(
+        $a^(u+1) sim Prob_theta (dot.c|History_t, Rew_t, Ter_t, Obs_(t+1))$,
+        comment: "Model policy",
+        label: <line:model-policy>,
+      ), State($u gets u + 1$, comment: "Append predictions to history.")),
+      Return($sum_(u=0)^t gamma^(u-1) Rew_u$, label: <line:return>),
+    ))
+  },
+  caption: [ Estimating Q-values with monte-carlo rollouts. ],
+  placement: top,
+) <alg:downstream-evaluation>
 
 Our approach to choosing actions during the downstream evaluation is as follows.
 For each action $Act$ in a set of candidate actions (either our complete action
@@ -317,21 +321,21 @@ metrics that we record.
 ], placement: top)
 
 #{
-  show figure: it => [
-    #align(center)[#it.body]
-    #set align(left)
-    #pad(x: .5cm)[#it.caption ]
-  ]
-  grid(
-    columns: (auto, auto),
-    [#figure(
-        image("figures/adpp/unseen-goals.png", height: 100pt),
-        caption: [ Evaluation on fully withheld locations. ],
-      ) <fig:unseen-goals>],
-    [#figure(
-        image("figures/adpp/model-accuracy.png", height: 100pt),
-        caption: [Accuracy of model predictions over the course of an evaluation rollout.],
-      ) <fig:model-accuracy>],
+  figure(
+    grid(
+      columns: (auto, auto),
+      column-gutter: 20pt,
+      [#figure(
+          image("figures/adpp/unseen-goals.png", height: 100pt),
+          caption: [ Evaluation on fully withheld locations. ],
+        ) <fig:unseen-goals>],
+      [#figure(
+          image("figures/adpp/model-accuracy.png", height: 100pt),
+          caption: [Accuracy of model predictions over the course of an evaluation rollout.],
+        ) <fig:model-accuracy>],
+    ),
+    placement: bottom,
+    outlined: false,
   )
 }
 
@@ -368,6 +372,7 @@ distill the logic which produced them.
   caption: [
     Generalization to higher percentages of walls.
   ],
+  placement: top,
 ) <fig:generalization-to-more-walls>
 
 ==== Evaluation on Withheld Wall Configurations
@@ -388,6 +393,7 @@ than higher-level abstractions.
   caption: [
     Generalization to higher percentages of walls with guaranteed achievability.
   ],
+  placement: top,
 ) <fig:generalization-to-more-walls-with-guaranteed-achievability>
 
 Because walls are chosen from all possible positions IID, some configurations
@@ -427,6 +433,7 @@ rare events, the model rapidly recovers accuracy near 100%.
     Impact of model error on performance, measured by introducing noise into each
     component of the model's predictions.
   ],
+  placement: top,
 ) <fig:model-noise>
 
 While @fig:model-noise indicates that our model generally achieves high accuracy
@@ -446,6 +453,7 @@ its lower performance in many of the settings previously discussed.
     Impact of policy noise on performance, measured by interpolating policy logits
     with uniform noise.
   ],
+  placement: top,
 )
 
 ==== Data Scaling Properties
@@ -463,7 +471,7 @@ its lower performance in many of the settings previously discussed.
     ],
   )<fig:less-source-data-iid>
 
-], outlined: false)
+], outlined: false, placement: top)
 
 We also examined the impacts of scaling the quantity of data that our model was
 trained on. In figure , we scale the quantity of the training data along the IID
@@ -540,23 +548,27 @@ original Half-Cheetah environment, the agent also receives a control reward that
 penalizes large actions. As @fig:cheetah-dir and @fig:cheetah-vel demonstrate, #ADPP outperforms
 vanilla AD on both domains.
 
-#grid(
-  columns: (auto, auto, auto),
-  [#figure([#box(image("figures/adpp/point-env.png", height: 100pt))], caption: [
-      Evaluation on the "Sparse-Point" environment.
-    ]) <fig:point-env>],
-  [#figure(
-      [#box(image("figures/adpp/cheetah-dir.png", height: 100pt))],
-      caption: [
-        Evaluation on the "Half-Cheetah Direction" domain.
-      ],
-    ) <fig:cheetah-dir>],
-  [#figure(
-      [#box(image("figures/adpp/cheetah-vel.png", height: 100pt))],
-      caption: [
-        Evaluation on the "Half-Cheetah Velocity" domain.
-      ],
-    ) <fig:cheetah-vel>],
+#figure(
+  grid(
+    columns: (auto, auto, auto),
+    [#figure([#box(image("figures/adpp/point-env.png", height: 100pt))], caption: [
+        Evaluation on the "Sparse-Point" environment.
+      ]) <fig:point-env>],
+    [#figure(
+        [#box(image("figures/adpp/cheetah-dir.png", height: 100pt))],
+        caption: [
+          Evaluation on the "Half-Cheetah Direction" domain.
+        ],
+      ) <fig:cheetah-dir>],
+    [#figure(
+        [#box(image("figures/adpp/cheetah-vel.png", height: 100pt))],
+        caption: [
+          Evaluation on the "Half-Cheetah Velocity" domain.
+        ],
+      ) <fig:cheetah-vel>],
+  ),
+  outlined: false,
+  placement: top,
 )
 
 == Conclusion

@@ -6,21 +6,24 @@
     alg-counter.step()
     counter(figure.where(kind: "line-number")).update(0)
     let title = it.caption
-    block(
-      stroke: (y: 1pt),
-      [
-        #block(
-          inset: (bottom: .2em, top: .3em),
-          [*Algorithm #alg-counter.display()*] + { if title != none [*:* #title] },
-        )
-        #v(-1em) // Unfortunately, typst inserts a space here that we have to remove
-        #block(
-          inset: (y: .5em),
-          width: 100%,
-          stroke: (top: .7pt),
-          align(left)[#it.body],
-        )
-      ],
+    figure(
+      block(
+        stroke: (y: 1pt),
+        [
+          #block(
+            inset: (bottom: .2em, top: .3em),
+            [*Algorithm #alg-counter.display()*] + { if title != none [*:* #title] },
+          )
+          #v(-1em) // Unfortunately, typst inserts a space here that we have to remove
+          #block(
+            inset: (y: .5em),
+            width: 100%,
+            stroke: (top: .7pt),
+            align(left)[#it.body],
+          )
+        ],
+      ),
+      placement: it.placement,
     )
   }
   body

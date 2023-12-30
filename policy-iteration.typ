@@ -552,6 +552,7 @@ assert not done`
     This table provides example prompts for each domain, showcasing the text format
     and hints. Hints are in italics.
   ],
+  placement: top,
 )<tab:prompt-format>
 // typstfmt::on
 
@@ -751,6 +752,7 @@ improving the policy before experiencing good trajectories.
     regret (normalized between 0 and 1), computed relative to an optimal
     return with a discount-factor of 0.8. The $x$-axis depicts time-steps
     during training. Error bars are standard errors from four seeds.],
+    placement: top,
 ) <fig:ablations>
 
 === Ablation of ICPI components
@@ -818,6 +820,7 @@ using these models.
     regret (normalized between 0 and 1), computed relative to an optimal
     return with a discount-factor of 0.8. The $x$-axis depicts time-steps of
     training. Error bars are standard errors from four seeds.],
+    placement: top,
 ) <fig:language-models>
 
 

@@ -1,9 +1,10 @@
 = Abstract
 In-Context Learning describes a form of learning that occurs when a model
-accumulates information in its context or memory. For example, an LSTM can
-rapidly adapt to a novel task as input/target exemplars are fed into it. While
-in-context learning of this kind is not a new discovery, recent work has
-demonstrated the capacity of large "foundation" models to acquire this ability
+accumulates information in its context or memory. For example, a Long Short-Term
+Memory unit (LSTM) can rapidly adapt to a novel task as input/target exemplars
+are fed into it. While in-context learning of this kind is not a new discovery,
+recent work has demonstrated the capacity of large "foundation" models to
+acquire this ability
 "for free," by training on large quantities of semi-supervised data, without the
 sophisticated (but often unstable) meta-objectives proposed by many earlier
 papers #cite(<finn2017model>)#cite(<stadie2018some>)#cite(<rakelly2019efficient>).

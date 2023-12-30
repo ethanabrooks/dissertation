@@ -503,11 +503,14 @@ increases.
 
 ==== Does value prediction with a Bellman Update Network mitigate overfitting?
 In the lower half of @fig:root-mean-sq-error, we compare values estimated by the
-Bellman Update Network. As the figure demonstrates, test error continues to
-diminish along with the training error, long after the test error for the $delta_max$ model
-has plateaued. While we observe a slight diminution in performance as the number
-of omitted state-action pairs increases, the gap between train and test remains
-constant.
+Bellman Update Network. Note that the "test" lines in @fig:root-mean-sq-error
+describe error for the _full_ value estimate produced by $delta_max$ steps of
+iteration (following the procedure described in @sec:train-tabular), not the the
+error for a single Bellman update. As the figure demonstrates, test error
+continues to diminish along with the training error, long after the test error
+for the $delta_max$ model has plateaued. While we observe a slight diminution in
+performance as the number of omitted state-action pairs increases, the gap
+between train and test remains constant.
 
 ==== Do values predicted by a Bellman Update Network inform good policies?
 #figure(
