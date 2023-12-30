@@ -498,58 +498,60 @@ Python code to represent these values (examples are available in
 @tab:prompt-format).
 
 // typstfmt::off
-TODO: fix
 #figure(
   {
     set par(leading: 1em)
-    tablex(columns: 2, auto-vlines: false, breakable: true, [*Chain*], [
-      `assert state == 6` _`and state != 4`_\
-      `state = left()
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert reward == 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert not done
-                                                                                                                                                                                                                                                                                                                                                                                                                                          `
-    ], [*Distractor*], [`assert state == (6, 3)` _`and state != (4, 3)`_\
-      `state = left()
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert reward == 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert not done`], [*Maze*], [
-      `assert state == C(i=2, j=1)`
-      _`and state != C(i=1, j=0)`_\
-      `state, reward = left()
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert reward == 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert not done
-                                                                                                                                                                                                                                                                                                                                                                                                                                          `
-    ], [*Mini Catch*], [
-      `assert paddle == C(2, 0)`\
-      _`  and ball == C(0, 4)
-                                                                                                                                                                                                                                                                                                                                                                                                                                            and paddle.x == 2 and ball.x == 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                            and paddle.x > ball.x
-                                                                                                                                                                                                                                                                                                                                                                                                                                            and ball.y == 4`_\
-      `reward = paddle.left()
-                                                                                                                                                                                                                                                                                                                                                                                                                                          ball.descend()
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert reward == 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert not done`
-    ], [*Mini Invaders*], [
-      `assert ship == C(2, 0) and aliens == [C(3, 5), C(1, 5)]`\
-      _`  and (ship.x, aliens[0].x, aliens[1].x) == (2, 3, 1)
-                                                                                                                                                                                                                                                                                                                                                                                                                                            and ship.x < aliens[0].x
-                                                                                                                                                                                                                                                                                                                                                                                                                                            and ship.x > aliens[1].x`_\
-      `ship.left()
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert reward == 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                          for a in aliens:
-                                                                                                                                                                                                                                                                                                                                                                                                                                             a.descend()
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert not done`
-    ], [*Point-Mass*], [
-      `assert pos == -3.45 and vel == 0.00` _`and pos < -2 and vel == 0`_\
-      `pos, vel = decel(pos, vel)
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert reward == 0
-                                                                                                                                                                                                                                                                                                                                                                                                                                          assert not done`
-    ])
-  },
+  tablex(columns: 2, auto-vlines: false, breakable: true,
+  [*Chain*], [
+    `assert state == 6` _`and state != 4`_\
+`state = left()
+assert reward == 0
+assert not done
+`
+  ],
+[*Distractor*], [`assert state == (6, 3)` _`and state != (4, 3)`_\
+`state = left()
+assert reward == 0
+assert not done`],
+[*Maze*], [
+  `assert state == C(i=2, j=1)`
+    _`and state != C(i=1, j=0)`_\
+`state, reward = left()
+assert reward == 0
+assert not done
+`
+],
+[*Mini Catch*], [
+`assert paddle == C(2, 0)`\
+_`  and ball == C(0, 4)
+  and paddle.x == 2 and ball.x == 0
+  and paddle.x > ball.x
+  and ball.y == 4`_\
+`reward = paddle.left()
+ball.descend()
+assert reward == 0
+assert not done`
+], [*Mini Invaders*], [
+  `assert ship == C(2, 0) and aliens == [C(3, 5), C(1, 5)]`\
+_`  and (ship.x, aliens[0].x, aliens[1].x) == (2, 3, 1)
+  and ship.x < aliens[0].x
+  and ship.x > aliens[1].x`_\
+`ship.left()
+assert reward == 0
+for a in aliens:
+   a.descend()
+assert not done`
+], [*Point-Mass*], [
+`assert pos == -3.45 and vel == 0.00` _`and pos < -2 and vel == 0`_\
+`pos, vel = decel(pos, vel)
+assert reward == 0
+assert not done`
+ ]
+   )},
   caption: [
     This table provides example prompts for each domain, showcasing the text format
     and hints. Hints are in italics.
   ],
-  placement: top,
 )<tab:prompt-format>
 // typstfmt::on
 
