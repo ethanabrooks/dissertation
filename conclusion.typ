@@ -204,8 +204,8 @@ can learn representations that generalizes.
 
 The broader questions remain --- about credit-assignment, generalization, and
 the challenges of scale. However, given the history and magnitude of innovations
-in this vibrant community of research, we confidently anticipate revolutionary
-developments in the science of RL foundation models.
+in this vibrant community of research, we can be sure that revolutionary
+developments in the science of RL foundation models are still to come.
 
 // == Dummy <sec:introduction>
 // #bibliography("main.bib", style: "american-society-of-civil-engineers") 

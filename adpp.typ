@@ -140,7 +140,7 @@ Given such a dataset, we may train a world-model with a negative log likelihood
 
 $ Loss_theta := -sum_(n=1)^N sum_(t=1)^(T-1) log Prob_theta (Act^n_t |
 History^n_t) + log Prob_theta (Rew^n_t, Ter^n_t, Obs^n_(t+1) | History^n_t,
-Act^n_t) $
+Act^n_t) $ <eq:loss-adpp>
 
 In this work we implement $Prob_theta$ as a causal transformer. For
 action-prediction $Prob_theta (Act^n_t |History^n_t) $, the inputs comprise
@@ -154,7 +154,7 @@ corresponds to
 $Rew^n_(i-1) Ter^n_(i-1) Obs^n_(i-1) Act^n_i$.
 
 == Downstream Evaluation
-<downstream-evaluation>
+<sec:downstream-evaluation>
 #algorithm-figure({
   import "algorithmic.typ": *
   algorithm(..Function(
@@ -197,7 +197,7 @@ action with the highest value estimate:
 $arg max_(Act in Actions) QValue(History_t, Act)$.
 
 == Policy improvement
-<policy-improvement>
+<sec:policy-improvement>
 If the downstream task is sufficiently dissimilar to the tasks in the training
 dataset, or if the training dataset does not contain optimal policies, then it
 is unlikely that the procedure described above will initially yield an optimal
@@ -242,6 +242,38 @@ the input policy
 $Policy_n$. Then $V^(Policy_(n+1)) >= V^(Policy'_n) >= V^(Policy_n)$. Therefore
 each step of improvement actually superimposes the two improvement operators,
 one from the $arg max$ operator, the other from AD.
+
+=== Extension to Continuous Actions <sec:continuous-actions>
+When evaluating #ADPP on continuous action domains, the formulation we have
+described must be modified, since it is not possible to iterate over the action
+space. Instead, we sample a fixed number of actions from $Prob_theta (dot.c|History_t, Rew_t, Ter_t, Obs_(t+1))$ and
+for each sampled action, perform a rollout per @alg:downstream-evaluation. This
+step does not preserve the policy improvement guarantees
+(@sec:policy-improvement), but works well enough in practice.
+
+=== Beam search <sec:beam-search>
+The algorithm that we have described can be further augmented with beam Search,
+similar to #cite(<janner2021sequence>, form: "prose"). While this proved useful
+in only one of the domains that we evaluated, we describe it here for the sake
+of completeness. Using beam search requires learning a value function which is
+used for pruning the tree. We augment @eq:loss-adpp with the following term:
+
+$ Loss'_theta := Loss_theta + sum_(n=1)^N sum_(t=1)^(T-1) log Prob_theta (sum_(u=t)^T gamma^(T-u) Rew_u | History^n_t) $
+
+When conditioning $History^n_t$, the model $Prob_theta$ outputs two predictions,
+one corresponding to the next action, the other corresponding to the value of
+the current state. For the latter, we use the discounted cumulative sum of
+empirical reward as a target.
+
+The procedure for estimating value with beam search is as follows. On each step
+of the rollout procedure described in @alg:downstream-evaluation, we sample $N$ actions
+(instead of just one per rollout). Instead of a series of parallel chains, as in
+the original algorithm, this procedure would result in an expanding tree with
+arity $N$. For computational tractability, we therefore rank the paths by value
+(as estimated by $Prob_theta$) and discard the bottom $(N - 1) / N$ so that the
+number of active pathways per rollout step does not increase. Ranking is
+performed across all rollouts, so all the descendants of a given node may
+eventually be pruned.
 
 == Experiments
 <experiments>
@@ -446,21 +478,85 @@ method outperforms AD in all data regimes.
 
 === Continuous-State and Continuous-Action Domains
 Finally, we evaluate the ability of #ADPP to learn in domains with continuous
-states and actions. Note that continuous action spaces require an adjustment to
-the traditional policy iteration formulation, which iterates over all actions in
-the action space.
+states and actions. In order to adapt #ADPP to infinitely large action spaces,
+we use the sampling technique described in @sec:continuous-actions. In the
+experiments that follow, the number of actions sampled at the beginning of the
+rollouts is 128.
+
+==== Sparse Point Environment
+In the "Sparse Point" environment, a point spawns randomly on a half circle. The
+agent does not observe the point and has to discover it through exploration. The
+agent receives reward for occupying coordinates within a fixed radius of the
+goal. The agent's observation space consists of 2d position coordinates and its
+action space consists of 2d position deltas. The Sparse Point environment tests
+the ability of the agent to explore efficiently, since an agent that
+concentrates its exploration on the half-circle will significantly outperform
+one that explores all positions with equal probability.
+
+As @fig:point-env demonstrates, vanilla AD fares quite poorly in this setting.
+Of the 20 seeds in the diagram, only two discover the goal and only one returns
+to it consistently. The AD agent either explores randomly in vicinity of the
+origin --- emulating policies observed early in the source data --- or commits
+arbitrarily to a point on the arc and remains in its vicinity --- emulating
+later policies, but ignoring the lack of experienced reward. The Sparse Point
+environment highlights a weakness in vanilla AD. During training, the source
+algorithm --- which uses one agent per task --- can memorize the location of the
+goal. It therefore never exhibits Bayes-optimal exploration patterns for AD to
+imitate.
+
+Why should we expect #ADPP to perform better? For the same reasons that cause
+vanilla AD to fail, we should not expect the simulated rollouts to perform
+Bayes-optimal exploration. However, before the model experiences reward, its
+reward predictions will reflect the prior, which has support on the semi-circle
+and nowhere else. If the model anticipates reward anywhere in the environment,
+it should only do so on the semi-circle, given the distribution of reward in the
+training data. Therefore any rollouts that do not lead to the semi-circle should
+result in a simulation of zero cumulative reward.
+
+In order for #ADPP to recover Bayes optimal exploration in the Sparse Point
+environment, two random events must co-occur: some of the rollouts must lead to
+the semi-circle, and the model must anticipate reward there, without having
+necessarily experienced it. In practice, this does not happen consistently. The
+rollout policy often degenerates into random dithering and the reward model
+often predicts no reward at all. We found that the key to eliciting consistent
+performance from #ADPP was to perform beam-search as described in
+@sec:beam-search. This effectively increases the opportunities for rollouts to
+lead to the arc and for the reward model to anticipate reward there. For
+example, the pruning path can entirely prune paths that do not lead to the arc,
+while those that do benefit from node-expansion. As @fig:point-env demonstrates,
+both beam-search methods significantly outperform vanilla AD and #ADPP.
+
+==== Half-Cheetah Environments
+
+In our final set of environments, we explore two variants on the well-known
+Mujoco "Half-Cheetah" environment. This environment uses a 2D two-legged
+embodiment. In order to instantiate a multi-task problem, we vary the reward
+function: for the "Half-Cheetah Direction" environment, we instantiate two
+tasks, one which rewards the agent for forward movement of the Cheetah and one
+that rewards it for backward movement. For the "Half-Cheetah Velocity"
+environment, we choose a target velocity per task. The agent receives a reward
+penalty for the difference between its current velocity and the target. Per the
+original Half-Cheetah environment, the agent also receives a control reward that
+penalizes large actions. As @fig:cheetah-dir and @fig:cheetah-vel demonstrate, #ADPP outperforms
+vanilla AD on both domains.
 
 #grid(
   columns: (auto, auto, auto),
-  [#figure([#box(image("figures/adpp/point-env.png"))], caption: [
+  [#figure([#box(image("figures/adpp/point-env.png", height: 100pt))], caption: [
       Evaluation on the "Sparse-Point" environment.
     ]) <fig:point-env>],
-  [#figure([#box(image("figures/adpp/cheetah-dir.png"))], caption: [
-      Evaluation on the "Half-Cheetah Direction" domain.
-    ]) <fig:cheetah-dir>],
-  [#figure([#box(image("figures/adpp/cheetah-vel.png"))], caption: [
-      Evaluation on the "Half-Cheetah Velocity" domain.
-    ]) <fig:cheetah-vel>],
+  [#figure(
+      [#box(image("figures/adpp/cheetah-dir.png", height: 100pt))],
+      caption: [
+        Evaluation on the "Half-Cheetah Direction" domain.
+      ],
+    ) <fig:cheetah-dir>],
+  [#figure(
+      [#box(image("figures/adpp/cheetah-vel.png", height: 100pt))],
+      caption: [
+        Evaluation on the "Half-Cheetah Velocity" domain.
+      ],
+    ) <fig:cheetah-vel>],
 )
 
 == Conclusion
@@ -473,7 +569,7 @@ this method on more complex domains, especially those involving simulated
 robotics. We also intend to evaluate more baselines, especially those from the
 traditional meta-learning literature like RL$""^2$ #cite(<duan_rl2_2016>).
 
-= Dummy <chap:pi>
-== Dummy <sec:model-based-planning>
-== Dummy <sec:markov-decision-processes>
-#bibliography("main.bib", style: "american-society-of-civil-engineers")
+// = Dummy <chap:pi>
+// == Dummy <sec:model-based-planning>
+// == Dummy <sec:markov-decision-processes>
+// #bibliography("main.bib", style: "american-society-of-civil-engineers")
