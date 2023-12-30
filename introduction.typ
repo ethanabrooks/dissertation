@@ -120,16 +120,15 @@ details of our methods to later chapters, but offer a cursory sketch at this
 point.
 
 === Value Estimation
-Using offline data, we train a model to make context-conditional predictions,
-which we use to somehow estimate state-action values [TODO: "You are not
-training GPT. Get rid of somehow"]. This stage of training involves standard
-gradient-based optimization and is analogous to outer-loop optimization in a
-traditional meta-learning algorithm. The inputs to the model contain information
-relating to the environment dynamics, the reward function, and the current
-policy --- the parameters of a value estimate --- and we train the model to
-condition its predictions on this information. We explore various techniques to
-encourage the model to attend to this context (in-context learning) as opposed
-to resorting to priors encoded in its weights (in-weights learning). #cite(<chan2022data>, form: "prose") provides
+We use a model trained on offline data to make context-conditional predictions,
+that we use to estimate state-action values. This stage of training involves
+standard gradient-based optimization and is analogous to outer-loop optimization
+in a traditional meta-learning algorithm. The inputs to the model contain
+information relating to the environment dynamics, the reward function, and the
+current policy --- the parameters of a value estimate --- and we train the model
+to condition its predictions on this information. We explore various techniques
+to encourage the model to attend to this context (in-context learning) as
+opposed to resorting to priors encoded in its weights (in-weights learning). #cite(<chan2022data>, form: "prose") provides
 further discussion of this distinction. The model will then demonstrate some
 capability to generalize its predictions to unseen downstream settings, as long
 as those settings are adequately represented in the inputs and these inputs are

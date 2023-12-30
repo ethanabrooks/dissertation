@@ -237,10 +237,9 @@ normally distributed with fixed standard deviation.
 Here we describe a practical procedure for computing values to serve as inputs
 and targets to the network, and for training the network. For all values of $k$ greater
 than 1, we must choose between using inaccurate bootstrap values or adopting a
-curriculum, which introduces challenges of non-stationarity. We adopt the latter
-approach, in order to maximize the correctness of the values that we train with,
-as training times already tend to run long with Bellman Update Networks. TODO:
-the reason is actually more principled than this.
+curriculum. Each approach introduces a different form of non-stationarity into
+the training procedure. We favor the latter, since it avoids training the
+network on targets before they are mostly accurate.
 
 Our curriculum initially trains
 $QValue_1$ bootstrapped from $QValue_0$, which we set to *$0$*. We proceed

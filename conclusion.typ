@@ -107,10 +107,10 @@ thought to be synonymous with generalization. Classical frameworks like the
 bias-variance tradeoff #cite(<franklin2005elements>) imply that modeling noise
 will lead to overfitting --- failure to generalize from training data to
 out-of-distribution test data --- and that regularization of some kind or
-truncation of training is necessary to prevent this. However, an extensive
-literature has documented the mismatch between these predictions and empirical
-reality #cites(<zhang2021understanding>, <brown2021memorization>) TODO: find one
-more. Some work has also presented theoretical frameworks for understanding this
+truncation of training is necessary to prevent this. However, several
+publications have documented the mismatch between these predictions and
+empirical reality #cites(<zhang2021understanding>, <brown2021memorization>).
+Some work has also presented theoretical frameworks for understanding this
 mismatch #cite(<feldman2020does>).
 
 In general, there has been a movement away from classical regularization
