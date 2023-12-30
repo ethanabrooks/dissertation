@@ -192,14 +192,14 @@ and critique its own outputs, rather than using policy iteration as our method
 does.
 
 == Background
-<background>
+<sec:background>
 ==== Markov Decision Processes
-<markov-decision-processes>
-A Markov Decision Process \(MDP) is a problem formulation in which an agent
+<sec:markov-decision-processes>
+A Markov Decision Process (MDP) is a problem formulation in which an agent
 interacts with an environment through actions, receiving rewards for each
 interaction. Each action transitions the environment from some state to some
 other state and the agent is provided observations which depend on this state
-\(and from which the state can usually be inferred). MDPs can be "fully" or "partially"
+(and from which the state can usually be inferred). MDPs can be "fully" or "partially"
 observed. A fully observed MDP is defined by the property that the distribution
 for each transition and reward is fully conditioned on the current observation.
 In a partially observed MDP, the distribution depends on history — some
@@ -216,6 +216,21 @@ Planning describes a class of approaches to reinforcement learning which use a
 model to choose actions. These approaches vary widely, but most take advantage
 of the fact that an accurate model enables the agent to anticipate the
 consequences of an action before taking it in the environment.
+
+==== Policy Iteration
+<sec:policy-iteration>
+
+Policy iteration is a technique for improving a policy in which one estimates
+the values for the current policy and then chooses actions greedily with respect
+to these value estimates. This yields a new policy which is at least as good as
+the original policy according to the policy improvement theorem \(assuming that
+the value estimates are correct). This process may be repeated indefinitely
+until convergence. To choose actions greedily with respect to the value
+estimates, there must be some mechanism for estimating value conditioned not
+only on the current state and policy but also on an arbitrary action. The "greedy"
+action choice corresponds to the action with the highest value estimate. Policy
+iteration is possible if our value estimates are unbiased for any state-action
+pair and for the current policy.
 
 #let formatAction = (s) => text(fill: blue)[#s]
 #let formatReward = (s) => text(fill: orange)[#s]
@@ -488,44 +503,44 @@ TODO: fix
     tablex(columns: 2, auto-vlines: false, breakable: true, [*Chain*], [
       `assert state == 6` _`and state != 4`_\
       `state = left()
-                                                                                                                                                                                                                                                                                                                                    assert reward == 0
-                                                                                                                                                                                                                                                                                                                                    assert not done
-                                                                                                                                                                                                                                                                                                                                    `
+                                                                                                                                                                                                                                                                                                                                                                                                assert reward == 0
+                                                                                                                                                                                                                                                                                                                                                                                                assert not done
+                                                                                                                                                                                                                                                                                                                                                                                                `
     ], [*Distractor*], [`assert state == (6, 3)` _`and state != (4, 3)`_\
       `state = left()
-                                                                                                                                                                                                                                                                                                                                    assert reward == 0
-                                                                                                                                                                                                                                                                                                                                    assert not done`], [*Maze*], [
+                                                                                                                                                                                                                                                                                                                                                                                                assert reward == 0
+                                                                                                                                                                                                                                                                                                                                                                                                assert not done`], [*Maze*], [
       `assert state == C(i=2, j=1)`
       _`and state != C(i=1, j=0)`_\
       `state, reward = left()
-                                                                                                                                                                                                                                                                                                                                    assert reward == 0
-                                                                                                                                                                                                                                                                                                                                    assert not done
-                                                                                                                                                                                                                                                                                                                                    `
+                                                                                                                                                                                                                                                                                                                                                                                                assert reward == 0
+                                                                                                                                                                                                                                                                                                                                                                                                assert not done
+                                                                                                                                                                                                                                                                                                                                                                                                `
     ], [*Mini Catch*], [
       `assert paddle == C(2, 0)`\
       _`  and ball == C(0, 4)
-                                                                                                                                                                                                                                                                                                                                      and paddle.x == 2 and ball.x == 0
-                                                                                                                                                                                                                                                                                                                                      and paddle.x > ball.x
-                                                                                                                                                                                                                                                                                                                                      and ball.y == 4`_\
+                                                                                                                                                                                                                                                                                                                                                                                                  and paddle.x == 2 and ball.x == 0
+                                                                                                                                                                                                                                                                                                                                                                                                  and paddle.x > ball.x
+                                                                                                                                                                                                                                                                                                                                                                                                  and ball.y == 4`_\
       `reward = paddle.left()
-                                                                                                                                                                                                                                                                                                                                    ball.descend()
-                                                                                                                                                                                                                                                                                                                                    assert reward == 0
-                                                                                                                                                                                                                                                                                                                                    assert not done`
+                                                                                                                                                                                                                                                                                                                                                                                                ball.descend()
+                                                                                                                                                                                                                                                                                                                                                                                                assert reward == 0
+                                                                                                                                                                                                                                                                                                                                                                                                assert not done`
     ], [*Mini Invaders*], [
       `assert ship == C(2, 0) and aliens == [C(3, 5), C(1, 5)]`\
       _`  and (ship.x, aliens[0].x, aliens[1].x) == (2, 3, 1)
-                                                                                                                                                                                                                                                                                                                                      and ship.x < aliens[0].x
-                                                                                                                                                                                                                                                                                                                                      and ship.x > aliens[1].x`_\
+                                                                                                                                                                                                                                                                                                                                                                                                  and ship.x < aliens[0].x
+                                                                                                                                                                                                                                                                                                                                                                                                  and ship.x > aliens[1].x`_\
       `ship.left()
-                                                                                                                                                                                                                                                                                                                                    assert reward == 0
-                                                                                                                                                                                                                                                                                                                                    for a in aliens:
-                                                                                                                                                                                                                                                                                                                                       a.descend()
-                                                                                                                                                                                                                                                                                                                                    assert not done`
+                                                                                                                                                                                                                                                                                                                                                                                                assert reward == 0
+                                                                                                                                                                                                                                                                                                                                                                                                for a in aliens:
+                                                                                                                                                                                                                                                                                                                                                                                                   a.descend()
+                                                                                                                                                                                                                                                                                                                                                                                                assert not done`
     ], [*Point-Mass*], [
       `assert pos == -3.45 and vel == 0.00` _`and pos < -2 and vel == 0`_\
       `pos, vel = decel(pos, vel)
-                                                                                                                                                                                                                                                                                                                                    assert reward == 0
-                                                                                                                                                                                                                                                                                                                                    assert not done`
+                                                                                                                                                                                                                                                                                                                                                                                                assert reward == 0
+                                                                                                                                                                                                                                                                                                                                                                                                assert not done`
     ])
   },
   caption: [
@@ -817,4 +832,4 @@ powerful.
 
 
 
-#bibliography("main.bib", style: "american-society-of-civil-engineers")
+// #bibliography("main.bib", style: "american-society-of-civil-engineers")

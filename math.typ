@@ -1,7 +1,7 @@
 #let gets = $arrow.l$
 #let sim = $tilde.op$
 
-#let ADPP = "ADPP"
+#let ADPP = "AD++"
 #let ADPP-full-name = "Algorithm Distillation ++"
 #let Act = $a$
 #let Actions = $cal(A)$

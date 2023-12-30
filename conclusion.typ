@@ -1,7 +1,6 @@
 #import "style.typ": cites
 
 #set heading(numbering: "1.1")
-== Dummy <sec:introduction>
 = Conclusion
 
 Since beginning of this work, the science of artificial intelligence has
@@ -205,7 +204,8 @@ can learn representations that generalizes.
 
 The broader questions remain --- about credit-assignment, generalization, and
 the challenges of scale. However, given the history and magnitude of innovations
-in this vibrant community of researchers, we confidently anticipate
-revolutionary developments in the science of RL foundation models.
+in this vibrant community of research, we confidently anticipate revolutionary
+developments in the science of RL foundation models.
 
-#bibliography("main.bib", style: "american-society-of-civil-engineers") 
+// == Dummy <sec:introduction>
+// #bibliography("main.bib", style: "american-society-of-civil-engineers") 
