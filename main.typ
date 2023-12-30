@@ -20,9 +20,7 @@
 
 #lorem(80)
 
-= Acknowledgements
-
-#lorem(80)
+#include "acknowledgements.typ"
 
 #outline(
   title: [#formatHeader(body: "Table of Contents")],
@@ -33,8 +31,6 @@
   title: [#formatHeader(body: "List of Figures")],
   target: figure.where(kind: image),
 )
-
-#set heading(numbering: "1.1", supplement: "Chapter")
 #set page(numbering: "1")
 #counter(page).update(1)
 

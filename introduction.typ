@@ -1,4 +1,4 @@
-= Introduction
+= Introduction <sec:introduction>
 
 == The Importance of Rapid Adaptation
 Deep neural networks optimized by gradient descent have shown strong empirical
@@ -36,8 +36,8 @@ In general, meta-learning algorithms have a hierarchical structure in which an
 _inner-loop_ optimizes performance on a specific task and an _outer-loop_
 optimizes the learning procedure of the inner-loop. Some approaches use gradient
 updates for both levels #cite(<finn2017model>)#cite(<stadie2018some>), while
-others others use gradients only for the outer-loop and train some kind of
-learned update rule for the inner-loop.
+others use gradients only for the outer-loop and train some kind of learned
+update rule for the inner-loop.
 
 == In-Context Learning
 A common approach to learning an update rule involves learning some latent
@@ -120,20 +120,20 @@ details of our methods to later chapters, but offer a cursory sketch at this
 point.
 
 === Value Estimation
-Using some dataset, we train a model to make context-conditional predictions,
-which we use to somehow estimate state-action values. This stage of training
-involves standard gradient-based optimization and is analogous to outer-loop
-optimization in a traditional meta-learning algorithm. The inputs to the model
-contain information relating to the environment dynamics, the reward function,
-and the current policy --- the parameters of a value estimate --- and we train
-the model to condition its predictions on this information. We explore various
-techniques to encourage the model to attend to this context (in-context
-learning) as opposed to resorting to priors encoded in its weights (in-weights
-learning). #cite(<chan2022data>) provides further discussion of this
-distinction. The model will then demonstrate some capability to generalize its
-predictions to unseen downstream settings, as long as those settings are
-adequately represented in the inputs and these inputs are similarly distributed
-to the inputs in the training dataset.
+Using offline data, we train a model to make context-conditional predictions,
+which we use to somehow estimate state-action values [TODO: "You are not
+training GPT. Get rid of somehow"]. This stage of training involves standard
+gradient-based optimization and is analogous to outer-loop optimization in a
+traditional meta-learning algorithm. The inputs to the model contain information
+relating to the environment dynamics, the reward function, and the current
+policy --- the parameters of a value estimate --- and we train the model to
+condition its predictions on this information. We explore various techniques to
+encourage the model to attend to this context (in-context learning) as opposed
+to resorting to priors encoded in its weights (in-weights learning). #cite(<chan2022data>, form: "prose") provides
+further discussion of this distinction. The model will then demonstrate some
+capability to generalize its predictions to unseen downstream settings, as long
+as those settings are adequately represented in the inputs and these inputs are
+similarly distributed to the inputs in the training dataset.
 
 === Policy Improvement
 We target a meta-RL setting in which the agent is unable to perform optimally at
@@ -160,14 +160,14 @@ action selection strategy will produce an improvement cycle.
 == Summary of Chapters
 === In-Context Policy Iteration
 Our first chapter explores a method that bootstraps a pre-existing large
-language model (Codex, #cite(<chen2021evaluating>)) to produce value estimates.
-This work restricts itself to a set of toy domains that can be translated into
-text. Instead of predicting value directly, a form of quantitative reasoning
-that would strain the capabilities of a language model, our method uses
-simulated rollouts to generate monte-carlo estimations of value, similar to
-Model-Predictive Control #cite(<pan2022model>). The work presents a series of
-prompting techniques for eliciting these predictions from a pre-trained language
-model.
+language model --- Codex #cite(<chen2021evaluating>) --- to produce value
+estimates. This work restricts itself to a set of toy domains that can be
+translated into text. Instead of predicting value directly, a form of
+quantitative reasoning that would strain the capabilities of a language model,
+our method uses simulated rollouts to generate monte-carlo estimations of value,
+similar to Model-Predictive Control #cite(<pan2022model>). The work presents a
+series of prompting techniques for eliciting these predictions from a
+pre-trained language model.
 
 Continuing our analogy to traditional meta-learning, the outer-loop corresponds
 to the pretraining of Codex. Of the three methods that we present in this work,

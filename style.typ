@@ -24,7 +24,7 @@
   set page(margin: (x: 1in))
   set align(center)
   set text(font: "New Computer Modern")
-
+  set heading(numbering: "1.1")
   show heading.where(level: 1): it => pagebreak(weak: true) + formatHeader(body: it)
   show figure: it => box[
     #it.body

@@ -1,8 +1,6 @@
 #import "style.typ": cites
 
 #set heading(numbering: "1.1")
-= Dummy <sec:introduction>
-
 = Conclusion
 
 Since beginning of this work, the science of artificial intelligence has
@@ -205,4 +203,4 @@ credit-assignment, generalization, and the challenges of scale. However, the
 community of researchers is vibrant and undaunted, the future of RL foundation
 models is surely promising.
 
-#bibliography("main.bib", style: "american-society-of-civil-engineers") 
+// #bibliography("main.bib", style: "american-society-of-civil-engineers") 

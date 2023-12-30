@@ -508,8 +508,8 @@ performance in many of the settings previously discussed.
 #figure(
   [#box(image("figures/adpp/policy-noise-timestep.png"))],
   caption: [
-    Impact of model error on performance, measured by introducing noise into each
-    component of the model's predictions.
+    Impact of policy noise on performance, measured by interpolating policy logits
+    with uniform noise.
   ],
 )
 
@@ -529,9 +529,7 @@ performance in many of the settings previously discussed.
     ],
   )
 
-], caption: [
-  Impact of scaling the length of training of the source algorithm.
-])
+], outlined: false)
 
 Finally, we examined the impacts of scaling the quantity of data that our model
 was trained on. In figure , we scale the quantity of the training data along the

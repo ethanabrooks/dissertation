@@ -21,11 +21,16 @@ the case of large pre-trained models (or "foundation models") is that the models
 are not directly trained to optimize a meta-learning objective, but demonstrate
 an emergent capacity to generalize (or at least specialize) to diverse
 downstream task-distributions
-#cites(<lu_pretrained_2021>, <brown_language_2020>, <chan_data_2022>).
-#cites(<brown_language_2020>, <wei_emergent_2022>). A litany of existing work
+#cites(
+  <lu_pretrained_2021>,
+  <brown_language_2020>,
+  <chan_data_2022>,
+  <wei_emergent_2022>,
+).
+A litany of existing work
 has explored methods for applying this remarkable capability to downstream tasks
 (see @sec:related), including Reinforcement Learning (RL). Most work in this
-area either (1) assumes access to expert demonstrations---collected either from
+area either (1) assumes access to expert demonstrations --- collected either from
 human experts
 #cites(<huang_language_2022>, <baker_video_2022>), or domain-specific
 pre-trained RL agents
@@ -35,7 +40,7 @@ pre-trained RL agents
   <janner_offline_2021>,
   <reed_generalist_2022>,
   <xu_prompting_2022>,
-).---or (2) relies on gradient-based methods---e.g. fine-tuning of the
+) --- or (2) relies on gradient-based methods --- e.g. fine-tuning of the
 foundation models parameters as a whole
 #cites(<lee_multi-game_2022>, <reed_generalist_2022>, <baker_video_2022>) or
 newly training an adapter layer or prefix vectors while keeping the original
@@ -51,11 +56,11 @@ Furthermore, the use of policy iteration frees us from expert demonstrations
 because suboptimal prompts can be improved over the course of training.
 
 We illustrate the algorithm empirically on six small illustrative RL
-tasks---_chain, distractor-chain, maze, mini-catch, mini-invaders_, and
-_point-mass_---in which the algorithm very quickly finds good policies. We also
+tasks --- _chain, distractor-chain, maze, mini-catch, mini-invaders_, and
+_point-mass_ --- in which the algorithm very quickly finds good policies. We also
 compare five pretrained Large Language Models (LLMs), including two different
-size models trained on natural language---OPT-30B and GPT-J---and three
-different sizes of a model trained on program code---two sizes of Codex as well
+size models trained on natural language --- OPT-30B and GPT-J --- and three
+different sizes of a model trained on program code --- two sizes of Codex as well
 as InCoder. On our six domains, we find that only the largest model (the
 `code-davinci-001` variant of Codex) consistently demonstrates learning.
 
@@ -66,8 +71,8 @@ as InCoder. On our six domains, we find that only the largest model (the
     rollout by alternately predicting transitions and selecting actions. Q-value
     estimates are discounted sums of rewards. The action is chosen greedily with
     respect to Q-values. Both state/reward prediction and next action selection use
-    trajectories from // $\Buffer$
-    to create prompts for the LLM. Changes to the content of // $\Buffer$
+    trajectories from $Buffer$
+    to create prompts for the LLM. Changes to the content of $Buffer$
     change the prompts that the LLM receives, allowing the model to improve its
     behavior over time.
   ],
@@ -84,7 +89,7 @@ language input, for example natural language instructions/goals
   <majumdar_improving_2020>,
   <ammanabrolu_learning_2021>,
 ). Another approach encodes RL trajectories into token sequences, and processes
-them with a foundation model, model representations as input to deep RL
+them with a foundation model, and passes the model outputs to deep RL
 architectures
 #cites(<li_pre-trained_2022>, <tarasov_prompts_2022>, <tam_semantic_2022>).
 Finally, a recent set of approaches (which we will focus on in this Related Work
@@ -101,89 +106,86 @@ finetuning), and context manipulation (in-context learning).
 === Learning from demonstrations
 Many recent sequence-based approaches to reinforcement learning use
 demonstrations that come either from human experts or pretrained RL agents. For
-example, #cite(<huang_language_2022>) use a frozen LLM as a planner for everyday
+example, #cite(<huang_language_2022>, form: "prose") use a frozen LLM as a planner for everyday
 household tasks by constructing a prefix from human-generated task instructions,
 and then using the LLM to generate instructions for new tasks. This work is
-extended by #cite(<huang_inner_2022>). Similarly,
-#cite(<ahn_as_2022>) use a value function that is trained on human
+extended by #cite(<huang_inner_2022>, form: "prose"). Similarly,
+#cite(<ahn_as_2022>, form: "prose") use a value function that is trained on human
 demonstrations to rank candidate actions produced by an LLM.
-#cite(<baker_video_2022>) use human demonstrations to train the foundation model
+#cite(<baker_video_2022>, form: "prose") use human demonstrations to train the foundation model
 itself: they use video recordings of human Minecraft players to train a
-foundation models that plays Minecraft. Works that rely on pretrained RL agents
-include #cite(<janner_offline_2021>) who train a "Trajectory Transformer" to
+foundation model to play Minecraft. Works that rely on pretrained RL agents
+include #cite(<janner_offline_2021>, form: "prose") who train a "Trajectory Transformer" to
 predict trajectory sequences in continuous control tasks by using trajectories
-generated by pretrained agents, and #cite(<chen_decision_2021>), who use a
+generated by pretrained agents, and #cite(<chen_decision_2021>, form: "prose"), who use a
 dataset of offline trajectories to train a "Decision Transformer" that predicts
 actions from state-action-reward sequences in RL environments like Atari. Two
 approaches build on this method to improve generalization:
-#cite(<lee_multi-game_2022>) use trajectories generated by a DQN agent to train
+#cite(<lee_multi-game_2022>, form: "prose") use trajectories generated by a DQN agent to train
 a single Decision Transformer that can play many Atari games, and
-#cite(<xu_prompting_2022>) use a combination of human and artificial
+#cite(<xu_prompting_2022>, form: "prose") use a combination of human and artificial
 trajectories to train a Decision Transformer that achieves few-shot
-generalization on continuous control tasks. #cite(<reed_generalist_2022>) take
+generalization on continuous control tasks. #cite(<reed_generalist_2022>, form: "prose") take
 task-generality a step farther and use datasets generated by pretrained agents
 to train a multi-modal agent that performs a wide array of RL (e.g. Atari,
 continuous control) and non-RL (e.g. image captioning, chat) tasks.
 
 Some of the above works include non-expert demonstrations as well.
-#cite(<chen_decision_2021>) include experiments with trajectories generated by
-random (as opposed to expert) policies. #cite(<lee_multi-game_2022>) and
-#cite(<xu_prompting_2022>) also use datasets that include trajectories generated
+#cite(<chen_decision_2021>, form: "prose") include experiments with trajectories generated by
+random (as opposed to expert) policies. #cite(<lee_multi-game_2022>, form: "prose") and
+#cite(<xu_prompting_2022>, form: "prose") also use datasets that include trajectories generated
 by partially trained agents in addition to fully trained agents. Like these
 works, our proposed method (ICPI) does not rely on expert demonstrations---but
 we note two key differences between our approach and existing approaches.
 Firstly, ICPI only consumes self-generated trajectories, so it does not require
-any demonstrations (like #cite(<chen_decision_2021>) with random trajectories,
-but unlike #cite(<lee_multi-game_2022>), #cite(<xu_prompting_2022>), and the
+any demonstrations (like #cite(<chen_decision_2021>, form: "prose") with random trajectories,
+but unlike #cite(<lee_multi-game_2022>, form: "prose"), #cite(<xu_prompting_2022>, form: "prose"), and the
 other approaches reviewed above). Secondly, ICPI relies primarily on in-context
 learning rather than in-weights learning to achieve generalization (like
-#cite(<xu_prompting_2022>), but unlike #cite(<chen_decision_2021>) \&
-#cite(<lee_multi-game_2022>)). For discussion about in-weights vs. in-context
-learning see #cite(<chan_data_2022>).
+#cite(<xu_prompting_2022>, form: "prose"), but unlike #cite(<chen_decision_2021>, form: "prose") \&
+#cite(<lee_multi-game_2022>, form: "prose")). For discussion about in-weights vs. in-context
+learning see #cite(<chan_data_2022>, form: "prose").
 
 === Gradient-based training \& finetuning on RL tasks
 Many approaches that use foundation models for RL involve specifically training
 or fine-tuning on RL tasks. For example,
-
-#cites(
-  <janner_offline_2021>,
-  <chen_decision_2021>,
-  <lee_multi-game_2022>,
-  <xu_prompting_2022>,
-  <baker_video_2022>,
-  <reed_generalist_2022>,
-)
+#cite(<janner_offline_2021>, form: "prose"), #cite(<chen_decision_2021>, form: "prose"),
+#cite(<lee_multi-game_2022>, form: "prose"),
+#cite(<xu_prompting_2022>, form: "prose"),
+#cite(<baker_video_2022>, form: "prose"),
+and
+#cite(<reed_generalist_2022>, form: "prose")
 all use models that are trained from scratch on tasks of interest, and
-#cites(<singh_know_2022>, <ahn_as_2022>, <huang_inner_2022>) combine frozen
+#cites(<singh_know_2022>, form: "prose"), #cite(<ahn_as_2022>, form: "prose"), and #cite(<huang_inner_2022>, form: "prose") combine frozen
 foundation models with trainable components or adapters. In contrast,
-#cite(<huang_language_2022>) use frozen foundation models for planning, without
-training or fine-tuning on RL tasks. Like #cite(<huang_language_2022>), ICPI
+#cite(<huang_language_2022>, form: "prose") use frozen foundation models for planning, without
+training or fine-tuning on RL tasks. Like #cite(<huang_language_2022>, form: "prose"), ICPI
 does not update the parameters of the foundation model, but relies on the frozen
 model's in-context learning abilities. However, ICPI gradually builds and
 improves the prompts within the space defined by the given fixed text-format for
-observations, actions, and rewards (in contrast to #cite(<huang_language_2022>),
+observations, actions, and rewards (in contrast to #cite(<huang_language_2022>, form: "prose"),
 which uses the frozen model to select good prompts from a given fixed library of
 goal/plan descriptions).
 
 === In-Context learning
 Several recent papers have specifically studied in-context learning.
-#cite(<laskin2022context>) demonstrates an approach to performing in-context
+#cite(<laskin2022context>, form: "prose") demonstrates an approach to performing in-context
 reinforcement learning by training a model on complete RL learning histories,
 demonstrating that the model actually distills the improvement operator of the
-source algorithm. % #cite(<min_rethinking_2022>) demonstrates that LLMs can
-learn in-context, even % when the labels in the prompt are randomized,
-problemetizing the conventional % understanding of in-context learning and
-showing that label distribution is more % important than label correctness.
-#cite(<chan_data_2022>) and #cite(<garg_what_2022>) provide analyses of the
+source algorithm. #cite(<min_rethinking_2022>, form: "prose") demonstrates that LLMs can
+learn in-context, even when the labels in the prompt are randomized,
+problemetizing the conventional understanding of in-context learning and
+showing that label distribution is more important than label correctness.
+#cite(<chan_data_2022>, form: "prose") and #cite(<garg_what_2022>, form: "prose") provide analyses of the
 properties that drive in-context learning, the first in the context of image
 classification, the second in the context of regression onto a continuous
 function. These papers identify various properties, including "burstiness,"
 model-size, and model-architecture, that in-context learning depends on.
-#cite(<chen_relation_2022>) studies the sensitivity of in-context learning to
+#cite(<chen_relation_2022>, form: "prose") studies the sensitivity of in-context learning to
 small perturbations of the context. They propose a novel method that uses
 sensitivity as a proxy for model certainty. Some recent work has explored
 iterative forms of in-context learning, similar to our own. For example,
-#cite(<shinn2023reflexion>) and #cite(<madaan2023self>) use iterative
+#cite(<shinn2023reflexion>, form: "prose") and #cite(<madaan2023self>, form: "prose") use iterative
 self-refinement to improve the outputs of a large language model in a natural
 language context. These approaches rely on the ability of the model to examine
 and critique its own outputs, rather than using policy iteration as our method
@@ -324,12 +326,7 @@ approximately tracks the behavior policy.
 
 How does the policy improve? When acting in the environment (as opposed to
 planning), we choose the action that maximizes the estimated Q-value from the
-current state (see
-#todo("fix")
-// @algo:train
-// pseudocode,
-// @line:arg-max
-). At time step $t$, the agent
+current state (see @algo:train, @line:arg-max). At time step $t$, the agent
 observes the state of the environment (denoted $Obs_t$) and executes action $Act_t = arg max_(Act in Actions) QValue^(Policy_t)(Obs_t,Act)$,
 where $Actions = [Actions(1),dots,Actions(n)]$
 denotes the set of $n$ actions available, $Policy_t$ denotes the policy of the
@@ -339,7 +336,7 @@ new and improved policy.
 
 === Computing Q-values <para:q-values>
 This section provides details on the prompts that we use in our computation of
-Q-values (see @algo:q pseudocode & Figure @fig:q rollout). During training, we
+Q-values (see @algo:q pseudocode & @fig:q rollout). During training, we
 maintain a buffer $Buffer$ of transitions experienced by the agent. To compute
 $QValue^(Policy_t)(Obs_t, Act)$ at time step $t$ in the real-world we rollout a
 simulated trajectory $Obs^1=Obs_t$, $Act^1 = Act$, $Rew^1$,
@@ -392,7 +389,7 @@ trajectory subsequences, not individual time-steps. Prompting with sequences
 better enables the foundation model to apprehend the logic behind a policy.
 Trajectory subsequences consist of $(Obs_k, Act_k)$ pairs, randomly clipped from
 the $Recency$ most recent trajectories. More recent trajectories will, in
-general demonstrate higher performance, since they come from policies that have
+general, demonstrate higher performance, since they come from policies that have
 benefited from more rounds of improvement.
 
 Finally, the Q-value estimate is simply the discounted sum of rewards for the
@@ -418,14 +415,99 @@ the rollout policy will improve with the improvement of the mixture of policies
 from which its prompt-trajectories are drawn. This results in a kind of rapid
 policy improvement that works without any use of gradients.
 
-paragraphPrompt-Format labelpara:prompt-format The LLM cannot take
+#figure(
+  {
+    tablex(
+      columns: 3,
+      header-rows: 1,
+      auto-vlines: false,
+      [*Model*],
+      [*Parameters*],
+      [*Training Data*],
+      [GPT-J #cite(<wang_gpt-j-6b_2021>) ],
+      [6 billion],
+      ["The Pile" #cite(<gao_pile_2020>), an 825GB English corpus incl. Wikipedia,
+        GitHub, academic pubs],
+      [InCoder cite(<fried_incoder_2022>) ],
+      [6.7 billion],
+      [159 GB of open-source StackOverflow code],
+      [OPT-30B cite(<zhang_opt_2022>) ],
+      [30 billion],
+      [180B tokens of predominantly English data],
+      [Codex cite(<chen_evaluating_2021>) ],
+      [185 billion],
+      [179 GB of GitHub code],
+    )
+  },
+  caption: [Table of models and training data.],
+  supplement: "Table",
+  placement: top,
+) <tab:llms>
+
+=== Prompt-Format <para:prompt-format>
+
+The LLM cannot take
 non-linguistic prompts, so our algorithm assumes access to a textual
 representation of the environment---of states, actions, terminations, and
 rewards---and some way to recover the original action, termination, and reward
 values from their textual representation (we do not attempt to recover states).
 Since our primary results use the Codex language model (see @tab:llms), we use
 Python code to represent these values (examples are available in
-@tab:promptformat in the appendix).
+@tab:prompt-format).
+
+TODO: fix
+#figure(
+  {
+    set par(leading: 1em)
+    tablex(columns: 2, auto-vlines: false, breakable: true, [*Chain*], [
+      `assert state == 6` _`and state != 4`_\
+      `state = left()
+                                                                                                                                                                                                                                                                              assert reward == 0
+                                                                                                                                                                                                                                                                              assert not done
+                                                                                                                                                                                                                                                                              `
+    ], [*Distractor*], [`assert state == (6, 3)` _`and state != (4, 3)`_\
+      `state = left()
+                                                                                                                                                                                                                                                                              assert reward == 0
+                                                                                                                                                                                                                                                                              assert not done`], [*Maze*], [
+      `assert state == C(i=2, j=1)`
+      _`and state != C(i=1, j=0)`_\
+      `state, reward = left()
+                                                                                                                                                                                                                                                                              assert reward == 0
+                                                                                                                                                                                                                                                                              assert not done
+                                                                                                                                                                                                                                                                              `
+    ], [*Mini Catch*], [
+      `assert paddle == C(2, 0)`\
+      _`  and ball == C(0, 4)
+                                                                                                                                                                                                                                                                                and paddle.x == 2 and ball.x == 0
+                                                                                                                                                                                                                                                                                and paddle.x > ball.x
+                                                                                                                                                                                                                                                                                and ball.y == 4`_\
+      `reward = paddle.left()
+                                                                                                                                                                                                                                                                              ball.descend()
+                                                                                                                                                                                                                                                                              assert reward == 0
+                                                                                                                                                                                                                                                                              assert not done`
+    ], [*Mini Invaders*], [
+      `assert ship == C(2, 0) and aliens == [C(3, 5), C(1, 5)]`\
+      _`  and (ship.x, aliens[0].x, aliens[1].x) == (2, 3, 1)
+                                                                                                                                                                                                                                                                                and ship.x < aliens[0].x
+                                                                                                                                                                                                                                                                                and ship.x > aliens[1].x`_\
+      `ship.left()
+                                                                                                                                                                                                                                                                              assert reward == 0
+                                                                                                                                                                                                                                                                              for a in aliens:
+                                                                                                                                                                                                                                                                                 a.descend()
+                                                                                                                                                                                                                                                                              assert not done`
+    ], [*Point-Mass*], [
+      `assert pos == -3.45 and vel == 0.00` _`and pos < -2 and vel == 0`_\
+      `pos, vel = decel(pos, vel)
+                                                                                                                                                                                                                                                                              assert reward == 0
+                                                                                                                                                                                                                                                                              assert not done`
+    ])
+  },
+  caption: [
+    This table provides example prompts for each domain, showcasing the text format
+    and hints. Hints are in italics.
+  ],
+  placement: top,
+)<tab:prompt-format>
 
 In our experiments, we discovered that the LLM world-model was unable to
 reliably predict rewards, terminations, and next-states on some of the more
@@ -441,30 +523,19 @@ We use a consistent idiom for rewards and terminations, namely `assert reward ==
 x` and `assert done` or `assert not done`. Some decisions had to be made when
 representing states and actions. In general, we strove to use simple, idiomatic,
 concise Python. On the more challenging environments, we did search over several
-options for the choice of hint. For examples, see @tab:promptformat. We
+options for the choice of hint. For examples, see @tab:prompt-format. We
 anticipate that in the future, stronger foundation models will be increasingly
 robust to these decisions.
-
-#figure(
-  image("figures/policy-iteration/algorithm.png"),
-  caption: [
-    Comparison of ICPI with three baselines, "No ArgMax," "Tabular Q," and "Nearest
-    Neighbor." The $y$-axis depicts regret (normalized between 0 and 1), computed
-    relative to an optimal return with a discount-factor of 0.8. The $x$-axis
-    depicts time-steps during training. Error bars are standard errors from four
-    seeds.
-  ],
-) <fig:algorithms>
 
 == Experiments <sec:experiments>
 We have three main goals in our experiments: (1) Demonstrate that the agent
 algorithm can in fact quickly learn good policies, using pretrained LLMs, in a
 set of six simple illustrative domains of increasing challenge; (2) provide
-evidence through an ablation that the policy-improvement step---taking the
-$arg max$ over Q-values computed through LLM rollouts---accelerates learning;
+evidence through an ablation that the policy-improvement step --- taking the
+$arg max$ over Q-values computed through LLM rollouts --- accelerates learning;
 and (3) investigate the impact of using different LLMs (see
-@tab:llms)---different sizes and trained on different data, in particular,
-trained on (mostly) natural language (GPT-3 and GPT-J) vs.\ program code (Codex
+@tab:llms) --- different sizes and trained on different data, in particular,
+trained on (mostly) natural language program code (Codex
 and InCoder). We next describe the six domains and their associated prompt
 formats, and then describe the experimental methodology and results.
 
@@ -474,12 +545,12 @@ formats, and then describe the experimental methodology and results.
 In this environment, the agent occupies an 8-state chain. The agent has three
 actions: `Left`, `right`, and `try goal`. The `try goal` action always
 terminates the episode, conferring a reward of 1 on state 4 (the goal state) and
-0 on all other states.//Because this environment has simpler transitions than
-the other two, we see the//clearest evidence of learning here. Note that the
-initial batch of successful//trajectories collected from random behavior will
-usually be suboptimal, moving//inefficiently toward the goal state. We include a
-discount value of 0.8 in our//diagram to show the improvement in efficiency of
-the policy learned by the//agent over the course of training. `Prompt format.`
+0 on all other states. Because this environment has simpler transitions than
+the other two, we see the clearest evidence of learning here. Note that the
+initial batch of successful trajectories collected from random behavior will
+usually be suboptimal, moving inefficiently toward the goal state. We include a
+discount value of 0.8 in our diagram to show the improvement in efficiency of
+the policy learned by the agent over the course of training. `Prompt format.`
 Episodes also terminate after 8 time-steps. States are represented as numbers
 from 0 to 7, as in `assert state == n`, with the appropriate integer substituted
 for `n`. The actions are represented as functions `left()`, `right()`, and
@@ -499,7 +570,7 @@ observation, all text representations and hints are identical to the _chain_ env
 The agent navigates a small $3 times 3$ gridworld with obstacles. The agent can
 move `up`, `down`, `left`, or `right`. The episode terminates with a reward of 1
 once the agent navigates to the goal grid, or with a reward of 0 after 8
-time-steps. This environment tests our algorithms capacity to handle
+time-steps. This environment tests our algorithm's capacity to handle
 2-dimensional movement and obstacles, as well as a 4-action state-space. We
 represent the states as namedtuples --- `C(x, y)`, with integers substituted for
 `x` and `y`. Similar to _chain_, the hint indicates whether or not the state
@@ -516,13 +587,13 @@ environment specifically to challenge the action-inference/rollout-policy
 component of our algorithm. Specifically, note that the success condition in
 Mini Catch allows the paddle to meander before moving under the ball---as long
 as it gets there on the final time-step. Successful trajectories that include
-movement _away_ from the ball thus make a good rollout policies more challenging
+movement _away_ from the ball thus making good rollout policies more challenging
 to learn (i.e., elicit from the LLM via prompts). Again, we represent both the
 paddle and the ball as namedtuples `C(x, y)` and we represent actions as methods
 of the `paddle` object: `paddle.stay()`, `paddle.left()`, and `paddle.right()`.
 For the hint, we call out the location of the paddle's $x$-position, the ball's $x$-position,
 the relation between these positions (which is larger than which, or whether
-they are equal) and the ball's $y$-position. @tab:promptformat in the appendix
+they are equal) and the ball's $y$-position. @tab:prompt-format in the appendix
 provides an example. We also include the text `ball.descend()` to account for
 the change in the ball's position between states.
 
@@ -561,7 +632,7 @@ States are represented as `assert pos == p and vel == v`, substituting
 floats rounded to two decimals for `p` and `v`. The actions
 are `accel(pos, vel)` and `decel(pos, vel)`. The hint
 indicates whether the success conditions are met, namely the relationship
-of `pos` to $-2$ and $+2$ and the whether or not `vel == 0`.
+of `pos` to $-2$ and $+2$ and whether or not `vel == 0`.
 The hint includes identification of the aliens' and the ship's $x$-positions
 as well as a comparison between them.
 
@@ -571,7 +642,7 @@ For the results, we record the agent's regret over the course of training
 relative to an optimal policy computed with a discount factor of 0.8. For all
 experiments $Recency = 8$ (the number of most recent successful
 trajectories to include in the prompt). We did not have time for hyperparameter
-search and chose this number based on intuition. However the $Recency =
+search and chose this number based on intuition. However, the $Recency =
   16$ baseline demonstrates results when this hyperparameter is doubled. All
 results use 4 seeds.
 
@@ -582,9 +653,21 @@ Huggingface Transformers #cite(<wolf_transformers_2020>), each running on one
 Nvidia A40 GPU. All language models use a sampling temperature of 0.1. Code for our
 implementation is available at https://github.com/ethanabrooks/icpi.
 
+#figure(
+  image("figures/policy-iteration/algorithm.png"),
+  caption: [
+    Comparison of ICPI with three baselines, "No ArgMax," "Tabular Q," and "Nearest
+    Neighbor." The $y$-axis depicts regret (normalized between 0 and 1), computed
+    relative to an optimal return with a discount-factor of 0.8. The $x$-axis
+    depicts time-steps during training. Error bars are standard errors from four
+    seeds.
+  ],
+  placement: top
+) <fig:algorithms>
+
 === Comparison of ICPI with baseline algorithms. <para:baselines>
   We compare ICPI with three
-baselines (Fig. @fig:algorithms).
+baselines (@fig:algorithms).
 
 *The "No ArgMax" baseline* learns a good policy through random exploration and
 then imitates this policy. This baseline assumes access to a "success threshold"
@@ -613,7 +696,7 @@ selection so this will often lead to random action selection.
 As our results demonstrate, only ICPI learns good policies on all
 domains. We attribute this advantage to ICPI's ability to generalize
 from its context to unseen states and state/action pairs (unlike "Tabular Q" and
-"Matching Model"). Unlike "No ArgMax" ICPI is able to learn progressively,
+"Matching Model"). Unlike "No ArgMax," ICPI is able to learn progressively,
 improving the policy before experiencing good trajectories.
 
 #figure(
@@ -645,7 +728,7 @@ performance in several domains, none match its performance on all six.
 === Comparison of Different Language Models
  While our lab lacks the
 resources to do a full study of scaling properties, we did compare several
-language models of varying size (Fig. <fig:language-models>). See Table @tab:llms for details about
+language models of varying size (see @fig:language-models). See @tab:llms for details about
 these models. Both `code-davinci-002` and `code-cushman-001` are
 variations of the Codex language model. The exact number of parameters in these
 models is proprietary according to OpenAI, but #cite(<chen_evaluating_2021>)
@@ -654,7 +737,7 @@ contains 185 billion parameters. As for the distinction between the variations,
 the OpenAI website describes `code-cushman-001` as "almost as capable as
 Davinci Codex, but slightly faster."
 
-We found that the rate of learning and final performance of the smaller models fell significantly short of Codex on all but the simplest domein, _chain_.
+We found that the rate of learning and final performance of the smaller models fell significantly short of Codex on all but the simplest domain, _chain_.
 Examining the trajectories generated by agents trained using these models, we
 noted that in several cases, they seemed to struggle to apprehend the
 underlying "logic" of successful trajectories, which hampered the ability
@@ -691,21 +774,13 @@ using these models.
     training. Error bars are standard errors from four seeds.],
 ) <fig:language-models>
 
-#figure(
-tablex(columns: 3, header-rows: 1, auto-vlines: false,
-[*Model*], [*Parameters*], [*Training Data*],
-      [GPT-J #cite(<wang_gpt-j-6b_2021>) ]  , [6 billion]           , ["The Pile" #cite(<gao_pile_2020>), an 825GB English corpus incl. Wikipedia, GitHub, academic pubs],
-    [InCoder cite(<fried_incoder_2022>) ] , [6.7 billion]         , [159 GB of open-source StackOverflow code],
-    [OPT-30B cite(<zhang_opt_2022>) ]     , [30 billion]          , [180B tokens of predominantly English data],
-    [Codex cite(<chen_evaluating_2021>) ] , [185 billion]         , [179 GB of GitHub code],
-)) <tab:llms>
 
 == Conclusion
 Our main contribution in this chapter is a method for implementing policy iteration algorithm
 using Large Language Models and the mechanism of in-context learning. The
-algorithm uses a foundation models as both a world model and policy to compute
+algorithm uses a foundation model as both a world model and policy to compute
 Q-values via rollouts. Although we presented the method here as text-based, it
-is general enough to be applied to any foundation models that works through
+is general enough to be applied to any foundation model that works through
 prompting, including multi-modal models like #cite(<reed_generalist_2022>) and
 #cite(<seo_harp_2022>). In experiments we showed that the algorithm works in six
 illustrative domains imposing different challenges for ICPI, confirming the
@@ -714,62 +789,6 @@ are preliminary, we believe the approach provides an important new way to use
 LLMs that will increase in effectiveness as the models themselves become more
 powerful.
 
-
-#figure(
-  {
-    set par(leading: 1em)
-  tablex(columns: 2, auto-vlines: false, breakable: true,
-  [*Chain*], [
-    `assert state == 6` _`and state != 4`_\
-`state = left()
-assert reward == 0
-assert not done
-`
-  ],
-[*Distractor*], [`assert state == (6, 3)` _`and state != (4, 3)`_\
-`state = left()
-assert reward == 0
-assert not done`],
-[*Maze*], [
-  `assert state == C(i=2, j=1)`
-    _`and state != C(i=1, j=0)`_\
-`state, reward = left()
-assert reward == 0
-assert not done
-`
-],
-[*Mini Catch*], [
-`assert paddle == C(2, 0)`\
-_`  and ball == C(0, 4)
-  and paddle.x == 2 and ball.x == 0
-  and paddle.x > ball.x
-  and ball.y == 4`_\
-`reward = paddle.left()
-ball.descend()
-assert reward == 0
-assert not done`
-], [*Mini Invaders*], [
-  `assert ship == C(2, 0) and aliens == [C(3, 5), C(1, 5)]`\
-_`  and (ship.x, aliens[0].x, aliens[1].x) == (2, 3, 1)
-  and ship.x < aliens[0].x
-  and ship.x > aliens[1].x`_\
-`ship.left()
-assert reward == 0
-for a in aliens:
-   a.descend()
-assert not done`
-], [*Point-Mass*], [
-`assert pos == -3.45 and vel == 0.00` _`and pos < -2 and vel == 0`_\
-`pos, vel = decel(pos, vel)
-assert reward == 0
-assert not done`
- ]
-   )},
-  caption: [
-    This table provides example prompts for each domain, showcasing the text format
-    and hints. Hints are in italics.
-  ],
-)<tab:promptformat>
 
 
 // #bibliography("main.bib", style: "association-for-computing-machinery")

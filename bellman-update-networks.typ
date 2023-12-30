@@ -58,8 +58,8 @@ $ History^n_t := (Act^n_(t-1-Recency),
 Rew^n_(t-1-Recency), Ter^n_(t-1-Recency), Obs^n_(t-Recency), dots,
 Act^n_(t-1), Rew^n_(t-1), Ter^n_(t-1), Obs^n_t) $ <eq:history-adpp>
 Henceforth in this chapter, we omit the $n$ superscript for the sake of brevity
-and assume that all trajectories are drawn from a single task and policy. We
-implemented our model as a causal transformer
+and assume that there is one task and policy per trajectory. We implemented our
+model as a causal transformer
 #cite(<vaswani2017attention>). Because the model was conditioned on history, it
 demonstrated the capability to adapt in-context to settings with novel
 transition or reward functions.
@@ -101,10 +101,11 @@ the relevance or predictive power of information in a model's context strongly
 influences the balance of in-weights vs. in-context learning.
 
 With this in mind, we note that the history of values associated with states in
-the models context would be highly predictive of the value of the current state.
-A model provided this information in its context should attend more strongly to
-its context and memorize less. This would entail the following redefinition of $History^n_t$,
-the history on which we condition the model's predictions:
+the model's context would be highly predictive of the value of the current
+state. A model provided this information in its context should attend more
+strongly to its context and memorize less. This would entail the following
+redefinition of $History_t$, the history on which we condition the model's
+predictions:
 
 $ History_t := (Act_(t-1-Recency),
 Rew_(t-1-Recency), Ter_(t-1-Recency), Obs_(t-1-Recency), Highlight(QValue (Obs_(t-Recency+1), dot.c)) dots,
@@ -112,13 +113,14 @@ Highlight(QValue (Obs_t, dot.c)),
 Act_(t-1), Rew_(t-1), Ter_(t-1), Obs_t, ) $ <eq:history-bellman-network>
 
 The question remains how such input values might be obtained. After all, in a
-setting where we intend to estimate values, it does not make sense to assume
-that we already have access to good value estimates! To address this
-chicken-and-egg dilemma, we propose an alternative approach to predicting values _directly_ and
-instead take inspiration from the classic Policy Evaluation algorithm #cite(<sutton2018reinforcement>),
+setting where we intend to estimate values, we should not assume that we already
+have access to good value estimates! To address this chicken-and-egg dilemma, we
+propose an alternative approach to predicting values _directly_ and instead take
+inspiration from the classic Policy Evaluation algorithm #cite(<sutton2018reinforcement>),
 which iteratively improves a value estimate using the Bellman update equation:
 
-$ QValue_Highlight(k) (Obs_t, Act_t) := Rew(Obs_t, Act_t) + gamma E_(Obs' Act') [QValue_Highlight(k-1) (Obs', Act')] $
+$ QValue_Highlight(k) (Obs_t, Act_t) := Rew(Obs_t, Act_t) + gamma E_(Obs_(t+1) Act_(t+1))
+[ QValue_Highlight(k-1) (Obs_(t+1), Act_(t+1)) ] $
 
 For any $QValue_0$ and for sufficiently large $k$, this equation converges to
 the true value of $QValue$. We incorporate a similar approach in our method,
@@ -144,9 +146,9 @@ the context values $QValue_(k-1) (Obs_(t-Recency+1), dot.c),..., QValue_(k-1) (O
 By conditioning predictions of $QValue_k$ on a context containing estimates of $QValue_(k-1)$,
 we gain many of the benefits of the context proposed in
 @eq:history-bellman-network, in terms of promoting in-context learning over
-in-weights learning, without assuming the impossible.
+in-weights learning, without privileged access to ground-truth values.
 
-However, this approach entails a tradeoff. By training on $k < infinity$, we
+This approach entails a tradeoff. By training on $k < infinity$, we
 significantly increase the space of inputs for which the model must learn good
 representations. Therefore, the method takes longer to train and demands more of
 the capacity of the model. What we gain are more robust representations, capable
@@ -154,7 +156,7 @@ of better generalization to unseen settings.
 
 === Architecture <sec:architecture>
 
-#figure({
+#figure(placement: top, {
   set text(font: "PT Sans")
 
   canvas(length: 1cm, {
@@ -192,7 +194,7 @@ of better generalization to unseen settings.
     }
     content((7.5, 3), cell(width: 16cm, fill: orange, [Transformer]))
   })
-})<fig:architecture>
+}, caption: [Architecture diagram for the Bellman Update Network.])<fig:architecture>
 
 Before we describe the procedure for training the Bellman Update Network, we
 describe the inputs that the model receives, the architectures used to encode
@@ -204,13 +206,13 @@ defer the explanation of how to acquire these to @sec:train-bellman-network.
 
 As @fig:architecture illustrates, the inputs to the network are a sequence of
 transitions from the dataset. In principle, these transitions need not need be
-chronological but except in a partially observed setting. Each transition gets
-encoded using some encoder capable of distinguishing the inputs and summarizing
-them in a single fixed-size vector. We compared several alternatives, including
-small positional transformers, and found that Gated Recurrent Unit #cite(<cho2014learning>) demonstrated
-the strongest performance. Each of these transition vectors gets passed through
-a transformer network (one vector per transformer index) and the final outputs
-are projected to scalars.
+chronological except in a partially observed setting. Each transition gets
+encoded and summarized into a single fixed-size vector. We compared several
+methods for doing this, including small positional transformers, and found that
+Gated Recurrent Unit #cite(<cho2014learning>) demonstrated the strongest
+performance. Each of these transition vectors gets passed through a transformer
+network (one vector per transformer index) and the final outputs are projected
+to scalars.
 
 You will note that we provide $Value_k$ and not $QValue_k$ to the model, as in
 @eq:loss. We found that computing
@@ -247,14 +249,11 @@ each step in the curriculum, we continue to train $QValue_k$ for all values of $
 in 1, ..., K$ (see @line:for-k of @alg:train-bellman-network). This allows the
 network to continue improving its estimates for lower values of $k$ even as it
 begins to train on higher values, thereby mitigating the effects of compound
-error inherent to bootstrapping approaches. Another benefit of continuing to
-train lower values of $k$ is that these estimates can benefit from backward
-transfer as the curriculum progresses. As the network produces estimates, we use
-them both to train the network (see @line:optimize) but also to produce
-bootstrap targets for higher values of $k$ (see @line:bootstrap). Note that we
-use the policy logits to compute the expectation explicitly for @line:bootstrap
-of @alg:train-bellman-network (@line:vest), rather than relying on sample
-estimates.
+error. Another benefit of continuing to train lower values of $k$ is that these
+estimates can benefit from backward transfer as the curriculum progresses. As
+the network produces estimates, we use them both to train the network (see
+@line:optimize) but also to produce bootstrap targets for higher values of $k$ (see
+@line:bootstrap).
 
 #algorithm-figure(
   {
@@ -266,13 +265,13 @@ estimates.
       ..Repeat(
         ..Repeat(
           ..For(
-            $k sim {0, ..., K}$,
+            $k = 0, ..., K$,
             label: <line:for-k>,
             State($History sim Buffer$, comment: "sample sequence from data."),
             ..For(
-              $Obs_t in History$,
+              $t = 0, ..., Recency$,
               State(
-                [$Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) QValue_k (Obs_t, Act)$],
+                [$Value_k (Obs_t) gets sum_Act Policy(Act | Obs_t) QValue_k (Obs_t, Act)$],
                 comment: [Compute $E_(Act sim Policy(dot.c | Obs_t)) [QValue_k (Obs_t, Act)]$],
                 label: <line:vest>,
               ),
@@ -284,7 +283,7 @@ estimates.
             ..For(
               $t=0, ..., Recency$,
               State(
-                $QTar_(k+1) (Obs_t, Act_t) gets Rew_t + (1-Ter_t) gamma Value_k (Obs'_t)$,
+                $QTar_(k+1) (Obs_t, Act_t) gets Rew_t + (1-Ter_t) gamma Value_k (Obs_(t+1))$,
                 comment: "Bootstrap target for observed actions.",
                 label: <line:bootstrap>,
               ),
@@ -373,7 +372,7 @@ addition, we can use the estimates to act, by choosing actions greedily by value
           ..For(
             $Obs_t in History$,
             State(
-              [$Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) QValue_k (Obs_t, Act)$],
+              [$Value_k (Obs_t) gets sum_Act Policy(Act | Obs_t) QValue_k (Obs_t, Act)$],
               comment: [Compute $E_(Act sim Policy(dot.c | Obs_t)) [QValue_k (Obs_t, Act)]$],
             ),
           ),
@@ -384,7 +383,7 @@ addition, we can use the estimates to act, by choosing actions greedily by value
           ),
         ),
         State(
-          $Act_t gets arg max QValue_(K+1) (Obs_t, dot.c)$,
+          $Act_t gets arg max_Act QValue_(K+1) (Obs_t, Act)$,
           comment: "Choose the action with the highest value.",
         ),
         State([$Rew_t, Ter_t, Obs_(t+1) gets$ step environment with $Act_t$]),
@@ -402,13 +401,13 @@ Note that acting in this way implements policy iteration, much like the
 algorithms discussed in previous chapters. As the model acts, it populates its
 own context with new actions and action-logits. Since the model has been trained
 on a variety of policies, it conditions its value estimates on these actions and
-logits and consequently on the behavior policy. When we choose actions greedily,
-we improve on this behavior policy, completing the policy iteration cycle. Note
-that in practice, the context of the model will contain a mixture of older,
-lower-quality actions and newer, higher-quality actions, with newer actions
-progressively dominating. We rely on the context-conditioning capability of the
-model to approximate a policy mixing the multitude of policies represented in
-the context.
+logits and by transitivity, on the behavior policy. When we choose actions
+greedily, we improve on this behavior policy, completing the policy iteration
+cycle. Note that in practice, the context of the model will contain a mixture of
+older, lower-quality actions and newer, higher-quality actions, with newer
+actions progressively dominating. We rely on the context-conditioning capability
+of the model to approximate a policy mixing the multitude of policies
+represented in the context.
 
 === Extension to multi-step Bellman Updates <sec:multi-step>
 Note that the formulation so far discussed can be generalized to multi-step
@@ -446,7 +445,7 @@ actions in the sequence simultaneously. To evaluate this network we adapt the
 iterative procedure from @alg:eval-bellman-network: we iteratively apply the
 network first to an initial $QValue$ estimate, then auto-regressively to its own
 output (after computing value estimates from the Q estimates and the policy
-logits $Policy(Act|dot.c)$ per @eq:value). For details see @alg:eval-tabular.
+logits $Policy(dot.c|Obs_t)$ per @eq:value). For details see @alg:eval-tabular.
 
 #algorithm-figure(
   {
@@ -477,6 +476,7 @@ logits $Policy(Act|dot.c)$ per @eq:value). For details see @alg:eval-tabular.
     )
   },
   caption: [ Tabular evaluation of the Bellman Update Network. ],
+  placement: top,
 ) <alg:eval-tabular>
 
 ==== Do value functions overfit?
@@ -496,15 +496,10 @@ illustrates, we observe a significant gap between training accuracy and test
 accuracy, as measured by root mean-square error. In addition, we observe that
 test error mostly plateaus after update 100,000, even as train error continues
 to decrease, indicating that all learning after this point entails memorization.
-
 In the right two graphs of @fig:root-mean-sq-error, we randomly omit $1/4$ and $1/2$ of
 the state-action pairs from the input. As the figures demonstrate, the gap
-between training and testing widens and the extent of memorization increases.
-For omitted state-action pairs, the model must infer the marginal for the
-policy. Thus the mapping from context to output becomes more complex as more
-state-action pairs are omitted. The resulting drop in generalization recalls the
-intuition that we offered in @sec:bellman-network-method: the less informative a
-model's context, the more it will revert to memorization.
+between training and testing widens slightly and the extent of memorization
+increases.
 
 ==== Does value prediction with a Bellman Update Network mitigate overfitting?
 In the lower half of @fig:root-mean-sq-error, we compare values estimated by the
@@ -584,10 +579,10 @@ in @fig:root-mean-sq-error.
 === Training without ground-truth targets
 
 Until this point we assumed access to a set of ground-truth values computed
-using tabular methods. In most realistic, non-tabular settings, such methods are
-not tractable. In this section, we turn our attention to the algorithm proposed
-in @sec:train-bellman-network, which uses a combination of curriculum-based
-training and bootstrapping to train the Bellman Update Network.
+using tabular methods. In most realistic, non-tabular settings, we cannot make
+this assumption. In this section, we turn our attention to the algorithm
+proposed in @sec:train-bellman-network, which uses a combination of
+curriculum-based training and bootstrapping to train the Bellman Update Network.
 
 @alg:train-bellman-network introduces a handful of difficulties not present in
 the previous section:
@@ -619,10 +614,12 @@ E_(Obs_(t+1), Act_(t+1)) [QTar_theta (Obs_(t+1), Act_(t+1))]))^2 $
 
 where $QTar_theta$ is the output of $QValue_theta$ interpolated with previous
 values. To mitigate instability, we found it necessary to reduce the
-interpolation factor from 0.5 to 0.001. Nonetheless, we were unable to prevent
-these predictions from eventually diverging as seen in @fig:bootstrap-rmse. Some
-existing literature has documented the tendency for value prediction to overfit
-in the offline setting, especially when integrating policy improvement.
+interpolation factor from 0.5 to 0.001. #text(
+  fill: orange,
+)[Nonetheless, we were unable to prevent these predictions from eventually
+  diverging as seen in @fig:bootstrap-rmse. Some existing literature has
+  documented the tendency for value prediction to overfit in the offline setting,
+  especially when integrating policy improvement.]
 
 ==== Can @alg:train-bellman-network induce in-context reinforcement learning in a non-tabular setting?
 #figure(
@@ -657,15 +654,15 @@ the Conservative Q-Learning (CQL) algorithm #cite(<kumar2020conservative>), a
 state-of-the-art offline RL algorithm. Unlike the Bellman Update Network, CQL
 integrates policy improvement into its loss function, minimizing
 
-$ sum_(t=1)^(T-1) (QValue_theta (Obs_t, Act_t | History^(Value_k)_t) - max_Act QTar(Obs_t, Act))^2 $
+$ sum_(t=1)^(T-1) (QValue_theta (Obs_t, Act_t | History^(Value_k)_t) - Highlight(max_Act) QTar(Obs_t, Highlight(Act)))^2 $
 <eq:loss-cql>
 
-where $QTar$ is computed using bootstrapping. Note that $QValue_(k=infinity)$ minimizes
-this loss but $QValue_(k<infinity)$ does not. Therefore this form of policy
-improvement is not available to Bellman Update Networks. However, a well-known
-property of these kinds of losses is that they tend to produce overly optimistic
-value estimates, due to the sensitivity of the $max_a$ operator to noise. To
-mitigate this, CQL introduces a "conservative" auxiliary loss:
+where $QTar$ is computed using bootstrapping. Note that the $arg max$ operation
+cannot be used in the loss when $k< infinity$. Therefore this form of policy
+improvement is not available to Bellman Update Networks. A well-known property
+of these kinds of losses is that they tend to produce overly optimistic value
+estimates, due to the sensitivity of the $max_a$ operator to noise. To mitigate
+this, CQL introduces a "conservative" auxiliary loss:
 
 $ alpha sum_(t=1)^(T-1) log sum_Act exp (QValue(Obs_t, Act)) - QValue(Obs_t, Act_t) $
 <eq:reg-cql>
@@ -677,7 +674,7 @@ only two ways:
   from @eq:loss-bellman-update-network.
 2. We add the regularizer from @eq:reg-cql to our loss function.
 
-In @fig:miniworld, we comparing CQL with Bellman Update Networks under several
+In @fig:miniworld, we compare CQL with the Bellman Update Networks under several
 settings of $delta$. We also compare the results of training on different
 quantities of data by stopping the training of the source algorithm at different
 points in time. For reference, the middle graph in @fig:miniworld, trained on
