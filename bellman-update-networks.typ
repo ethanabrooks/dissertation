@@ -247,17 +247,24 @@ the network produces estimates, we use them both to train the network (see
 
 #let formatObs = text.with(fill: green)
 
+#let FormatV(x) = text(fill: orange, x)
+#let FormatQ(x) = text(fill: green, x)
+#let FormatQTar(x) = text(fill: blue, x)
+#let FormatBUN(x) = text(fill: aqua, x)
+#let Value_k = FormatV($Value_k$)
+#let QValue_k = FormatQ($QValue_k$)
+#let QValue_theta = FormatBUN($QValue_theta$)
+
 #algorithm-figure(
   {
     import "algorithmic.typ": *
-    let Green(x) = text(fill: green, [#x])
-    let Blue(x) = text(fill: blue, [#x])
-    let Purple(x) = text(fill: purple, [#x])
-    let Maroon(x) = text(fill: maroon, [#x])
-    let Red(x) = text(fill: red, [#x])
+
     algorithm(
       Input($Recency, Buffer$, comment: [Context length, RL data ]),
-      State($QValue_0 gets bold(0)$, comment: "Initialize Q-estimates to zero."),
+      State(
+        $FormatQ(QValue_0) gets bold(0)$,
+        comment: [Initialize #FormatQ("Q-estimates") to zero.],
+      ),
       State($K gets 0$),
       ..Repeat(
         ..Repeat(
@@ -271,38 +278,39 @@ the network produces estimates, we use them both to train the network (see
             ..For(
               $t = 0, ..., Recency$,
               State(
-                [$Value_k (Obs_t) gets sum_Act Policy(Act | Obs_t) QValue_k (Obs_t, Act)$],
-                comment: [Compute $E_(Act sim Policy(dot.c | Obs_t)) [QValue_k (Obs_t, Act)]$],
+                [$#Value_k (Obs_t) gets sum_Act Policy(Act | Obs_t) #QValue_k (Obs_t, Act)$],
+                comment: [Compute #FormatV("values") from #FormatQ("Q-values")],
                 label: <line:vest>,
               ),
             ),
             State(
-              [$History^(Value_k) gets$ pair transitions with $Value_k$ estimates],
+              [$History^(#Value_k) gets (Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, #Value_k (Obs_t) )_(t=0)^Recency$ ],
+              comment: [pair transitions with #FormatV("values")],
               label: <line:pair>,
             ),
             ..For(
               $t=0, ..., Recency$,
               State(
-                $QTar_(k+1) (Obs_t, Act_t) gets Rew_t + (1-Ter_t) gamma Value_k (Obs_(t+1))$,
-                comment: "Bootstrap target for observed actions.",
+                $FormatQTar(QTar_(k+1)) (Obs_t, Act_t) gets Rew_t + (1-Ter_t) gamma #Value_k (Obs_(t+1))$,
+                comment: [Bootstrap #FormatQTar("target") for observed actions.],
                 label: <line:bootstrap>,
               ),
             ),
             State(
-              [$QValue_(k+1) gets QValue_theta (History^(Value_k))$],
-              comment: [Use Bellman Update Network to estimate values],
+              [$FormatQ(QValue_(k+1)) gets #QValue_theta (History^(#Value_k))$],
+              comment: [Use #FormatBUN("Bellman Update Network") to estimate #FormatQ("values")],
               label: <line:forward>,
             ),
             State(
-              [minimize $sum_t [QValue_theta (Obs_t, Act_t | History^(Value_k)_t) - QTar_(k+1)(Obs_t, Act_t)]^2 $],
+              [minimize $sum_t [#QValue_theta (Obs_t, Act_t | History^(#Value_k)_t) - FormatQTar(QTar_(k+1))(Obs_t, Act_t)]^2 $],
               comment: "Optimize predictions",
               label: <line:optimize>,
             ),
           ),
-          $QValue_(k+1) approx QTar_(k+1)$,
+          $FormatQ(QValue_(k+1)) approx FormatQTar(QTar_(k+1))$,
         ),
         State($K gets K + 1$),
-        $QValue_(k + 1) approx QValue_k$,
+        $FormatQ(QValue_(k + 1)) approx FormatQ(QValue_k)$,
       ),
     )
   },
