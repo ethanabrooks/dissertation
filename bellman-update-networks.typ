@@ -366,39 +366,45 @@ addition, we can use the estimates to act, by choosing actions greedily by value
     algorithm(
       Input(
         $Recency, K, T$,
-        comment: [Context length, number of iterations, length of evaluation ],
+        comment: [Context length, iterations, evaluation length ],
       ),
-      State($QValue_0 gets bold(0)$, comment: "Initialize Q-estimates to zero."),
       State(
-        [$History sim$ random behavior],
+        $FormatQ(QValue_0) gets bold(0)$,
+        comment: "Initialize Q-estimates to zero.",
+      ),
+      State(
+        [$(Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t)_(t=0)^Recency sim$ random
+          behavior],
         comment: "Fill transformer context with random behavior.",
       ),
       State([$Obs_Recency gets$ reset environment]),
       ..For(
-        $t=Recency, ..., Recency + T$,
+        $t_0=0, ..., T$,
         ..For(
           $k=0,...,K$,
           ..For(
-            $Obs_t in History$,
+            $t = t_0, ..., t_0 + Recency$,
             State(
-              [$Value_k (Obs_t) gets sum_Act Policy(Act | Obs_t) QValue_k (Obs_t, Act)$],
-              comment: [Compute $E_(Act sim Policy(dot.c | Obs_t)) [QValue_k (Obs_t, Act)]$],
+              [$#Value_k (Obs_t) gets sum_Act Policy(Act | Obs_t) #QValue_k (Obs_t, Act)$],
+              comment: [Compute #FormatV("values") from #FormatQ("Q-values")],
             ),
           ),
-          State([$History_Value_k (Obs_t) gets$ pair transitions with $Value_k$]),
           State(
-            [$QValue_(k+1) gets QValue_theta (History_Value_k)$],
-            comment: [Use the Bellman Update Network to estimate values.],
+            [$History^(#Value_k) gets (Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, #Value_k (Obs_t) )_(t=t_0)^(t_0 + Recency)$ ],
+            comment: [pair transitions with #FormatV("values")],
+            label: <line:pair>,
+          ),
+          State(
+            [$FormatQ(QValue_(k+1)) gets #QValue_theta (History_Value_k)$],
+            comment: [Use the #FormatBUN("Bellman Update Network") to estimate values.],
           ),
         ),
         State(
-          $Act_t gets arg max_Act QValue_(K+1) (Obs_t, Act)$,
+          $Act_t gets arg max_Act FormatQ(QValue_(K+1)) (Obs_t, Act)$,
           comment: "Choose the action with the highest value.",
         ),
         State([$Rew_t, Ter_t, Obs_(t+1) gets$ step environment with $Act_t$]),
         State($Policy(dot.c|Obs_t) gets text("one-hot")(Act_t)$),
-        State($History gets History union (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t,
-        Obs_(t+1))$, comment: "Append new transition to context."),
       ),
     )
   },
@@ -495,24 +501,31 @@ logits $Policy(dot.c|Obs_t)$ per @eq:value). For details see @alg:eval-tabular.
       ..Function(
         $QValue(History)$,
         comment: "Estimate values for all states in input sequence.",
-        State($QValue_0 gets bold(0)$, comment: "Initialize Q-estimates to zero."),
+        State(
+          $FormatQ(QValue_0) gets bold(0)$,
+          comment: "Initialize Q-estimates to zero.",
+        ),
         ..For(
           $k=0,...,K$,
           label: <line:iterate>,
           ..For(
             $Obs_t in History$,
             State(
-              [$Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) QValue_k (Obs_t, Act)$],
-              comment: [Compute $E_(Act sim Policy(dot.c | Obs_t)) [QValue_k (Obs_t, Act)]$],
+              [$#Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) #QValue_k (Obs_t, Act)$],
+              comment: [Compute $E_(Act sim Policy(dot.c | Obs_t)) [#QValue_k (Obs_t, Act)]$],
             ),
           ),
-          State([$History_Value_k gets$ pair transitions with $Value_k$ estimates]),
           State(
-            [$QValue_(k+1) gets Prob_theta (History_Value_k)$],
-            comment: [Use the Bellman Update Network to estimate values.],
+            [$History^(#Value_k) gets (Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, #Value_k (Obs_t) )_(t=0)^Recency$ ],
+            comment: [pair transitions with #FormatV("values")],
+            label: <line:pair>,
+          ),
+          State(
+            [$FormatQ(QValue_(k+1)) gets #QValue_theta (History^(#Value_k))$],
+            comment: [Use #FormatBUN("Bellman Update Network") to estimate #FormatQ("values")],
           ),
         ),
-        Return($QValue_(K+1)$),
+        Return($FormatQ(QValue_(K+1))$),
       ),
     )
   },
