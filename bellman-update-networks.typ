@@ -644,8 +644,8 @@ these challenges.
           targets using @alg:train-bellman-network.],
       )<fig:bootstrap-rmse>],
     [#figure(
-        align(center, image("figures/bellman-update-networks/oneroom.jpg")),
-        caption: [Improved policy regret on $5 times 5$ grid-world with walls.],
+        align(center, image("figures/bellman-update-networks/sequence-obs.png")),
+        caption: [Example observation from Miniworld environment described in @sec:miniworld],
       )<fig:sequence-obs>],
   ),
   caption: none,
