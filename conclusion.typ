@@ -177,14 +177,15 @@ generalization -- that is, a meaningful gap between training data and the domain
 of interest. Whatever their limitations in terms of expertise, LLMs
 unquestionably distinguish themselves by the breadth of their capacity to
 produce coherent, usually intelligent, responses to almost any prompt. A system
-that combines the expertise of RL with the breadth of LLMs will need to distill
-expertise from specialized fields and then generalize it beyond those fields.
-For example, a model may acquire knowledge of advanced mathematics by training
-on textbooks, or even by distilling the behaviors of RL agents specialized to
-certain mathematical problems, like AlphaTensor #cite(<fawzi2022discovering>).
-However, in order to advance the frontiers of science, such a model would need
-to transfer this specialized intelligence to other domains, domains which may
-lie beyond the limits of current human understanding.
+that combines the expertise of RL with the breadth of LLMs does not currently
+exist. Therefore, the first of its kind will need to distill expertise from
+_specialists_ and then generalize it beyond those specializations. For example,
+a model may acquire knowledge of advanced mathematics by training on textbooks,
+or even by distilling the behaviors of RL agents specialized to certain
+mathematical problems, like AlphaTensor #cite(<fawzi2022discovering>). However,
+in order to advance the frontiers of science, such a model would need to
+transfer this specialized intelligence to other domains, domains which may lie
+beyond the limits of current human understanding.
 
 === Foundation models for reinforcement learning
 A consequence of these reflections is that foundation models for RL will not

@@ -243,9 +243,16 @@ the network produces estimates, we use them both to train the network (see
 @line:optimize) but also to produce bootstrap targets for higher values of $k$ (see
 @line:bootstrap).
 
+#let formatObs = text.with(fill: green)
+
 #algorithm-figure(
   {
     import "algorithmic.typ": *
+    let ObsT = text(fill: green, $Obs_t$)
+    let ActT = text(fill: blue, $Act_t$)
+    let PolicyT = text(fill: purple, $Policy(dot.c | ObsT)$)
+    let RewT = text(fill: red, $Rew_t$)
+    let TerT = text(fill: orange, $Ter_t$)
     algorithm(
       Input($Recency, Buffer$, comment: [Context length, RL data ]),
       State($QValue_0 gets bold(0)$, comment: "Initialize Q-estimates to zero."),
@@ -255,7 +262,10 @@ the network produces estimates, we use them both to train the network (see
           ..For(
             $k = 0, ..., K$,
             label: <line:for-k>,
-            State($History sim Buffer$, comment: "sample sequence from data."),
+            State(
+              $(Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t )_(t=0)^Recency sim Buffer$,
+              comment: "sample sequence from data.",
+            ),
             ..For(
               $t = 0, ..., Recency$,
               State(
@@ -295,6 +305,7 @@ the network produces estimates, we use them both to train the network (see
     )
   },
   caption: [ Training the Bellman Network. ],
+  placement: top,
 ) <alg:train-bellman-network>
 
 === Implementation Details <sec:implementation>
@@ -382,6 +393,7 @@ addition, we can use the estimates to act, by choosing actions greedily by value
     )
   },
   caption: [ Evaluating the Bellman Update Network. ],
+  placement: top,
 ) <alg:eval-bellman-network>
 
 ==== Policy Iteration <sec:policy-iteration>
@@ -607,7 +619,7 @@ where $QTar_theta$ is the output of $QValue_theta$ interpolated with previous
 values. To mitigate instability, we found it necessary to reduce the
 interpolation factor from 0.5 to 0.001. #text(
   fill: orange,
-)[Nonetheless, we were unable to prevent these predictions from eventually
+)[TODO: Nonetheless, we were unable to prevent these predictions from eventually
   diverging as seen in @fig:bootstrap-rmse. Some existing literature has
   documented the tendency for value prediction to overfit in the offline setting,
   especially when integrating policy improvement.]
