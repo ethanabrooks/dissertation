@@ -1,12 +1,12 @@
 = Introduction <sec:introduction>
 
 == The Importance of Rapid Adaptation
-Deep neural networks optimized by gradient descent have shown strong empirical
-results in many complex and realistic settings. While other algorithms with
-faster convergence and stronger guarantees exist, they often require certain
-properties such as linearity, convexity, and smoothness that are not present in
-reality. As a result, researchers have turned to general-purpose algorithms that
-make few assumptions about the functions they approximate.
+Deep neural networks optimized by gradient descent have defined the most
+pioneering techniques of the last decade of machine learning research. While
+other architectures may provide stronger stronger guarantees, they often require
+certain assumptions such as linearity, convexity, and smoothness that are not
+present in reality. As a result, researchers have turned to general-purpose
+algorithms that make few assumptions about the functions they approximate.
 
 However, these algorithms' generality comes at a cost: they learn slowly and
 require thousands or millions of gradient updates to converge. This contrasts
@@ -40,9 +40,9 @@ others use gradients only for the outer-loop and train some kind of learned
 update rule for the inner-loop.
 
 == In-Context Learning
-A common approach to learning an update rule involves learning some latent
-embedding of each new experience of the task, along with the parameters of some
-operator that aggregates these embeddings. For example, the// $ RL^2 $
+A common approach to learning an update rule involves learning some
+representation of each new experience of the task, along with the parameters of
+some operator that aggregates these representations. For example, the $"RL"^2$
 #cite(<duan_rl2_2016>) algorithm uses the Long-Short Term Memory (LSTM,
 #cite(<hochreiter1997long>)) architecture for aggregation. Others
 #cite(<team2023human>) have used Transformers #cite(<vaswani2017attention>)
@@ -50,20 +50,21 @@ in place of LSTMs. PEARL #cite(<rakelly2019efficient>) uses a latent context
 that accumulates representations of the agent's observations in a product of
 Gaussian factors.
 
-The aggregated representation, which we call _memory_ or _context_, acts as a
-kind of belief state. Its modification, through the assimilation of new
-experiences, acts as a form of learning which occurs in the inner loop during
-meta-learning. This modification of the context representation in the service of
-a learned update rule is what we call _in-context learning_.
+We call this aggregated representation _memory_ or _context_. In many settings,
+one observes a rapid increase in performance as new experiences accumulate in
+the context of a neural architecture. This increase in performance is what we
+call _in-context learning_.
 
-Importantly, not all in-context learning literature uses the inner/outer-loop
-meta-learning formulation. Famously, GPT-3 #cite(<brown2020language>)
-demonstrated that a large language model <LLM> developed the ability to
-in-context learn as an emergent consequence of large-scale training. Another
+In the context of meta-learning, in-context learning corresponds to the
+inner-loop, which rapidly adapts the learner to a specific task. However, not
+all in-context learning uses the inner/outer-loop meta-learning formulation.
+Famously, GPT-3 #cite(<brown2020language>)
+demonstrated that a large language model <LLM> developed the ability to learn
+in-context as an emergent consequence of large-scale training. Another
 interesting example of in-context learning outside of meta-learning is Algorithm
 Distillation #cite(<laskin2022context>), which demonstrates that a transformer
 trained on offline RL data can distill and reproduce improvement operators from
-the algorithms that generated the data.
+the algorithm that generated the data.
 
 == Meta Reinforcement Learning
 Meta reinforcement learning (meta-RL) is a subdiscipline of meta-learning which
@@ -123,16 +124,18 @@ point.
 We use a model trained on offline data to make context-conditional predictions,
 that we use to estimate state-action values. This stage of training involves
 standard gradient-based optimization and is analogous to outer-loop optimization
-in a traditional meta-learning algorithm. The inputs to the model contain
-information relating to the environment dynamics, the reward function, and the
-current policy --- the parameters of a value estimate --- and we train the model
-to condition its predictions on this information. We explore various techniques
-to encourage the model to attend to this context (in-context learning) as
-opposed to resorting to priors encoded in its weights (in-weights learning). #cite(<chan2022data>, form: "prose") provides
-further discussion of this distinction. The model will then demonstrate some
-capability to generalize its predictions to unseen downstream settings, as long
-as those settings are adequately represented in the inputs and these inputs are
-similarly distributed to the inputs in the training dataset.
+in a traditional meta-learning algorithm, insofar as this stage distills priors
+in the model that support rapid downstream learning. The inputs to the model
+contain information relating to the environment dynamics, the reward function,
+and the current policy --- the parameters of a value estimate --- and we train
+the model to condition its predictions on this information. We explore various
+techniques to encourage the model to attend to this context (in-context
+learning) as opposed to resorting to priors encoded in its weights (in-weights
+learning). #cite(<chan2022data>, form: "prose") provides further discussion of
+this distinction. The model will then demonstrate some capability to generalize
+its predictions to unseen downstream settings, as long as those settings are
+adequately represented in the inputs and these inputs are similarly distributed
+to the inputs in the training dataset.
 
 === Policy Improvement
 We target a meta-RL setting in which the agent is unable to perform optimally at
@@ -140,11 +143,11 @@ the start of an episode, due to limited knowledge of the task and environment.
 Our method therefore requires some mechanism for improving the policy as
 information accumulates through interaction. This stage of training does not use
 gradients and is analogous to the inner-loop of a traditional meta-learning
-algorithm. To induce policy improvement, our method combines the classic policy
-iteration algorithm with in-context learning techniques. At each timestep, we
-use the method described in the previous paragraph to estimate the state-action
-value of each action in the action space. We then choose the action with the
-highest value estimate.
+algorithm, insofar as it adapts the learner to a specific task. To induce policy
+improvement, our method combines the classic policy iteration algorithm with
+in-context learning techniques. At each timestep, we use the method described in
+the previous paragraph to estimate the state-action value of each action in the
+action space. We then choose the action with the highest value estimate.
 
 In general, policy iteration depends on a cycle in which actions are chosen
 greedily with respect to value estimates and value estimates are updated to
@@ -176,7 +179,7 @@ completely agnostic to the downstream tasks on which we evaluate our method.
 Nevertheless, we present evidence that our method leverages commonsense pattern
 completion and numerical reasoning distilled in Codex's weights.
 
-=== In-Context Model-Based Planning
+=== Algorithm Distillaion + Model-Based Planning
 Our second chapter extends the first by training a new model from offline
 reinforcement learning (RL) data instead of using an existing pre-trained
 language model. We demonstrate that learning planning primitives from the
@@ -185,7 +188,7 @@ dynamics and reward functions. Additionally, we demonstrate that in-context
 policy iteration can be used in conjunction with Algorithm Distillation #cite(<laskin2022context>),
 superimposing the policy improvement operators induced by both methods.
 
-=== In-Context Value Iteration
+=== Bellman Update Networks
 Our final chapter, in which we propose future work, describes an alternative to
 the monte-carlo rollout estimation technique used in the other two chapters.
 This chapter advocates a method which directly optimizes the accuracy of value

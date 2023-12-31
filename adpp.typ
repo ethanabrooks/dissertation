@@ -5,7 +5,7 @@
 
 #show: show-algorithms
 
-= Algorithm Distillation + Policy Iteration
+= Algorithm Distillation + Model-Based Planning
 == Introduction <sec:introduction-adpp>
 Generalization to novel tasks is an important challenge in multitask
 reinforcement learning (RL). This setting entails a training regime that
@@ -193,7 +193,7 @@ $Ter^u$ is true, or once the rollout reaches some maximum length.
 The final step is to choose an action. Having modelled the rollout, we compute
 the value estimate as the discounted sum of rewards in the rollout
 (@line:return). Repeating this process of modelling rollouts and computing value
-estimates for each action in pool of candidate actions, we simply choose the
+estimates for each action in a set of candidate actions, we simply choose the
 action with the highest value estimate:
 $arg max_(Act in Actions) QValue(History_t, Act)$.
 
@@ -205,16 +205,16 @@ is unlikely that the procedure described above will initially yield an optimal
 policy. Some method for policy improvement will be necessary.
 
 ==== Policy Iteration
-Our method satisfies this requirement by implementing a form a policy iteration.
-To see this, first observe that our model is always trained to map a behavior
-history drawn from a single policy to actions drawn from the same policy. A
-fully trained model will therefore learn to match the distribution of actions in
-its output to the distribution of actions in its input. Since our rollouts are
-conditioned on histories drawn from our behavior policy, the rollout policy will
-approximately match this policy. Our value estimates will therefore be
-conditioned on the current behavior policy. However, by choosing the action
-corresponding to $arg max_(Act in Actions) QValue(History_t, Act)$, our behavior
-policy always improves on the policy on which $QValue(History_t, Act)$ is
+Our method satisfies this requirement by implementing a form of policy
+iteration. To see this, first observe that our model is always trained to map a
+behavior history drawn from a single policy to actions drawn from the same
+policy. A fully trained model will therefore learn to match the distribution of
+actions in its output to the distribution of actions in its input. Since our
+rollouts are conditioned on histories drawn from our behavior policy, the
+rollout policy will approximately match this policy. Our value estimates will
+therefore be conditioned on the current behavior policy. However, by choosing
+the action corresponding to $arg max_(Act in Actions) QValue^Policy (History_t, Act)$,
+our behavior policy always improves on $Policy$, the policy on which $QValue^Policy (History_t, Act)$ is
 conditioned, a consequence of the policy improvement theorem. Thus, each time an
 action is chosen using this $arg max$ method, our behavior policy improves on
 itself.
@@ -224,8 +224,9 @@ that we use to behave. We collect a trajectory containing actions drawn from
 this policy. When we perform rollouts, we condition on this trajectory and the
 rollout policy simulates $Policy^n$. Assuming that this simulation is accurate
 as well as the world model, our value estimate will be an unbiased monte carlo
-estimate of $QValue(History_t, Act)$ for any action $Act$. Then we act with
-policy $Policy^(n+1) := arg max_(Act in Actions) QValue(History_t, Act)$. But
+estimate of $QValue^(Policy^n) (History_t, Act)$ for any action $Act$. Then we
+act with policy $Policy^(n+1) := arg max_(Act in Actions) QValue^(Policy_n) (History_t, Act)$.
+But
 $Policy^(n+1)$ is at least as good as $Policy^n$. Using the same reasoning, $Policy^(n+2)$ will
 be at least as good as
 $Policy^(n+1)$, and so on. Note that in our implementation, we perform the $arg max$ at
@@ -237,12 +238,13 @@ Our setting is almost identical to Algorithm Distillation (AD)
 include a full learning history. Rather than competing with AD, our method is
 actually complementary to it. If the input to our transformer is a sufficiently
 long history of behavior, then the rollout policy will not only match the input
-policy but actually improve upon it, as demonstrated in that paper. Then $QValue$ will
-actually estimate values for a policy $Policy'_n$ that is at least as good as
-the input policy
-$Policy_n$. Then $V^(Policy_(n+1)) >= V^(Policy'_n) >= V^(Policy_n)$. Therefore
-each step of improvement actually superimposes the two improvement operators,
-one from the $arg max$ operator, the other from AD.
+policy but actually improve upon it, as demonstrated in that paper. Then the
+procedure described in @alg:downstream-evaluation for estimating $Q$-values will
+actually condition these estimates on a policy $Policy'_n$ that is at least as
+good as the input policy
+$Policy_n$. Then $V^(Policy_(n)) <= V^(Policy'_n) <= V^(Policy_(n+1))$.
+Therefore each step of improvement actually superimposes the two improvement
+operators, one from the $arg max$ operator, the other from AD.
 
 === Extension to Continuous Actions <sec:continuous-actions>
 When evaluating #ADPP on continuous action domains, the formulation we have
@@ -287,11 +289,11 @@ transformer-based agents to new tasks. #cite(<raparthy2023generalization>) study
 the properties that are conducive to generalization in these kinds of agents,
 especially highlighting "burstiness" #cite(<chan2022data>) and "multi-trajectory"
 inputs -- inputs containing multiple episodes from the same task, as used in #cite(<laskin2022context>, form: "prose") and
-in this work. #cite(<lee2023supervised>, form: "prose"). #cite(<lee2023supervised>, form: "prose") propose
-an approach similar to AD, but instead of predicting the _next_ action, they
-directly predict the _optimal_ action. They demonstrate that this gives rise to
-similar forms of in-context learning and outperforms AD on several tasks.
-#cite(<pinon2022model>, form: "prose") learn a dynamics model, similar to this
+in this work. #cite(<lee2023supervised>, form: "prose") propose an approach
+similar to AD, but instead of predicting the _next_ action, they directly
+predict the _optimal_ action. They demonstrate that this gives rise to similar
+forms of in-context learning and outperforms AD on several tasks.
+#cite(<pinon2022model>, form: "prose") train a dynamics model, similar to this
 work, and execute tree search, though unlike this work, they use a fixed policy.
 
 Transformers have also been studied extensively in the capacity of world models. #cite(<micheli2022transformers>, form: "prose") train
@@ -318,7 +320,7 @@ on the mechanisms detailed in the previous sections. One hypothesis that our
 experiments test is whether these learning processes can successfully happen
 concurrently.
 
-All of our experiments occur within a discrete, partially observable,
+Our first set of experiments occur within a discrete, partially observable,
 $5 times 5$ grid world. The agent has four actions, up, left, down, and right.
 For each task, we spawn a "key" and a "door" in a random location. The agent
 receives a reward of 1 for visiting the key location and then a reward of 1 for
@@ -340,31 +342,9 @@ metrics that we record.
 === Results
 <results>
 
-#figure(image("figures/adpp/no-walls.png"), caption: [
-  Evaluation on withheld location pairs.
-], placement: top)
-
-#{
-  figure(
-    grid(
-      columns: (auto, auto),
-      column-gutter: 20pt,
-      [#figure(
-          image("figures/adpp/unseen-goals.png", height: 100pt),
-          caption: [ Evaluation on fully withheld locations. ],
-        ) <fig:unseen-goals>],
-      [#figure(
-          image("figures/adpp/model-accuracy.png", height: 100pt),
-          caption: [Accuracy of model predictions over the course of an evaluation rollout.],
-        ) <fig:model-accuracy>],
-    ),
-    placement: bottom,
-    outlined: false,
-  )
-}
-
 ==== Evaluation on Withheld Goals
 <evaluation-on-withheld-goals>
+
 In our first experiment, we evaluate the agent on a set of withheld key-door
 pairs, which we sample uniformly at random (10% of all possible pairs) and
 remove from the training set. As @fig:unseen-goals indicates, our algorithm
@@ -599,11 +579,8 @@ vanilla AD on both domains.
 <conclusion>
 This chapter presents an approach for combining ICPI with AD. The resulting
 method scales to more complex settings than those explored in the previous
-chapter. Moreover, the method significantly outperforms vanilla AD in a wide
-variety of settings. For the final version of this thesis, we intend to test
-this method on more complex domains, especially those involving simulated
-robotics. We also intend to evaluate more baselines, especially those from the
-traditional meta-learning literature like RL$""^2$ #cite(<duan_rl2_2016>).
+chapter. Moreover, the method significantly outperforms vanilla AD in a variety
+of settings.
 
 // = Dummy <chap:pi>
 // == Dummy <sec:model-based-planning>

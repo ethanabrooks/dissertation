@@ -267,6 +267,7 @@ pair and for the current policy.
   ],
   placement: top,
 ) <algo:train>
+
 #algorithm-figure(
   {
     import "algorithmic.typ": *
