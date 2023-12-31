@@ -10,16 +10,15 @@
   committee: (
     "Professor Satinder Singh, Chair",
     "Professor Richard L. Lewis, Co-Chair",
-    "Professor Rada Mihalcea",
     "Professor Honglak Lee",
+    "Professor Rada Mihalcea",
+    "Professor Thad Polk",
   ),
   doc: doc,
 )
 
-= Dedication
-
-#lorem(80)
-
+#counter(page).update(2)
+#include "dedication.typ"
 #include "acknowledgements.typ"
 
 #outline(

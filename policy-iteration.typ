@@ -6,8 +6,6 @@
 
 #show: show-algorithms
 
-#set heading(numbering: "1.1")
-
 = In-Context Policy Iteration <chap:pi>
 In the context of Large Language Models (LLMs), in-context learning describes
 the ability of these models to generalize to novel downstream tasks when
