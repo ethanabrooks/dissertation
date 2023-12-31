@@ -24,9 +24,9 @@
   set document(title: title, author: author, date: date)
   set page(margin: (x: 1in))
   set align(center)
-  set text(font: "New Computer Modern")
+  set text(font: "New Computer Modern", size: 12pt)
   set heading(numbering: "1.1")
-  show heading.where(level: 1): it => pagebreak(weak: true) + formatHeader(body: it)
+  show heading.where(level: 1): it => pagebreak(weak: true) + v(1in) + formatHeader(body: it)
 
   show link: underline
 
