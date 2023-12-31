@@ -250,11 +250,11 @@ the network produces estimates, we use them both to train the network (see
 #algorithm-figure(
   {
     import "algorithmic.typ": *
-    let ObsT = text(fill: green, $Obs_t$)
-    let ActT = text(fill: blue, $Act_t$)
-    let PolicyT = text(fill: purple, $Policy(dot.c | ObsT)$)
-    let RewT = text(fill: red, $Rew_t$)
-    let TerT = text(fill: orange, $Ter_t$)
+    let Green(x) = text(fill: green, [#x])
+    let Blue(x) = text(fill: blue, [#x])
+    let Purple(x) = text(fill: purple, [#x])
+    let Maroon(x) = text(fill: maroon, [#x])
+    let Red(x) = text(fill: red, [#x])
     algorithm(
       Input($Recency, Buffer$, comment: [Context length, RL data ]),
       State($QValue_0 gets bold(0)$, comment: "Initialize Q-estimates to zero."),
