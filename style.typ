@@ -3,7 +3,7 @@
 
 #let formatHeader(body: content) = [
   #set align(center)
-  #body
+  #smallcaps(body)
   #v(18pt)
 ]
 
