@@ -148,19 +148,28 @@ of better generalization to unseen settings.
 === Architecture <sec:architecture>
 
 #figure(placement: top, {
-  set text(font: "PT Sans")
+  set text(font: "PT Sans", size: 10pt)
 
   canvas(length: 1cm, {
     import draw: *
+    let plusOne(t) = {
+      if type(t) == "integer" {
+        t + 1
+      } else if type(t) == "string" {
+        $#t + 1$
+      } else {
+        type(t)
+      }
+    }
     let transition(t) = {
+      let t1 = plusOne(t)
       (
-        $Obs_#t$,
         $Act_#t$,
-        $Policy(dot|Obs_#t)$,
+        $Policy(dot.c, Obs_#t)$,
         $Rew_#t$,
         $Ter_#t$,
-        $Obs_(#if (t == 1) { 2 } else { $t + 1$ })$,
-        $Value_k (Obs_#t)$,
+        $Obs_(#t1)$,
+        $Value_k (Obs_#t1)$,
       )
     }
     let cell(content, .. args) = box(
@@ -171,33 +180,35 @@ of better generalization to unseen settings.
       align(center + horizon, content),
     )
     // grid((0, 0), (15, 8), stroke: (paint: gray, dash: "dotted"))
-    content((7.5, 1.5), $dots.c$)
-    content((7.5, 4.5), $dots.c$)
-    for (t, start) in ((1, 0), ("t", 9)) {
+    content((7.0, 1.5), $dots.c$)
+    content((7.0, 4.5), $dots.c$)
+    for (t, start) in ((0, 0), ("t", 9)) {
       for (i, component) in transition(t).enumerate(start: start) {
         content((i, .25), $component$)
         line((i, .5), (i, 1), mark: (end: ">"))
       }
-      line((start + 3, 2), (start + 3, 2.5), mark: (end: ">"))
-      content((start + 3, 1.5), cell(width: 7cm, fill: red, "GRU"))
-      line((start + 3, 3.5), (start + 3, 4), mark: (end: ">"))
-      content((start + 3, 4.5), $Value_(k+1)(Obs_#t)$)
+      line((start + 2.5, 2), (start + 2.5, 2.5), mark: (end: ">"))
+      content((start + 2.5, 1.5), cell(width: 6cm, fill: red, "GRU"))
+      line((start + 2.5, 3.5), (start + 2.5, 4), mark: (end: ">"))
+      content((start + 2.5, 4.5), $Value_(k+1)(Obs_#plusOne(t))$)
     }
-    content((7.5, 3), cell(width: 16cm, fill: orange, [Transformer]))
+    content((7, 3), cell(width: 15cm, fill: orange, [Transformer]))
   })
 }, caption: [Architecture diagram for the Bellman Update Network.])<fig:architecture>
 
 Before we describe the procedure for training the Bellman Update Network, we
 describe the inputs that the model receives, the architectures used to encode
 them, and the targets on which the outputs regress. We assume that we are given
-a dataset of observations $Obs_t$, actions $Act_t$, rewards $Rew_t$,
-terminations $Ter_t$, and policy logits $Obs_t$. We also assume that we have
-estimates of value at different numbers of Bellman updates $k$, although we
-defer the explanation of how to acquire these to @sec:train-bellman-network.
+a dataset of observations $Obs$, actions $Act$, rewards $Rew$, terminations $Ter$,
+and policy logits $Policy(dot.c|Obs)$. We also assume that we have estimates of
+value at different numbers of Bellman updates $k$, although we defer the
+explanation of how to acquire these to @sec:train-bellman-network.
 
 As @fig:architecture illustrates, the inputs to the network are a sequence of
 transitions from the dataset. In principle, these transitions need not be
-chronological, except in a partially observed setting. Each transition gets
+chronological, except in a partially observed setting. Importantly, the
+observations are offset by one index from the rest of the components of the
+transition. This will be explained in @sec:implementation. Each transition gets
 encoded and summarized into a single fixed-size vector. We compared several
 methods for doing this, including small positional transformers, and found that
 Gated Recurrent Unit (GRU) #cite(<cho2014learning>) demonstrated the strongest
@@ -208,7 +219,7 @@ to scalars.
 You will note that we provide $Value_k$ and not $QValue_k$ to the model, as in
 @eq:loss. We found that computing
 
-$ Value_k (Obs_t) := sum_Act Policy(Act | Obs_t) QValue_k (Obs_t, Act) $ <eq:value>
+$ Value_k (Obs_t) := sum_Act Policy QValue_k (Obs_t, Act) $ <eq:value>
 
 and providing this as input to the network, rather than providing the full array
 of Q-values, improved the speed and stability of learning.
@@ -272,11 +283,11 @@ the network produces estimates, we use them both to train the network (see
             $k = 0, ..., K$,
             label: <line:for-k>,
             State(
-              $(Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t )_(t=0)^Recency sim Buffer$,
+              $(Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1) )_(t=0)^Recency sim Buffer$,
               comment: "sample sequence from data.",
             ),
             ..For(
-              $t = 0, ..., Recency$,
+              $t = 1, ..., 1 + Recency$,
               State(
                 [$#Value_k (Obs_t) gets sum_Act Policy(Act | Obs_t) #QValue_k (Obs_t, Act)$],
                 comment: [Compute #FormatV("values") from #FormatQ("Q-values")],
@@ -284,12 +295,12 @@ the network produces estimates, we use them both to train the network (see
               ),
             ),
             State(
-              [$History^(#Value_k) gets (Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, #Value_k (Obs_t) )_(t=0)^Recency$ ],
+              [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1), #Value_k (Obs_(t+1)) )_(t=0)^Recency$ ],
               comment: [pair transitions with #FormatV("values")],
               label: <line:pair>,
             ),
             ..For(
-              $t=0, ..., Recency$,
+              $t=1, ..., 1+Recency$,
               State(
                 $FormatQTar(QTar_(k+1)) (Obs_t, Act_t) gets Rew_t + (1-Ter_t) gamma #Value_k (Obs_(t+1))$,
                 comment: [Bootstrap #FormatQTar("target") for observed actions.],
@@ -377,9 +388,9 @@ addition, we can use the estimates to act, by choosing actions greedily by value
           behavior],
         comment: "Fill transformer context with random behavior.",
       ),
-      State([$Obs_Recency gets$ reset environment]),
+      State([$Obs_(Recency+1) gets$ reset environment]),
       ..For(
-        $t_0=0, ..., T$,
+        $t_0=1, ..., 1+T$,
         ..For(
           $k=0,...,K$,
           ..For(
@@ -390,7 +401,7 @@ addition, we can use the estimates to act, by choosing actions greedily by value
             ),
           ),
           State(
-            [$History^(#Value_k) gets (Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, #Value_k (Obs_t) )_(t=t_0)^(t_0 + Recency)$ ],
+            [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1),#Value_k (Obs_(t+1)) )_(t=t_0)^(t_0 + Recency)$ ],
             comment: [pair transitions with #FormatV("values")],
             label: <line:pair>,
           ),
@@ -399,12 +410,16 @@ addition, we can use the estimates to act, by choosing actions greedily by value
             comment: [Use the #FormatBUN("Bellman Update Network") to estimate values.],
           ),
         ),
+        State($t gets t_0 + Recency$),
         State(
           $Act_t gets arg max_Act FormatQ(QValue_(K+1)) (Obs_t, Act)$,
           comment: "Choose the action with the highest value.",
         ),
         State([$Rew_t, Ter_t, Obs_(t+1) gets$ step environment with $Act_t$]),
-        State($Policy(dot.c|Obs_t) gets text("one-hot")(Act_t)$),
+        State(
+          $Policy(dot.c|Obs_t) gets text("one-hot")(Act_t)$,
+          comment: "Use greedy policy for action logits",
+        ),
       ),
     )
   },
@@ -516,7 +531,7 @@ logits $Policy(dot.c|Obs_t)$ per @eq:value). For details see @alg:eval-tabular.
             ),
           ),
           State(
-            [$History^(#Value_k) gets (Obs_t, Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, #Value_k (Obs_t) )_(t=0)^Recency$ ],
+            [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1), #Value_k (Obs_(t+1)) )_(t=0)^Recency$ ],
             comment: [pair transitions with #FormatV("values")],
             label: <line:pair>,
           ),
