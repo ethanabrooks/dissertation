@@ -62,20 +62,9 @@ different sizes of a model trained on program code --- two sizes of Codex as wel
 as InCoder. On our six domains, we find that only the largest model (the
 `code-davinci-001` variant of Codex) consistently demonstrates learning.
 
-#figure(
-  image("figures/policy-iteration/action-selection.svg"),
-  caption: [
-    For each possible action $Actions(1), dots.h, Actions(n)$, the LLM generates a
-    rollout by alternately predicting transitions and selecting actions. Q-value
-    estimates are discounted sums of rewards. The action is chosen greedily with
-    respect to Q-values. Both state/reward prediction and next action selection use
-    trajectories from $Buffer$
-    to create prompts for the LLM. Changes to the content of $Buffer$
-    change the prompts that the LLM receives, allowing the model to improve its
-    behavior over time.
-  ],
-  placement: top,
-) <fig:q>
+#figure(image("figures/policy-iteration/action-selection.svg"), caption: [
+  Diagram of procedure used to generate rollouts and select actions.
+], placement: top) <fig:q>
 
 == Related Work <sec:related>
 
@@ -276,6 +265,7 @@ pair and for the current policy.
   caption: [
     Training Loop
   ],
+  placement: top,
 ) <algo:train>
 #algorithm-figure(
   {
@@ -335,6 +325,7 @@ pair and for the current policy.
   caption: [
     Computing Q-values
   ],
+  placement: top,
 ) <algo:q>
 
 == Method <sec:method>
@@ -547,8 +538,8 @@ assert not done`
  ]
    )},
   caption: [
-    This table provides example prompts for each domain, showcasing the text format
-    and hints. Hints are in italics.
+    Example prompts for each domain, showcasing the text format
+    and hints (hints in italics).
   ],
   placement: top,
 )<tab:prompt-format>
@@ -701,11 +692,12 @@ implementation is available at https://github.com/ethanabrooks/icpi.
 #figure(
   image("figures/policy-iteration/algorithm.png"),
   caption: [
-    Comparison of ICPI with three baselines, "No ArgMax," "Tabular Q," and "Nearest
-    Neighbor." The $y$-axis depicts regret (normalized between 0 and 1), computed
-    relative to an optimal return with a discount-factor of 0.8. The $x$-axis
-    depicts time-steps during training. Error bars are standard errors from four
-    seeds.
+    Comparison of ICPI with three baselines.
+    // , "No ArgMax," "Tabular Q," and "Nearest
+    // Neighbor." The $y$-axis depicts regret (normalized between 0 and 1), computed
+    // relative to an optimal return with a discount-factor of 0.8. The $x$-axis
+    // depicts time-steps during training. Error bars are standard errors from four
+    // seeds.
   ],
   placement: top
 ) <fig:algorithms>
@@ -746,10 +738,13 @@ improving the policy before experiencing good trajectories.
 
 #figure(
   image("figures/policy-iteration/ablation.png"),
-  caption: [Comparison of ICPI with ablations. The $y$-axis depicts
-    regret (normalized between 0 and 1), computed relative to an optimal
-    return with a discount-factor of 0.8. The $x$-axis depicts time-steps
-    during training. Error bars are standard errors from four seeds.],
+  caption: [
+    Comparison of ICPI with ablations.
+    // The $y$-axis depicts
+    // regret (normalized between 0 and 1), computed relative to an optimal
+    // return with a discount-factor of 0.8. The $x$-axis depicts time-steps
+    // during training. Error bars are standard errors from four seeds.
+    ],
     placement: top,
 ) <fig:ablations>
 
@@ -814,10 +809,12 @@ using these models.
 
 #figure(
   image("figures/policy-iteration/language-model.png"),
-  caption: [Comparison of different language models used to implement ICPI. The $y$-axis depicts
-    regret (normalized between 0 and 1), computed relative to an optimal
-    return with a discount-factor of 0.8. The $x$-axis depicts time-steps of
-    training. Error bars are standard errors from four seeds.],
+  caption: [Comparison of different language models used to implement ICPI.
+  // The $y$-axis depicts
+  //   regret (normalized between 0 and 1), computed relative to an optimal
+  //   return with a discount-factor of 0.8. The $x$-axis depicts time-steps of
+  //   training. Error bars are standard errors from four seeds.
+    ],
     placement: top,
 ) <fig:language-models>
 
