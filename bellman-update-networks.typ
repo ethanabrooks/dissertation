@@ -3,11 +3,6 @@
 
 #import "algorithmic.typ": algorithm-figure, show-algorithms
 
-#set heading(numbering: "1.1")
-
-#set math.equation(numbering: "(1)")
-#set page(numbering: "1")
-#show: show-algorithms
 #show heading: it => text(
   weight: "regular",
   [#counter(heading).display() #smallcaps(it.body) #linebreak()

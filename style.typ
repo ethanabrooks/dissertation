@@ -1,4 +1,5 @@
 #import "@preview/anti-matter:0.1.1": anti-matter, fence, set-numbering
+#import "algorithmic.typ": show-algorithms
 
 #let formatHeader(body: content) = [
   #set align(center)
@@ -63,6 +64,7 @@
   show figure: set block(breakable: true)
   show figure: set par(leading: 1em)
   set math.equation(numbering: "(1)")
+  show: show-algorithms
 
   [ #author \
     #email \
