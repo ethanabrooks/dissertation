@@ -1,7 +1,9 @@
 #import "math.typ": *
 #import "@preview/cetz:0.1.2": canvas, draw, tree
-
 #import "algorithmic.typ": algorithm-figure, show-algorithms
+
+// #set math.equation(numbering: "(1)")
+// #set heading(numbering: "1.1")
 
 = Bellman Update Networks
 
@@ -288,7 +290,7 @@ the network produces estimates, we use them both to train the network (see
             ),
             State(
               [$QValue_(k+1) gets QValue_theta (History^(Value_k))$],
-              comment: [Use Bellman Network to estimate values],
+              comment: [Use Bellman Update Network to estimate values],
               label: <line:forward>,
             ),
             State(
@@ -304,12 +306,12 @@ the network produces estimates, we use them both to train the network (see
       ),
     )
   },
-  caption: [ Training the Bellman Network. ],
+  caption: [ Training the Bellman Update Network. ],
   placement: top,
 ) <alg:train-bellman-network>
 
 === Implementation Details <sec:implementation>
-We implement the Bellman Network as a causal transformer, using the GPT2 #cite(<radford2019language>)
+We implement the Bellman Update Network as a causal transformer, using the GPT2 #cite(<radford2019language>)
 implementation from #link("https://huggingface.co/", [www.huggingface.co]). Why
 is causal masking necessary, given that the target does not appear in the input
 to the model? To answer this question, we must draw attention to a disparity
@@ -416,13 +418,44 @@ updates, e.g. using the loss:
 $ Loss^delta_theta &:= -E[sum_(t=1)^(T-1)sum_(Act in Actions) log Prob_theta
 (QValue_Highlight(k) (Obs_t, Act) | History^(QValue_Highlight(k- delta))_t)] $
 
-where $delta$ is some integer between 1 and $k-1$ (see @eq:loss for the
+where $delta$ is some integer between 1 angitd $k-1$ (see @eq:loss for the
 definition of $History_t^(QValue_Highlight(k- delta))$). In our experiments, we
 vary $delta$ between 1 and the maximum number of iterations $delta_max$. We
 inversely vary $K$, the number of iterations in our evaluation (@line:iterate of
 @alg:eval-tabular), so that $delta times k =delta_max$. Thus when $delta = delta_max$,
 we perform $k=1$ iterations, reducing the algorithm to the "naive" method
 described in @sec:naive.
+
+== Related Work <sec:related-work-bellman-networks>
+An earlier work that anticipates many of the ideas used by Bellman Update
+Networks is Value Iteration Networks #cite(<tamar2016value>). Like a Bellman
+Update Network, a Value Iteration Network uses a neural network to approximate a
+single step of value propagation and performs multiple steps of recurrent
+forward passes to produce an inference, with each new value estimate conditioned
+on a previous one. However, Value Iteration Networks do not target in-context
+learning, and instead the paper focuses on their ability to plan implicitly.
+Additionally, Value Iteration Networks rely on Convolutional Neural Networks
+which assume a representation of the environment in which the network can
+simultaneously observe the current state and those adjacent to it. As a result,
+the paper focuses exclusively on top-down 2D and graph navigation domains.
+
+A more recent work that incorporates many related ideas is Procedure Cloning #cite(<yang2022chain>).
+In this work, the authors augment a behavior cloning dataset with information
+relating to the procedure used to choose an action. For example, in a maze
+environment, instead of cloning actions only, they also clone steps in a
+breadth-first-search algorithm used to choose those actions. Bellman Update
+Networks may be thought of as a specialization of this approach to the policy
+evaluation algorithm.
+
+A variety of works, to include #cite(<schrittwieser2020mastering>, form: "prose"), #cite(<okada2022dreamingv2>, form: "prose"), #cite(<zhumastering>, form: "prose") and #cite(<wen2023dream>, form: "prose") consider
+methods of planning in a latent space. We highlight two recent works in
+particular. Thinker #cite(<chung2023thinker>) performs Monte-Carlo Tree Search
+entirely in latent space, with states augmented by anticipated rollout return
+and visit count. Another interesting work is #cite(<ritter2020rapid>, form: "prose") which
+proposes "Episodic Planning Networks," which extends the agent with an episodic
+memory which is updated using a self-attention operation that iterates multiple
+times per step. The authors observe that the self-attention operation learns a
+kind of value map of states in the environment.
 
 == Experiments <sec:experiments-bellman-network>
 Our experiments explore two settings: a tabular grid-world setting in which
@@ -600,11 +633,27 @@ In this section we test the ability of the transformer architecture to meet
 these challenges.
 
 ==== Can @alg:train-bellman-network yield accurate predictions? <sec:accurate-predictions>
+
 #figure(
-  image("figures/bellman-update-networks/bootstrap-rmse.png"),
+  grid(
+    columns: (auto, auto),
+    column-gutter: 20pt,
+    [#figure(
+        align(center, image("figures/bellman-update-networks/bootstrap-rmse.png")),
+        caption: [Root mean-square error of Bellman Update Network trained without ground-truth
+          targets using @alg:train-bellman-network.],
+      )<fig:bootstrap-rmse>],
+    [#figure(
+        align(center, image("figures/bellman-update-networks/oneroom.jpg")),
+        caption: [Improved policy regret on $5 times 5$ grid-world with walls.],
+      )<fig:sequence-obs>],
+  ),
+  caption: none,
+  supplement: none,
   placement: top,
-  caption: [TODO: this is a placeholder.],
-) <fig:bootstrap-rmse>
+  outlined: false,
+)
+
 Our first set of experiments reproduces those in @sec:train-tabular. Again, in
 order to give meaning to the accuracy estimates in @fig:bootstrap-rmse, we
 compare against a simple baseline, analogous to $delta_max$, which directly
@@ -617,24 +666,15 @@ E_(Obs_(t+1), Act_(t+1)) [QTar_theta (Obs_(t+1), Act_(t+1))]))^2 $
 
 where $QTar_theta$ is the output of $QValue_theta$ interpolated with previous
 values. To mitigate instability, we found it necessary to reduce the
-interpolation factor from 0.5 to 0.001. #text(
-  fill: orange,
-)[TODO: Nonetheless, we were unable to prevent these predictions from eventually
-  diverging as seen in @fig:bootstrap-rmse. Some existing literature has
-  documented the tendency for value prediction to overfit in the offline setting,
-  especially when integrating policy improvement.]
+interpolation factor from 0.5 to 0.001. While lower values of $delta$ clearly
+outperform higher values in @fig:bootstrap-rmse, we do observe some overfitting
+toward the end of training for $delta=1$.
 
-==== Can @alg:train-bellman-network induce in-context reinforcement learning in a non-tabular setting?
-#figure(
-  image("figures/bellman-update-networks/oneroom.jpg", width: 75%),
-  placement: bottom,
-  caption: [A screenshot of the Miniworld environment. The agent also observes objects with
-    different colors and shapes.],
-) <fig:pickupobjects>
+==== Can @alg:train-bellman-network induce in-context reinforcement learning in a non-tabular setting? <sec:miniworld>
 
 Finally, we turn our attention to a non-tabular setting, implemented using #link("https://miniworld.farama.org/", "Miniworld") #cite(<MinigridMiniworld23>).
 Miniworld is a 3D domain in which the agent receives egocentric, RGB
-observations of the environment (see @fig:pickupobjects). We adapt the #link("https://miniworld.farama.org/environments/oneroom/", "OneRoom") environment
+observations of the environment (see @fig:sequence-obs). We adapt the #link("https://miniworld.farama.org/environments/oneroom/", "OneRoom") environment
 to support multi-task training. We populate the environment with two random
 objects which the agent must visit in sequence. We encode the high-dimensional
 RGB observations used by Miniworld with a 3-layer convolutional network before
@@ -743,10 +783,6 @@ reflect the dynamics of the environment.
   ),
   placement: top,
 )
-
-== Related Work
-
-TO DO.
 
 == Conclusion
 

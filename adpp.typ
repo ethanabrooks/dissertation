@@ -276,6 +276,33 @@ number of active pathways per rollout step does not increase. Ranking is
 performed across all rollouts, so all the descendants of a given node may
 eventually be pruned.
 
+== Related Work
+A paper that strongly influenced this work is Trajectory Transformer #cite(<janner2021sequence>),
+from which we borrow much of our methodology. We distinguish ourselves from that
+work by focusing on in-context learning in partially observed multi-task
+domains, and through the incorporation of Algorithm Distillation #cite(<laskin2022context>).
+
+Several recent works have explored the use of in-context learning to adapt
+transformer-based agents to new tasks. #cite(<raparthy2023generalization>) study
+the properties that are conducive to generalization in these kinds of agents,
+especially highlighting "burstiness" #cite(<chan2022data>) and "multi-trajectory"
+inputs -- inputs containing multiple episodes from the same task, as used in #cite(<laskin2022context>, form: "prose") and
+in this work. #cite(<lee2023supervised>, form: "prose"). #cite(<lee2023supervised>, form: "prose") propose
+an approach similar to AD, but instead of predicting the _next_ action, they
+directly predict the _optimal_ action. They demonstrate that this gives rise to
+similar forms of in-context learning and outperforms AD on several tasks.
+#cite(<pinon2022model>, form: "prose") learn a dynamics model, similar to this
+work, and execute tree search, though unlike this work, they use a fixed policy.
+
+Transformers have also been studied extensively in the capacity of world models. #cite(<micheli2022transformers>, form: "prose") train
+a transformer world-model using methods similar to our own and demonstrate that
+training an agent to optimize return within this model is capable of
+significantly improving sample-complexity on the Atari 100k benchmark. #cite(<robine2023transformer>, form: "prose") augment
+this architecture with a variational autoencoder for generating compact
+representations of the observations. "TransDreamer" #cite(<chen2022transdreamer>) directly
+emulates Dreamer V2 #cite(<hafner2020mastering>) adjusting that algorithm to use
+transformers in place of GRUs to capture recurrence.
+
 == Experiments
 <experiments>
 ==== Domains
