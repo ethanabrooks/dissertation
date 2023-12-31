@@ -62,6 +62,7 @@
   show link: underline
   show figure: set block(breakable: true)
   show figure: set par(leading: 1em)
+  set math.equation(numbering: "(1)")
 
   [ #author \
     #email \

@@ -5,9 +5,6 @@
 
 #show: show-algorithms
 
-#set heading(numbering: "1.1")
-#set math.equation(numbering: "(1)")
-
 = Algorithm Distillation + Policy Iteration
 == Introduction <sec:introduction-adpp>
 Generalization to novel tasks is an important challenge in multitask
