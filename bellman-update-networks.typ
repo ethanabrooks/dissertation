@@ -3,12 +3,6 @@
 
 #import "algorithmic.typ": algorithm-figure, show-algorithms
 
-#show heading: it => text(
-  weight: "regular",
-  [#counter(heading).display() #smallcaps(it.body) #linebreak()
-  ],
-)
-
 = Bellman Update Networks
 
 In the previous two chapters, we demonstrated the capacity of a sequence model

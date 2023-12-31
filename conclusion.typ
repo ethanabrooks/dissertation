@@ -1,6 +1,5 @@
 #import "style.typ": cites
 
-#set heading(numbering: "1.1")
 = Conclusion
 
 Since beginning of this work, the science of artificial intelligence has
