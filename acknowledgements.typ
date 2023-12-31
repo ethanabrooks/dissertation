@@ -45,12 +45,14 @@ research journey, subjecting my ideas to meticulous examination and providing
 invaluable critiques. His unwavering support, particularly in the final stretch
 of my dissertation, has been truly indispensible.
 
-For Satinder, I owe a profound debt of gratitude. Though his critiques were
-uncompromising they truly represent an unwavering dedication to intellectual and
-scientific excellence. I have come to understand that his willingness to shoot
-down ideas, even when others encouraged them, was not an obstacle but a rare and
-precious gift. He challenged me to meet intellectual standards that truly felt
-out of reach at the start of this journey, and for that I am forever grateful.
+To Satinder, I owe a profound debt of gratitude. At times, he "imparted truth
+and health in rough electric shocks." But I came to recognize that what at first
+could seem like inflexibility owed from an unwavering dedication to intellectual
+and scientific excellence. I am incredibly fortunate to have benefited from his
+uncompromising critical lens these past six years, a lens which saved me months
+of frustration by steering me away from many a dead-end project. He challenged
+me to meet intellectual standards that truly felt out of reach at the start of
+this journey, and for that he has my lifelong gratitude.
 
 To each and every one of you, my heartfelt thanks. Your support and guidance
 have shaped me not only as a researcher but also as a person.
