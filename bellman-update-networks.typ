@@ -226,7 +226,7 @@ of Q-values, improved the speed and stability of learning.
 To regress the outputs of the model onto value targets, we use mean-square-error
 loss:
 
-$ Loss_theta &:= sum_(t=1)^(T-1) [QValue_theta (Obs_t, Act_t | History^(Value_k)_t) - QTar_(k+1)(Obs_t, Act_t)]^2 $ <eq:loss-bellman-update-network>
+$ Loss_theta &:= sum_(t=1)^(T-1) [QValue_theta (Obs_t, Act_t | History^(Value_Highlight(k))_t) - QTar_Highlight(k+1)(Obs_t, Act_t)]^2 $ <eq:loss-bellman-update-network>
 
 where $History^(Value_k)_t$ is a sequence of transitions containing values $Value_k$ and $QTar_(k+1)$ is
 a target Q value computed using bootstrapping (details in
@@ -445,44 +445,6 @@ represented in the context.
 
 === Extension to multi-step Bellman Updates <sec:multi-step>
 
-#algorithm-figure(
-  {
-    import "algorithmic.typ": *
-    algorithm(
-      ..Function(
-        $QValue(History)$,
-        comment: "Estimate values for all states in input sequence.",
-        State(
-          $FormatQ(QValue_0) gets bold(0)$,
-          comment: "Initialize Q-estimates to zero.",
-        ),
-        ..For(
-          $k=0,...,K$,
-          label: <line:iterate>,
-          ..For(
-            $Obs_t in History$,
-            State(
-              [$#Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) #QValue_k (Obs_t, Act)$],
-              comment: [Compute #FormatV("values") from #FormatQ("Q-values")],
-            ),
-          ),
-          State(
-            [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1), #Value_k (Obs_(t+1)) )_(t=0)^Recency$ ],
-            comment: [pair transitions with #FormatV("values")],
-            label: <line:pair>,
-          ),
-          State(
-            [$FormatQ(QValue_(k+1)) gets #QValue_theta (History^(#Value_k))$],
-            comment: [Use #FormatBUN("Bellman Update Network") to estimate #FormatQ("values")],
-          ),
-        ),
-        Return($FormatQ(QValue_(K+1))$),
-      ),
-    )
-  },
-  caption: [ Tabular evaluation of the Bellman Update Network. ],
-  placement: top,
-) <alg:eval-tabular>
 The present formulation trains the Bellman Update Network to perform a single
 Bellman update. However, this can be generalized to multi-step updates, e.g.
 using the loss:
@@ -541,6 +503,45 @@ the heart of the Bellman Update Network algorithm from the specific procedure
 used to train the network.
 
 === Training with ground-truth values <sec:train-tabular>
+
+#algorithm-figure(
+  {
+    import "algorithmic.typ": *
+    algorithm(
+      ..Function(
+        $QValue(History)$,
+        comment: "Estimate values for all states in input sequence.",
+        State(
+          $FormatQ(QValue_0) gets bold(0)$,
+          comment: "Initialize Q-estimates to zero.",
+        ),
+        ..For(
+          $k=0,...,K$,
+          label: <line:iterate>,
+          ..For(
+            $Obs_t in History$,
+            State(
+              [$#Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) #QValue_k (Obs_t, Act)$],
+              comment: [Compute #FormatV("values") from #FormatQ("Q-values")],
+            ),
+          ),
+          State(
+            [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1), #Value_k (Obs_(t+1)) )_(t=0)^Recency$ ],
+            comment: [pair transitions with #FormatV("values")],
+            label: <line:pair>,
+          ),
+          State(
+            [$FormatQ(QValue_(k+1)) gets #QValue_theta (History^(#Value_k))$],
+            comment: [Use #FormatBUN("Bellman Update Network") to estimate #FormatQ("values")],
+          ),
+        ),
+        Return($FormatQ(QValue_(K+1))$),
+      ),
+    )
+  },
+  caption: [ Tabular evaluation of the Bellman Update Network. ],
+  placement: top,
+) <alg:eval-tabular>
 When regressing onto ground-truth values, we simply minimize
 @eq:loss-bellman-update-network, regressing onto ground-truth values for $QValue^n
 (Obs^n_t, Act)$. Since we are able to optimize the value estimates for all
@@ -673,7 +674,7 @@ the previous section:
 In this section we test the ability of the transformer architecture to meet
 these challenges.
 
-==== Can @alg:train-bellman-network yield accurate predictions? <sec:accurate-predictions>
+==== Can training without ground-truth targets yield accurate predictions? <sec:accurate-predictions>
 
 #figure(
   grid(
@@ -695,23 +696,22 @@ these challenges.
   outlined: false,
 )
 
-Our first set of experiments reproduces those in @sec:train-tabular. Again, in
+Our first set of experiments in this new setting reproduces those the previous
+section, with a $5 times 5$ grid-world using goals of achievement. Again, in
 order to give meaning to the accuracy estimates in @fig:bootstrap-rmse, we
 compare against a simple baseline, analogous to $delta_max$, which directly
-estimates $QValue_(k= infinity)$. In order to train this baseline, we use an
-algorithm identical to @alg:train-bellman-network, except we eliminate the
-curriculum, and in place of @line:optimize, we minimize the traditional
-bootstrapped loss:
-$ Loss_theta := (QValue_theta (Obs_t, Act_t | History_t) - (Rew_t + gamma
+estimates $QValue_(k= infinity)$. This baseline uses the same procedure as the
+original (@alg:train-bellman-network), except for two changes. First, we
+eliminate the curriculum. Second, we eliminate $k$ from our loss, minimizing $ Loss_theta := (QValue_theta (Obs_t, Act_t | History_t) - (Rew_t + gamma
 E_(Obs_(t+1), Act_(t+1)) [QTar_theta (Obs_(t+1), Act_(t+1))]))^2 $
 
-where $QTar_theta$ is the output of $QValue_theta$ interpolated with previous
-values. To mitigate instability, we found it necessary to reduce the
-interpolation factor from 0.5 to 0.001. While lower values of $delta$ clearly
+instead of @eq:loss-bellman-update-network. Here, $QTar_theta$ is the output of $QValue_theta$ interpolated
+with previous values. To mitigate instability, we found it necessary to reduce
+the interpolation factor from 0.5 to 0.001. While lower values of $delta$ clearly
 outperform higher values in @fig:bootstrap-rmse, we do observe some overfitting
 toward the end of training for $delta=1$.
 
-==== Can @alg:train-bellman-network induce in-context reinforcement learning in a non-tabular setting? <sec:miniworld>
+==== Can a Bellman Update Network induce in-context reinforcement learning in a non-tabular setting? <sec:miniworld>
 
 Finally, we turn our attention to a non-tabular setting, implemented using #link("https://miniworld.farama.org/", "Miniworld") #cite(<MinigridMiniworld23>).
 Miniworld is a 3D domain in which the agent receives egocentric, RGB
@@ -770,8 +770,9 @@ regimes, where the disparity in distribution between the policies represented in
 the training data and the optimal policy is greatest. Moreover, we observe that
 CQL and $delta=delta_max$ also learn more gradually, perhaps reflecting
 limitations in the ability to generalize to the mixture policy observed during
-downstream evaluation. We also observe a slight advantage for $delta=1$ over $delta=2$,
-reflecting the disparity observed in our earlier grid-world results.
+downstream evaluation. We also observe a slight advantage for $delta=1$ over $delta=2$ in
+the higher-data regimes, reflecting the disparity observed in our earlier
+grid-world results.
 
 ==== Qualitative analysis
 
