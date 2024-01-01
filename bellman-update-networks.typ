@@ -35,8 +35,8 @@ comparing this approach with some baselines.
 
 === Review of In-Context Model-Based Planning <review-of-in-context-model-based-planning>
 In the preceding chapter, we described work in which we trained a causal model
-to map a temporally sequential history of states $Obs_(<= t)$, actions
-$Act_(<= t)$, and rewards $Rew_(<t)$, to predictions of the next state $Obs_(t+1)$ and
+to map a temporally sequential history of observations $Obs_(<= t)$, actions
+$Act_(<= t)$, and rewards $Rew_(<t)$, to predictions of the next observation $Obs_(t+1)$ and
 next reward $Rew_(t)$. Our model optimized the following loss:
 
 $ Loss^"AD"_theta := -E_(History_t^n)[ sum_(t=1)^(T-1) log Prob_theta (Act^n_t |
@@ -57,10 +57,10 @@ transition or reward functions.
 === Naive Alternative Method <sec:naive>
 
 An almost identical technique might be used to predict value functions in place
-of next-states and next-rewards. In principle, a history of states, actions, and
-rewards should be sufficient to infer the dynamics and reward of the environment
-as well as the current policy, all that is necessary to estimate value. Our
-model would then minimize the following loss:
+of next-observations and next-rewards. In principle, a history of observations,
+actions, and rewards should be sufficient to infer the dynamics and reward of
+the environment as well as the current policy, all that is necessary to estimate
+value. Our model would then minimize the following loss:
 
 $ Loss_theta &:= -E_History_t [sum_(t=1)^(T-1)sum_(Act in Actions) log Prob_theta (Highlight(QValue (Obs_t, Act)) |
 History_t)]
@@ -74,10 +74,10 @@ or #cite(<kumar2020conservative>, form: "prose").
 
 One question that we seek to understand is the extent to which this approach
 generalizes to novel tasks and policies. We observe that the mapping from a
-history of states, actions, and rewards to values is non-trivial, requiring the
-model to infer the policy and the dynamics of the environment, and to implicitly
-forecast these estimates for multiple time steps. As a result, it is reasonable
-to anticipate some degree of memorization.
+history of observations, actions, and rewards to values is non-trivial,
+requiring the model to infer the policy and the dynamics of the environment, and
+to implicitly forecast these estimates for multiple time steps. As a result, it
+is reasonable to anticipate some degree of memorization.
 
 == Proposed Method <sec:bellman-network-method>
 
@@ -90,10 +90,10 @@ evaluation while the latter will not. As #cite(<chan2022data>, form: "prose") su
 the relevance or predictive power of information in a model's context strongly
 influences the balance of in-weights vs. in-context learning.
 
-With this in mind, we note that the ground-truth values associated with states
-in the model's context would be highly predictive of the value of the current
-state. A model provided this information in its context should attend more
-strongly to its context and memorize less. This would entail the following
+With this in mind, we note that the ground-truth values associated with each
+time-step in the model's context would be highly predictive of the value of the
+current state. A model provided this information in its context should attend
+more strongly to its context and memorize less. This would entail the following
 redefinition of $History_t$, the history on which we condition the model's
 predictions:
 
@@ -335,12 +335,12 @@ is causal masking necessary, given that the target does not appear in the input
 to the model? To answer this question, we must draw attention to a disparity
 between the outputs from the model on @line:forward of
 @alg:train-bellman-network and the targets used to train the model on
-@line:optimize. For each input state $Obs_t$, we require the model to infer a
-vector of values, *$QValue(Obs_t, dot.c)$*, one for each action in the action
-space. However, we are only able to train the model on the single action
+@line:optimize. For each input observation $Obs_t$, we require the model to
+infer a vector of values, *$QValue(Obs_t, dot.c)$*, one for each action in the
+action space. However, we are only able to train the model on the single action
 observed in the dataset for that transition. If the model is able to observe
-both the input state $Obs_t$ and the action $Act_t$ on which we condition the
-target value, the model will neglect all predictions besides $QValue(Obs_t, Act_t)$.
+both the input observation $Obs_t$ and the action $Act_t$ on which we condition
+the target value, the model will neglect all predictions besides $QValue(Obs_t, Act_t)$.
 That is, it will learn good predictions of $QValue(Obs_t, Act)$ for $Act = Act_t$,
 the action that appears in the dataset, but not for the other actions in the
 action space. To prevent this degenerate outcome, we use masking to prevent the

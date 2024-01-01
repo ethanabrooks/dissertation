@@ -75,7 +75,7 @@ While many state-of-the-art models are not publicly documented (GPT-4, Gemini,
 etc.) and others are cagey about the details of RLHF #cite(<lieber2021jurassic>),
 it is clear that models increasingly ignore the credit-assignment problem by
 maximizing one-step reward #cite(<touvron2023llama>) -- and despite this,
-achieve state-of-the-art performance. Direct Preference Optimization #cite(<rafailov2023direct>),
+achieve top performance. Direct Preference Optimization #cite(<rafailov2023direct>),
 an increasingly popular technique for optimizing learned reward, actually brands
 itself as "RL-free" and completely disregards credit-assignment.
 
