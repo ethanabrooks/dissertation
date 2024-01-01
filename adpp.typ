@@ -5,7 +5,7 @@
 
 #show: show-algorithms
 
-= Algorithm Distillation + Model-Based Planning
+= Algorithm Distillation +\ Model-Based Planning
 == Introduction <sec:introduction-adpp>
 Generalization to novel tasks is an important challenge in multitask
 reinforcement learning (RL). This setting entails a training regime that
@@ -345,9 +345,14 @@ metrics that we record.
 ==== Evaluation on Withheld Goals
 <evaluation-on-withheld-goals>
 
+<evaluation-on-withheld-wall-configurations>
+#figure(image("figures/adpp/no-walls.png", width: 110%), caption: [
+  Evaluation on withheld location pairs.
+], placement: top) <fig:no-walls>
+
 In our first experiment, we evaluate the agent on a set of withheld key-door
 pairs, which we sample uniformly at random (10% of all possible pairs) and
-remove from the training set. As @fig:unseen-goals indicates, our algorithm
+remove from the training set. As @fig:no-walls indicates, our algorithm
 outperforms the AD baseline both in time to converge and final performance. We
 attribute this to the fact that our method's downstream policy directly
 optimizes expected return, choosing actions that correspond to the highest value
@@ -358,6 +363,12 @@ through modeling error. Moreover, we note that our method completely recovers
 the performance of the ground-truth baseline, though its speed of convergence
 lags slightly, due to the initial exploration phase in which the model learns
 the reward function through trial and error.
+
+#figure(
+  image("figures/adpp/unseen-goals.png", width: 300pt),
+  caption: [ Evaluation on fully withheld locations. ],
+  placement: top,
+) <fig:unseen-goals>
 
 Next, we increase the generalization challenge by holding out key and door
 locations entirely. During training of the source algorithm, we never place keys
@@ -371,16 +382,8 @@ high-level abstractions like a policy. As we argued in @sec:introduction-adpp,
 higher-level abstractions are prone to memorization since they do not perfectly
 distill the logic which produced them.
 
-#figure(
-  [#box(image("figures/adpp/generalization-to-more-walls-timestep.png"))],
-  caption: [
-    Generalization to higher percentages of walls.
-  ],
-  placement: top,
-) <fig:generalization-to-more-walls>
-
 ==== Evaluation on Withheld Wall Configurations
-<evaluation-on-withheld-wall-configurations>
+
 In addition to evaluating generalization to novel reward functions, we also
 evaluated our method's ability to generalize to novel dynamics. We did this by
 adding walls to the grid world, which obstruct the agent's movement. During
@@ -393,12 +396,12 @@ we attribute this to the tendency of lower-level primitives to generalize better
 than higher-level abstractions.
 
 #figure(
-  [#box(image("figures/adpp/more-walls-achievable-timestep.png"))],
+  [#box(image("figures/adpp/generalization-to-more-walls-timestep.png"))],
   caption: [
-    Generalization to higher percentages of walls with guaranteed achievability.
+    Generalization to higher percentages of walls.
   ],
   placement: top,
-) <fig:generalization-to-more-walls-with-guaranteed-achievability>
+) <fig:generalization-to-more-walls>
 
 Because walls are chosen from all possible positions IID, some configurations
 may wall off either the key or the door. In order to remove this confounder, we
@@ -406,11 +409,27 @@ ran a set of experiments in which we train the agent in the same 10% wall
 setting as before, but evaluate it on a set of configurations that guarantee the
 reachability of both goals. Specifically, we generate procedural mazes in which
 all cells of the grid are reachable and sample some percentage of the walls in
-the maze. As figure demonstrates, this widens the performance gap between our
-method and the AD baseline.
+the maze. As @fig:generalization-to-more-walls-with-guaranteed-achievability
+demonstrates, this widens the performance gap between our method and the AD
+baseline.
+
+#figure(
+  [#box(image("figures/adpp/more-walls-achievable-timestep.png"))],
+  caption: [
+    Generalization to higher percentages of walls with guaranteed achievability.
+  ],
+  placement: bottom,
+) <fig:generalization-to-more-walls-with-guaranteed-achievability>
 
 ==== Model Accuracy
 <model-accuracy>
+
+#figure(
+  image("figures/adpp/model-accuracy.png", width: 300pt),
+  caption: [Accuracy of model predictions over the course of an evaluation rollout.],
+  placement: top,
+) <fig:model-accuracy>
+
 In order to acquire a better understanding of the model's ability to in-context
 learn, we plotted model accuracy in the generalization to 10% walls setting.
 Note that while the percentages of walls in the training and evaluation setting
@@ -420,19 +439,19 @@ context. In @fig:model-accuracy, we measure the accuracy of the model's
 prediction of termination signals (labeled "done / not done"), of next
 observations (labeled "observation"), and of rewards (labeled
 "reward"). These predictions start near optimal, since the agent can rely on
-priors, that most timesteps do not terminate, that most transitions result in
+priors: that most timesteps do not terminate, that most transitions result in
 successful movement (no wall), and that the reward is 0. However, we also
 measure prediction accuracy for these rare events: the line labeled "done"
 measures termination-prediction accuracy for terminal timesteps only; the "positive
 reward" line measures reward-prediction accuracy on timesteps with positive
 reward; and the "wall" line measures accuracy on timesteps when the agent's
-movement is obstructed by a random wall. As figure demonstrates, even for these
-rare events, the model rapidly recovers accuracy near 100%.
+movement is obstructed by a random wall. As @fig:model-accuracy demonstrates,
+even for these rare events, the model rapidly recovers accuracy near 100%.
 
 ==== Contribution of Model Error to Performance
 <contribution-of-model-error-to-performance>
 #figure(
-  [#box(image("figures/adpp/model-noise.png"))],
+  [#box(image("figures/adpp/model-noise.png", width: 110%))],
   caption: [
     Impact of model error on performance, measured by introducing noise into each
     component of the model's predictions.
@@ -443,50 +462,42 @@ rare events, the model rapidly recovers accuracy near 100%.
 While @fig:model-noise indicates that our model generally achieves high accuracy
 in these simple domains, we nevertheless wish to understand the impact of a
 suboptimal model on RL performance. To test this, we introduced noise into
-different component of the model's predictions. In figure , we note that
-performance is fairly robust to noise in the termination predictions, but very
-sensitive to noise in the reward predictions. Encouragingly, the model
+different components of the model's predictions. In @fig:model-noise, we note
+that performance is fairly robust to noise in the termination predictions, but
+very sensitive to noise in the reward predictions. Encouragingly, the model
 demonstrates reasonable performance with as much as 20% noise in the observation
 predictions. Also, as indicated, the method is quite robust to noise in the
 action model. We also note that AD's sensitivity to noise in the policy explains
 its lower performance in many of the settings previously discussed.
 
-#figure(
-  [#box(image("figures/adpp/policy-noise-timestep.png"))],
-  caption: [
-    Impact of policy noise on performance, measured by interpolating policy logits
-    with uniform noise.
-  ],
-  placement: top,
-)
-
 ==== Data Scaling Properties
 <data-scaling-properties>
-#figure([#figure(
-    [#box(image("figures/adpp/less-source-data-time-timestep.png"))],
-    caption: [
-      Impact of scaling the training data along the IID dimension.
-    ],
-  )<fig:less-source-data-time>,
-  #figure(
-    [#box(image("figures/adpp/less-source-data-iid-timestep.png"))],
-    caption: [
-      Impact of scaling the length of training of the source algorithm.
-    ],
-  )<fig:less-source-data-iid>
-
-], outlined: false, placement: top)
+#figure(
+  [#box(image("figures/adpp/less-source-data-iid-timestep.png"))],
+  caption: [
+    Impact of scaling the length of training of the source algorithm.
+  ],
+  placement: bottom,
+)<fig:less-source-data-iid>
 
 We also examined the impacts of scaling the quantity of data that our model was
-trained on. In figure , we scale the quantity of the training data along the IID
-dimension, with the $x$-axis measuring the number of source algorithm histories
-in the training data scaled according to the equation $256 times 2^x$. In figure
-, we scale the length for which each source algorithm is trained, with the $x$-axis
-measuring the number of timesteps of training scaled according to the same
-equation. This result was surprising, as we expected AD to be
+trained on. In @fig:less-source-data-iid, we scale the quantity of the training
+data along the IID dimension, with the $x$-axis measuring the number of source
+algorithm histories in the training data scaled according to the equation $256 times 2^x$.
+In @fig:less-source-data-time, we scale the length for which each source
+algorithm is trained, with the $x$-axis measuring the number of timesteps of
+training scaled according to the same equation. This result was surprising, as
+we expected AD to be
 #emph[more] sensitive to reduced training time, since that algorithm is more
 dependent on demonstration of the optimal policy. Nevertheless, we note that our
 method outperforms AD in all data regimes.
+#figure(
+  [#box(image("figures/adpp/less-source-data-time-timestep.png"))],
+  caption: [
+    Impact of scaling the training data along the IID dimension.
+  ],
+  placement: top,
+)<fig:less-source-data-time>
 
 === Continuous-State and Continuous-Action Domains
 Finally, we evaluate the ability of #ADPP to learn in domains with continuous
@@ -504,53 +515,6 @@ action space consists of 2d position deltas. The Sparse Point environment tests
 the ability of the agent to explore efficiently, since an agent that
 concentrates its exploration on the half-circle will significantly outperform
 one that explores all positions with equal probability.
-
-As @fig:point-env demonstrates, vanilla AD fares quite poorly in this setting.
-Of the 20 seeds in the diagram, only two discover the goal and only one returns
-to it consistently. The AD agent either explores randomly in vicinity of the
-origin --- emulating policies observed early in the source data --- or commits
-arbitrarily to a point on the arc and remains in its vicinity --- emulating
-later policies, but ignoring the lack of experienced reward. The Sparse Point
-environment highlights a weakness in vanilla AD. During training, the source
-algorithm --- which uses one agent per task --- can memorize the location of the
-goal. It therefore never exhibits Bayes-optimal exploration patterns for AD to
-imitate.
-
-Why should we expect #ADPP to perform better? For the same reasons that cause
-vanilla AD to fail, we should not expect the simulated rollouts to perform
-Bayes-optimal exploration. However, before the model experiences reward, its
-reward predictions will reflect the prior, which has support on the semi-circle
-and nowhere else. If the model anticipates reward anywhere in the environment,
-it should only do so on the semi-circle, given the distribution of reward in the
-training data. Therefore any rollouts that do not lead to the semi-circle should
-result in a simulation of zero cumulative reward.
-
-In order for #ADPP to recover Bayes optimal exploration in the Sparse Point
-environment, two random events must co-occur: some of the rollouts must lead to
-the semi-circle, and the model must anticipate reward there, without having
-necessarily experienced it. In practice, this does not happen consistently. The
-rollout policy often degenerates into random dithering and the reward model
-often predicts no reward at all. We found that the key to eliciting consistent
-performance from #ADPP was to perform beam-search as described in
-@sec:beam-search. This effectively increases the opportunities for rollouts to
-lead to the arc and for the reward model to anticipate reward there. For
-example, the pruning path can entirely prune paths that do not lead to the arc,
-while those that do benefit from node-expansion. As @fig:point-env demonstrates,
-both beam-search methods significantly outperform vanilla AD and #ADPP.
-
-==== Half-Cheetah Environments
-
-In our final set of environments, we explore two variants on the well-known
-Mujoco "Half-Cheetah" environment. This environment uses a 2D two-legged
-embodiment. In order to instantiate a multi-task problem, we vary the reward
-function: for the "Half-Cheetah Direction" environment, we instantiate two
-tasks, one which rewards the agent for forward movement of the Cheetah and one
-that rewards it for backward movement. For the "Half-Cheetah Velocity"
-environment, we choose a target velocity per task. The agent receives a reward
-penalty for the difference between its current velocity and the target. Per the
-original Half-Cheetah environment, the agent also receives a control reward that
-penalizes large actions. As @fig:cheetah-dir and @fig:cheetah-vel demonstrate, #ADPP outperforms
-vanilla AD on both domains.
 
 #figure(
   grid(
@@ -573,7 +537,54 @@ vanilla AD on both domains.
   ),
   outlined: false,
   placement: top,
+  kind: "none",
+  supplement: none,
 )
+
+As @fig:point-env demonstrates, vanilla AD fares quite poorly in this setting.
+Of the 20 seeds in the diagram, only two discover the goal and only one returns
+to it consistently. The AD agent either explores randomly in vicinity of the
+origin --- emulating policies observed early in the source data --- or commits
+arbitrarily to a point on the arc and remains in its vicinity --- emulating
+later policies, but ignoring the lack of experienced reward. The Sparse Point
+environment highlights a weakness in vanilla AD. During training, the source
+algorithm --- which uses one agent per task --- can memorize the location of the
+goal. It therefore never exhibits Bayes-optimal exploration patterns for AD to
+imitate.
+
+Why should we expect #ADPP to perform better? For the same reasons that cause
+vanilla AD to fail, we should not expect the simulated rollouts of #ADPP to
+perform Bayes-optimal exploration. However, before the model experiences reward,
+its reward predictions will reflect the prior, which has support on the
+semi-circle and nowhere else. Therefore any rollouts that do not lead to the
+semi-circle should result in a simulation of zero cumulative reward.
+
+In order for #ADPP to recover Bayes optimal exploration in the Sparse Point
+environment, two random events must co-occur: some of the rollouts must lead to
+the semi-circle, and the model must anticipate reward there, without having
+necessarily experienced it. In practice, this does not happen consistently. The
+rollout policy often degenerates into random dithering and the reward model
+often predicts no reward at all. We found that the key to eliciting consistent
+performance from #ADPP was to perform beam-search as described in
+@sec:beam-search. This effectively increases the opportunities for rollouts to
+lead to the arc and for the reward model to anticipate reward there. For
+example, paths that do not lead to the arc can be pruned entirely, while those
+that do can benefit from node-expansion. As @fig:point-env demonstrates, both
+beam-search methods significantly outperform vanilla AD and #ADPP.
+
+==== Half-Cheetah Environments
+
+In our final set of environments, we explore two variants on the well-known
+Mujoco "Half-Cheetah" environment. This environment uses a 2D two-legged
+embodiment. In order to instantiate a multi-task problem, we vary the reward
+function: for the "Half-Cheetah Direction" environment, we instantiate two
+tasks, one which rewards the agent for forward movement of the Cheetah and one
+that rewards it for backward movement. For the "Half-Cheetah Velocity"
+environment, we choose a target velocity per task. The agent receives a reward
+penalty for the difference between its current velocity and the target. Per the
+original Half-Cheetah environment, the agent also receives a control reward that
+penalizes large actions. As @fig:cheetah-dir and @fig:cheetah-vel demonstrate, #ADPP outperforms
+vanilla AD on both domains.
 
 == Conclusion
 <conclusion>

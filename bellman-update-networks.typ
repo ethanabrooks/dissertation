@@ -2,6 +2,7 @@
 #import "@preview/cetz:0.1.2": canvas, draw, tree
 #import "algorithmic.typ": algorithm-figure, show-algorithms
 
+#show: show-algorithms
 // #set math.equation(numbering: "(1)")
 // #set heading(numbering: "1.1")
 
@@ -20,11 +21,11 @@ high variance. Second and perhaps more fundamentally, our previous methods
 focused on training an accurate model when value accuracy — not model accuracy —
 was our ultimate concern. As a result, our model learned to focus equally on all
 parts of the observation rather than skewing its resources toward those parts
-that contributed to the expected value — the "functional" part of the
-observation #cite(<grimm2020value>). Conversely, error in modeling any part of
-the observation, whether functional or not, could throw off the value estimate:
-a model trained on inputs containing only ground-truth observations might fail
-to generalize to observations corrupted by modeling error.
+that contributed to the expected value #cite(<grimm2020value>) and away from
+parts that are purely "decorative." Conversely, error in modeling any part of
+the observation, decorative or otherwise, could throw off the value estimate: a
+model trained on inputs containing only ground-truth observations might fail to
+generalize to observations corrupted by modeling error.
 
 In this work, we attempt to address these issues by proposing a method for
 estimating value directly instead of using model-based rollouts. In the next
@@ -49,8 +50,8 @@ $ History^n_t := (Act^n_(t-1-Recency),
 Rew^n_(t-1-Recency), Ter^n_(t-1-Recency), Obs^n_(t-Recency), dots,
 Act^n_(t-1), Rew^n_(t-1), Ter^n_(t-1), Obs^n_t) $ <eq:history-adpp>
 Henceforth in this chapter, we omit the $n$ superscript for the sake of brevity
-and assume that there is one task and policy per trajectory. We implemented our
-model as a causal transformer
+and assume that there is one task and policy per trajectory. In the preceding
+chapter, we implemented our model as a causal transformer
 #cite(<vaswani2017attention>). Because the model was conditioned on history, it
 demonstrated the capability to adapt in-context to settings with novel
 transition or reward functions.
@@ -91,8 +92,8 @@ evaluation while the latter will not. As #cite(<chan2022data>, form: "prose") su
 the relevance or predictive power of information in a model's context strongly
 influences the balance of in-weights vs. in-context learning.
 
-With this in mind, we note that the history of values associated with states in
-the model's context would be highly predictive of the value of the current
+With this in mind, we note that the ground-truth values associated with states
+in the model's context would be highly predictive of the value of the current
 state. A model provided this information in its context should attend more
 strongly to its context and memorize less. This would entail the following
 redefinition of $History_t$, the history on which we condition the model's
@@ -216,8 +217,8 @@ performance. Each of these transition vectors gets passed through a transformer
 network (one vector per transformer index) and the final outputs are projected
 to scalars.
 
-You will note that we provide $Value_k$ and not $QValue_k$ to the model, as in
-@eq:loss. We found that computing
+Note that in @fig:architecture, we provide $Value_k$ and not $QValue_k$ to the
+model, as in @eq:loss. We found that computing
 
 $ Value_k (Obs_t) := sum_Act Policy QValue_k (Obs_t, Act) $ <eq:value>
 
@@ -253,8 +254,8 @@ begins to train on higher values, thereby mitigating the effects of compound
 error. Another benefit of continuing to train lower values of $k$ is that these
 estimates can benefit from backward transfer as the curriculum progresses. As
 the network produces estimates, we use them both to train the network (see
-@line:optimize) but also to produce bootstrap targets for higher values of $k$ (see
-@line:bootstrap).
+@line:optimize in @alg:train-bellman-network) but also to produce bootstrap
+targets for higher values of $k$ (see @line:bootstrap).
 
 #let formatObs = text.with(fill: green)
 
@@ -345,7 +346,9 @@ target value, the model will neglect all predictions besides $QValue(Obs_t, Act_
 That is, it will learn good predictions of $QValue(Obs_t, Act)$ for $Act = Act_t$,
 the action that appears in the dataset, but not for the other actions in the
 action space. To prevent this degenerate outcome, we use masking to prevent the
-model from observing $Act_t$ when conditioning on $Obs_t$.
+model from observing $Act_t$ when conditioning on $Obs_t$. This is also why we
+offset the observations and value predictions by one index, as in
+@fig:architecture.
 
 One consequence of masking is that predictions for values early in the sequence
 are poor in comparison to predictions later in the sequence, since they benefit
@@ -364,6 +367,45 @@ Another important detail is that the bootstrap step on @line:bootstrap of
 lower targets of $k$ which the model has previously trained on. To mitigate
 this, we interpolate $QTar_(k+1)$ with its previous value, using an
 interpolation factor of $.5$.
+
+#algorithm-figure(
+  {
+    import "algorithmic.typ": *
+    algorithm(
+      ..Function(
+        $QValue(History)$,
+        comment: "Estimate values for all states in input sequence.",
+        State(
+          $FormatQ(QValue_0) gets bold(0)$,
+          comment: "Initialize Q-estimates to zero.",
+        ),
+        ..For(
+          $k=0,...,K$,
+          label: <line:iterate>,
+          ..For(
+            $Obs_t in History$,
+            State(
+              [$#Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) #QValue_k (Obs_t, Act)$],
+              comment: [Compute #FormatV("values") from #FormatQ("Q-values")],
+            ),
+          ),
+          State(
+            [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1), #Value_k (Obs_(t+1)) )_(t=0)^Recency$ ],
+            comment: [pair transitions with #FormatV("values")],
+            label: <line:pair>,
+          ),
+          State(
+            [$FormatQ(QValue_(k+1)) gets #QValue_theta (History^(#Value_k))$],
+            comment: [Use #FormatBUN("Bellman Update Network") to estimate #FormatQ("values")],
+          ),
+        ),
+        Return($FormatQ(QValue_(K+1))$),
+      ),
+    )
+  },
+  caption: [ Tabular evaluation of the Bellman Update Network. ],
+  placement: top,
+) <alg:eval-tabular>
 
 === Downstream Evaluation <sec:downstream>
 Once the network is trained, we can use it to estimate values in a new setting
@@ -441,8 +483,9 @@ of the model to approximate a policy mixing the multitude of policies
 represented in the context.
 
 === Extension to multi-step Bellman Updates <sec:multi-step>
-Note that the formulation so far discussed can be generalized to multi-step
-updates, e.g. using the loss:
+The present formulation trains the Bellman Update Network to perform a single
+Bellman update. However, this can be generalized to multi-step updates, e.g.
+using the loss:
 
 $ Loss^delta_theta &:= -E[sum_(t=1)^(T-1)sum_(Act in Actions) log Prob_theta
 (QValue_Highlight(k) (Obs_t, Act) | History^(QValue_Highlight(k- delta))_t)] $
@@ -473,7 +516,7 @@ In this work, the authors augment a behavior cloning dataset with information
 relating to the procedure used to choose an action. For example, in a maze
 environment, instead of cloning actions only, they also clone steps in a
 breadth-first-search algorithm used to choose those actions. Bellman Update
-Networks may be thought of as a specialization of this approach to the policy
+Networks may be viewed as a specialization of this approach to the policy
 evaluation algorithm.
 
 A variety of works, to include #cite(<schrittwieser2020mastering>, form: "prose"), #cite(<okada2022dreamingv2>, form: "prose"), #cite(<zhumastering>, form: "prose") and #cite(<wen2023dream>, form: "prose") consider
@@ -481,10 +524,10 @@ methods of planning in a latent space. We highlight two recent works in
 particular. Thinker #cite(<chung2023thinker>) performs Monte-Carlo Tree Search
 entirely in latent space, with states augmented by anticipated rollout return
 and visit count. Another interesting work is #cite(<ritter2020rapid>, form: "prose") which
-proposes "Episodic Planning Networks," which extends the agent with an episodic
-memory which is updated using a self-attention operation that iterates multiple
-times per step. The authors observe that the self-attention operation learns a
-kind of value map of states in the environment.
+proposes "Episodic Planning Networks." This architecture augments the agent with
+an episodic memory that gets updated using a self-attention operation that
+iterates multiple times per step. The authors observe that the self-attention
+operation learns a kind of "value map" of states in the environment.
 
 == Experiments <sec:experiments-bellman-network>
 Our experiments explore two settings: a tabular grid-world setting in which
@@ -499,54 +542,15 @@ used to train the network.
 
 === Training with ground-truth values <sec:train-tabular>
 When regressing onto ground-truth values, we simply minimize
-@eq:loss-bellman-update-network supplying ground-truth values for $QValue^n
+@eq:loss-bellman-update-network, regressing onto ground-truth values for $QValue^n
 (Obs^n_t, Act)$. Since we are able to optimize the value estimates for all
 actions, we dispense with masking (recall the discussion in @sec:implementation)
 and positional encodings. This allows us to train estimates for all states and
-actions in the sequence simultaneously. To evaluate this network we adapt the
+actions in the sequence simultaneously. To evaluate this network, we adapt the
 iterative procedure from @alg:eval-bellman-network: we iteratively apply the
 network first to an initial $QValue$ estimate, then auto-regressively to its own
 output (after computing value estimates from the Q estimates and the policy
 logits $Policy(dot.c|Obs_t)$ per @eq:value). For details see @alg:eval-tabular.
-
-#algorithm-figure(
-  {
-    import "algorithmic.typ": *
-    algorithm(
-      ..Function(
-        $QValue(History)$,
-        comment: "Estimate values for all states in input sequence.",
-        State(
-          $FormatQ(QValue_0) gets bold(0)$,
-          comment: "Initialize Q-estimates to zero.",
-        ),
-        ..For(
-          $k=0,...,K$,
-          label: <line:iterate>,
-          ..For(
-            $Obs_t in History$,
-            State(
-              [$#Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) #QValue_k (Obs_t, Act)$],
-              comment: [Compute $E_(Act sim Policy(dot.c | Obs_t)) [#QValue_k (Obs_t, Act)]$],
-            ),
-          ),
-          State(
-            [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1), #Value_k (Obs_(t+1)) )_(t=0)^Recency$ ],
-            comment: [pair transitions with #FormatV("values")],
-            label: <line:pair>,
-          ),
-          State(
-            [$FormatQ(QValue_(k+1)) gets #QValue_theta (History^(#Value_k))$],
-            comment: [Use #FormatBUN("Bellman Update Network") to estimate #FormatQ("values")],
-          ),
-        ),
-        Return($FormatQ(QValue_(K+1))$),
-      ),
-    )
-  },
-  caption: [ Tabular evaluation of the Bellman Update Network. ],
-  placement: top,
-) <alg:eval-tabular>
 
 ==== Do value functions overfit?
 #figure(
@@ -563,18 +567,18 @@ estimation is possible. We evaluate the network in an identical setting but with
 20,000 heldout policies. As the upper-left graph of @fig:root-mean-sq-error
 illustrates, we observe a significant gap between training accuracy and test
 accuracy, as measured by root mean-square error. In addition, we observe that
-test error mostly plateaus after update 100,000, even as train error continues
-to decrease, indicating that all learning after this point entails memorization.
-In the right two graphs of @fig:root-mean-sq-error, we randomly omit $1/4$ and $1/2$ of
-the state-action pairs from the input. As the figures demonstrate, the gap
-between training and testing widens slightly and the extent of memorization
-increases.
+test error mostly plateaus after update 100,000, even as training error
+continues to decrease, indicating that all learning after this point entails
+memorization. In the right two graphs of @fig:root-mean-sq-error, we randomly
+omit $1/4$ and $1/2$ of the state-action pairs from the input. As the figures
+demonstrate, the gap between training and testing widens slightly and the extent
+of memorization increases.
 
 ==== Does value prediction with a Bellman Update Network mitigate overfitting?
 In the lower half of @fig:root-mean-sq-error, we compare values estimated by the
 Bellman Update Network. Note that the "test" lines in @fig:root-mean-sq-error
 describe error for the _full_ value estimate produced by $delta_max$ steps of
-iteration (following the procedure described in @sec:train-tabular), not the the
+iteration (following the procedure described in @sec:train-tabular), not the
 error for a single Bellman update. As the figure demonstrates, test error
 continues to diminish along with the training error, long after the test error
 for the $delta_max$ model has plateaued. While we observe a slight diminution in
@@ -589,9 +593,10 @@ between train and test remains constant.
     different numbers of omitted state-action pairs.],
 ) <fig:improved-policy-regret>
 
-The utility of a value function is not entirely captured by its accuracy: an
-inaccurate value function can still induce a good policy. We therefore introduce
-the following procedure for evaluating value estimates in a tabular setting:
+The utility of a value function is not entirely captured by its accuracy, since
+an inaccurate value function can still induce a good policy. We therefore
+introduce the following procedure for evaluating value estimates in a tabular
+setting:
 
 1. We perform a single step of policy improvement, choosing actions greedily by
   value estimate.
@@ -615,7 +620,7 @@ or slightly outperforms the higher values of $delta$.
 #align(
   center,
   figure(
-    grid(columns: (auto, auto), [#figure(
+    grid(columns: (auto, auto), column-gutter: 10pt, [#figure(
         align(
           center,
           image("figures/bellman-update-networks/walls-rmse.png", height: 90pt),
