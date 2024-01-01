@@ -5,7 +5,7 @@
 
 #show: show-algorithms
 
-= Algorithm Distillation +\ Model-Based Planning
+= #text(hyphenate: false, "Algorithm Distillation + Model-Based Planning")
 == Introduction <sec:introduction-adpp>
 Generalization to novel tasks is an important challenge in multitask
 reinforcement learning (RL). This setting entails a training regime that

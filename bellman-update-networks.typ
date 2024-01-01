@@ -2,8 +2,6 @@
 #import "@preview/cetz:0.1.2": canvas, draw, tree
 #import "algorithmic.typ": algorithm-figure, show-algorithms, alg-counter
 
-#alg-counter.step() // deal with dumb counter bug
-
 = Bellman Update Networks
 
 In the previous two chapters, we demonstrated the capacity of a sequence model
@@ -359,8 +357,6 @@ X_1, X_2)$. We pass each rotation through the model, and for each rotation, we
 retain only the predictions for $X_3$, $X_1$, and $X_2$ respectively. We use
 this rotation procedure to produce the Q estimates on @line:forward of
 @alg:train-bellman-network.
-
-#alg-counter.update(4)
 
 Another important detail is that the bootstrap step on @line:bootstrap of
 @alg:train-bellman-network leads to instability when generating targets for
