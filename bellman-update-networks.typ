@@ -636,6 +636,7 @@ or slightly outperforms the higher values of $delta$.
       )<fig:walls-regret>]),
     caption: none, // [$5 times 5$ grid-world with walls. See @sec:novel-tasks for detailed description.],
     supplement: none,
+    kind: "none",
     placement: top,
     outlined: false,
   ),
@@ -692,6 +693,7 @@ these challenges.
   ),
   caption: none,
   supplement: none,
+  kind: "none",
   placement: top,
   outlined: false,
 )
@@ -824,6 +826,9 @@ reflect the dynamics of the environment.
       )<fig:no-reward-trajectory>],
   ),
   placement: top,
+  outlined: false,
+  kind: "none",
+  supplement: none,
 )
 
 == Conclusion
