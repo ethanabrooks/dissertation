@@ -24,7 +24,7 @@
 #outline(
   title: [#formatHeader(body: "Table of Contents")],
   depth: 2,
-  indent: auto,
+  indent: 0.25in,
 )
 #outline(
   title: [#formatHeader(body: "List of Figures")],

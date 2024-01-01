@@ -8,13 +8,13 @@ language models, come to dominate the field, but priorities and expectations
 around research have shifted dramatically. In some ways, the work in this thesis
 aligns with these shifts. The thesis anticipates a world in which RL algorithms
 acquire most of their knowledge through supervised training on offline datasets,
-as we discussed in @sec:introduction[Chapter]. In this paradigm, learning does
-not happen in a single unbroken arc, from tabula-rasa random weights to expert
-behavior, all driven by end-to-end gradient-descent-based deep RL algorithms.
-Instead, learning happens in _two_ stages: an initial stage in which the model
-soaks up large quantities of information using strong supervised signals from
-offline datasets, and a second stage in which the model adapts to its specific
-setting using some form of in-context learning.
+as we discussed in @sec:introduction[the introduction]. In this paradigm,
+learning does not happen in a single unbroken arc, from tabula-rasa random
+weights to expert behavior, all driven by end-to-end gradient-descent-based deep
+RL algorithms. Instead, learning happens in _two_ stages: an initial stage in
+which the model soaks up large quantities of information using strong supervised
+signals from offline datasets, and a second stage in which the model adapts to
+its specific setting using some form of in-context learning.
 
 However, in some ways, this thesis is out of step with the current trajectory of
 AI research. In particular, it focuses on two concerns which have fallen out of
