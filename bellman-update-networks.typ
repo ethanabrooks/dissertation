@@ -1,10 +1,8 @@
 #import "math.typ": *
 #import "@preview/cetz:0.1.2": canvas, draw, tree
-#import "algorithmic.typ": algorithm-figure, show-algorithms
+#import "algorithmic.typ": algorithm-figure, show-algorithms, alg-counter
 
-#show: show-algorithms
-// #set math.equation(numbering: "(1)")
-// #set heading(numbering: "1.1")
+#alg-counter.step() // deal with dumb counter bug
 
 = Bellman Update Networks
 
@@ -362,50 +360,13 @@ retain only the predictions for $X_3$, $X_1$, and $X_2$ respectively. We use
 this rotation procedure to produce the Q estimates on @line:forward of
 @alg:train-bellman-network.
 
+#alg-counter.update(4)
+
 Another important detail is that the bootstrap step on @line:bootstrap of
 @alg:train-bellman-network leads to instability when generating targets for
 lower targets of $k$ which the model has previously trained on. To mitigate
 this, we interpolate $QTar_(k+1)$ with its previous value, using an
 interpolation factor of $.5$.
-
-#algorithm-figure(
-  {
-    import "algorithmic.typ": *
-    algorithm(
-      ..Function(
-        $QValue(History)$,
-        comment: "Estimate values for all states in input sequence.",
-        State(
-          $FormatQ(QValue_0) gets bold(0)$,
-          comment: "Initialize Q-estimates to zero.",
-        ),
-        ..For(
-          $k=0,...,K$,
-          label: <line:iterate>,
-          ..For(
-            $Obs_t in History$,
-            State(
-              [$#Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) #QValue_k (Obs_t, Act)$],
-              comment: [Compute #FormatV("values") from #FormatQ("Q-values")],
-            ),
-          ),
-          State(
-            [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1), #Value_k (Obs_(t+1)) )_(t=0)^Recency$ ],
-            comment: [pair transitions with #FormatV("values")],
-            label: <line:pair>,
-          ),
-          State(
-            [$FormatQ(QValue_(k+1)) gets #QValue_theta (History^(#Value_k))$],
-            comment: [Use #FormatBUN("Bellman Update Network") to estimate #FormatQ("values")],
-          ),
-        ),
-        Return($FormatQ(QValue_(K+1))$),
-      ),
-    )
-  },
-  caption: [ Tabular evaluation of the Bellman Update Network. ],
-  placement: top,
-) <alg:eval-tabular>
 
 === Downstream Evaluation <sec:downstream>
 Once the network is trained, we can use it to estimate values in a new setting
@@ -483,6 +444,45 @@ of the model to approximate a policy mixing the multitude of policies
 represented in the context.
 
 === Extension to multi-step Bellman Updates <sec:multi-step>
+
+#algorithm-figure(
+  {
+    import "algorithmic.typ": *
+    algorithm(
+      ..Function(
+        $QValue(History)$,
+        comment: "Estimate values for all states in input sequence.",
+        State(
+          $FormatQ(QValue_0) gets bold(0)$,
+          comment: "Initialize Q-estimates to zero.",
+        ),
+        ..For(
+          $k=0,...,K$,
+          label: <line:iterate>,
+          ..For(
+            $Obs_t in History$,
+            State(
+              [$#Value_k (Obs_t) gets sum_Act Policy(Act | dot.c) #QValue_k (Obs_t, Act)$],
+              comment: [Compute #FormatV("values") from #FormatQ("Q-values")],
+            ),
+          ),
+          State(
+            [$History^(#Value_k) gets (Act_t, Policy(dot.c|Obs_t), Rew_t, Ter_t, Obs_(t+1), #Value_k (Obs_(t+1)) )_(t=0)^Recency$ ],
+            comment: [pair transitions with #FormatV("values")],
+            label: <line:pair>,
+          ),
+          State(
+            [$FormatQ(QValue_(k+1)) gets #QValue_theta (History^(#Value_k))$],
+            comment: [Use #FormatBUN("Bellman Update Network") to estimate #FormatQ("values")],
+          ),
+        ),
+        Return($FormatQ(QValue_(K+1))$),
+      ),
+    )
+  },
+  caption: [ Tabular evaluation of the Bellman Update Network. ],
+  placement: top,
+) <alg:eval-tabular>
 The present formulation trains the Bellman Update Network to perform a single
 Bellman update. However, this can be generalized to multi-step updates, e.g.
 using the loss:
