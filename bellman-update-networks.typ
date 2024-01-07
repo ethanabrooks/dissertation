@@ -2,6 +2,16 @@
 #import "@preview/cetz:0.1.2": canvas, draw, tree
 #import "algorithmic.typ": algorithm-figure, show-algorithms, alg-counter
 
+#show: show-algorithms
+#set text(font: "New Computer Modern", size: 12pt)
+#set heading(numbering: "1.1")
+#set heading(numbering: (..n) => {
+  if n.pos().len() > 1 {
+    numbering("1.1", ..n)
+  }
+})
+#set math.equation(numbering: "(1)")
+
 = Bellman Update Networks
 
 In the previous two chapters, we demonstrated the capacity of a sequence model
@@ -187,11 +197,53 @@ of better generalization to unseen settings.
       line((start + 2.5, 2), (start + 2.5, 2.5), mark: (end: ">"))
       content((start + 2.5, 1.5), cell(width: 6cm, fill: red, "GRU"))
       line((start + 2.5, 3.5), (start + 2.5, 4), mark: (end: ">"))
-      content((start + 2.5, 4.5), $Value_(k+1)(Obs_#plusOne(t))$)
+      content((start + 2.5, 4.5), $QValue_(k+1)(Obs_#plusOne(t), dot.c)$)
     }
     content((7, 3), cell(width: 15cm, fill: orange, [Transformer]))
   })
 }, caption: [Architecture diagram for the Bellman Update Network.])<fig:architecture>
+
+#figure(placement: top, {
+  set text(font: "PT Sans", size: 10pt)
+
+  canvas(length: 1cm, {
+    import draw: *
+    let plusOne(t) = {
+      if type(t) == "integer" {
+        t + 1
+      } else if type(t) == "string" {
+        $#t + 1$
+      } else {
+        type(t)
+      }
+    }
+    let transition(t) = {
+      let t1 = plusOne(t)
+      ($Act_#t$, $dots.c$, $Obs_(#t1)$, $Value_k (Obs_#t1)$,)
+    }
+    let cell(content, .. args) = box(
+      height: 1cm,
+      radius: .1cm,
+      stroke: black,
+      ..args,
+      align(center + horizon, content),
+    )
+    // grid((0, 0), (15, 8), stroke: (paint: gray, dash: "dotted"))
+    content((7.0, 1.5), $dots.c$)
+    content((7.0, 4.5), $dots.c$)
+    for (t, start) in ((0, 0), (1, 4), (2, 8)) {
+      for (i, component) in transition(t).enumerate(start: start) {
+        content((i, .25), $component$)
+        line((i, .5), (i, 1), mark: (end: ">"))
+      }
+      line((start + 2.5, 2), (start + 2.5, 2.5), mark: (end: ">"))
+      content((start + 2.5, 1.5), cell(width: 6cm, fill: red, "GRU"))
+      line((start + 2.5, 3.5), (start + 2.5, 4), mark: (end: ">"))
+      content((start + 2.5, 4.5), $QValue_(k+1)(Obs_#plusOne(t), dot.c)$)
+    }
+    content((7, 3), cell(width: 15cm, fill: orange, [Transformer]))
+  })
+}, caption: [Architecture diagram for the Bellman Update Network.])
 
 Before we describe the procedure for training the Bellman Update Network, we
 describe the inputs that the model receives, the architectures used to encode
@@ -216,7 +268,7 @@ to scalars.
 Note that in @fig:architecture, we provide $Value_k$ and not $QValue_k$ to the
 model, as in @eq:loss. We found that computing
 
-$ Value_k (Obs_t) := sum_Act Policy QValue_k (Obs_t, Act) $ <eq:value>
+$ Value_k (Obs_t) := sum_Act Policy(Act|Obs_t) QValue_k (Obs_t, Act) $ <eq:value>
 
 and providing this as input to the network, rather than providing the full array
 of Q-values, improved the speed and stability of learning.
@@ -855,4 +907,4 @@ in general not possible within the paradigm of in-context reinforcement
 learning, which requires an algorithm to yield a spectrum of policies
 transitioning from exploratory to exploitative behavior.
 
-// #bibliography("main.bib", style: "american-society-of-civil-engineers")
+#bibliography("main.bib", style: "american-society-of-civil-engineers")
