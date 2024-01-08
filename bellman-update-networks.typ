@@ -203,47 +203,49 @@ of better generalization to unseen settings.
   })
 }, caption: [Architecture diagram for the Bellman Update Network.])<fig:architecture>
 
-#figure(placement: top, {
-  set text(font: "PT Sans", size: 10pt)
+// #figure(placement: top, {
+//   set text(font: "PT Sans", size: 10pt)
 
-  canvas(length: 1cm, {
-    import draw: *
-    let plusOne(t) = {
-      if type(t) == "integer" {
-        t + 1
-      } else if type(t) == "string" {
-        $#t + 1$
-      } else {
-        type(t)
-      }
-    }
-    let transition(t) = {
-      let t1 = plusOne(t)
-      ($Act_#t$, $dots.c$, $Obs_(#t1)$, $Value_k (Obs_#t1)$,)
-    }
-    let cell(content, .. args) = box(
-      height: 1cm,
-      radius: .1cm,
-      stroke: black,
-      ..args,
-      align(center + horizon, content),
-    )
-    // grid((0, 0), (15, 8), stroke: (paint: gray, dash: "dotted"))
-    content((7.0, 1.5), $dots.c$)
-    content((7.0, 4.5), $dots.c$)
-    for (t, start) in ((0, 0), (1, 4), (2, 8)) {
-      for (i, component) in transition(t).enumerate(start: start) {
-        content((i, .25), $component$)
-        line((i, .5), (i, 1), mark: (end: ">"))
-      }
-      line((start + 2.5, 2), (start + 2.5, 2.5), mark: (end: ">"))
-      content((start + 2.5, 1.5), cell(width: 6cm, fill: red, "GRU"))
-      line((start + 2.5, 3.5), (start + 2.5, 4), mark: (end: ">"))
-      content((start + 2.5, 4.5), $QValue_(k+1)(Obs_#plusOne(t), dot.c)$)
-    }
-    content((7, 3), cell(width: 15cm, fill: orange, [Transformer]))
-  })
-}, caption: [Architecture diagram for the Bellman Update Network.])
+//   canvas(length: 1cm, {
+//     import draw: *
+//     let plusOne(t) = {
+//       if type(t) == "integer" {
+//         t + 1
+//       } else if type(t) == "string" {
+//         $#t + 1$
+//       } else {
+//         type(t)
+//       }
+//     }
+//     let transition(t) = {
+//       let t1 = plusOne(t)
+//       ($Act_#t$, $dots.c$, $Obs_(#t1)$)
+//     }
+//     let cell(content, .. args) = box(
+//       height: 1cm,
+//       radius: .1cm,
+//       stroke: black,
+//       ..args,
+//       align(center + horizon, content),
+//     )
+//     // grid((0, 0), (15, 8), stroke: (paint: gray, dash: "dotted"))
+//     content((12.0, 1.5), $dots.c$)
+//     content((12.0, 4.5), $dots.c$)
+//     for (t, start) in ((0, 0), (1, 4), (2, 8)) {
+//       for (i, component) in transition(t).enumerate(start: start) {
+//         let x = i + 0.5
+//         content((x, .25), $component$)
+//         line((x, .5), (x, 1), mark: (end: ">"))
+//       }
+//       let x = start + 1.5
+//       line((x, 2), (x, 2.5), mark: (end: ">"))
+//       content((x, 1.5), cell(width: 3cm, fill: red, "GRU"))
+//       line((x, 3.5), (x, 4), mark: (end: ">"))
+//       content((x, 4.5), $QValue_(k+1)(Obs_#plusOne(t), dot.c)$)
+//     }
+//     content((7.5, 3), cell(width: 15cm, fill: orange, [Transformer]))
+//   })
+// }, caption: [Architecture diagram for the Bellman Update Network.])
 
 Before we describe the procedure for training the Bellman Update Network, we
 describe the inputs that the model receives, the architectures used to encode
