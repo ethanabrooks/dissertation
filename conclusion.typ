@@ -93,8 +93,8 @@ Another important shift is that in many practical settings, imitation is enough.
 To reiterate, many natural language tasks do entail credit assignment,
 especially when multi-step, exploratory reasoning is involved #cite(<wei_chain_2022>).
 However, language models inherit a kind of imperfect credit assignment through
-imitation of the humans who wrote their data (who already somehow possess the
-capacity for credit assignment somehow). RL provides a framework for learning
+imitation of the humans who wrote their data (who already possess the capacity
+for credit assignment). RL provides a framework for learning
 _optimal_ credit assignment, but this framework does not empirically work in
 realistic language settings. Of course, an unprincipled solution that works is
 better than a principled solution that doesn't.

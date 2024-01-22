@@ -18,12 +18,12 @@ adapt a policy, as opposed to adapting the policy directly. If the model
 successfully adapts to the evaluation setting, we may use a variety of planning
 methods to recover a good policy.
 
-Our approach builds on the previous chapter, @chap:pi[Chapter], using a similar
-methodology to choose actions on the downstream evaluation task. Concretely, on
-each timestep, we use our learned model to perform multiple rollouts, each
-starting from a different action in the action space. We use these rollouts to
-estimate state-action values. Our behavior policy (as opposed to the policy used
-in the rollouts) chooses the action corresponding to the highest estimate. As we
+Our approach builds on the previous chapter, using a similar methodology to
+choose actions on the downstream evaluation task. Concretely, on each timestep,
+we use our learned model to perform multiple rollouts, each starting from a
+different action in the action space. We use these rollouts to estimate
+state-action values. Our behavior policy (as opposed to the policy used in the
+rollouts) chooses the action corresponding to the highest estimate. As we
 demonstrated in that work, this approach implements a form of policy iteration,
 an algorithm proven to eventually converge to the optimal policy.
 
@@ -542,7 +542,7 @@ one that explores all positions with equal probability.
 
 As @fig:point-env demonstrates, vanilla AD fares quite poorly in this setting.
 Of the 20 seeds in the diagram, only two discover the goal and only one returns
-to it consistently. The AD agent either explores randomly in vicinity of the
+to it consistently. The AD agent either explores randomly in the vicinity of the
 origin --- emulating policies observed early in the source data --- or commits
 arbitrarily to a point on the arc and remains in its vicinity --- emulating
 later policies, but ignoring the lack of experienced reward. The Sparse Point

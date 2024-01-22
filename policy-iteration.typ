@@ -5,6 +5,7 @@
 #import "@preview/tablex:0.0.7": tablex, rowspanx, colspanx
 
 #show: show-algorithms
+// #set heading(numbering: "1.1")
 
 = In-Context Policy Iteration <chap:pi>
 In the context of Large Language Models (LLMs), in-context learning describes
@@ -81,8 +82,8 @@ them with a foundation model, and passes the model outputs to deep RL
 architectures
 #cites(<li_pre-trained_2022>, <tarasov_prompts_2022>, <tam_semantic_2022>).
 Finally, a recent set of approaches (which we will focus on in this Related Work
-section) treat RL as a sequence modeling problem and use the foundation models
-itself to predict states or actions. In this related work section, we will focus
+section) treat RL as a sequence modeling problem and use the foundation model
+itself to predict states or actions. In this related work section, we will focus on
 a third set of recent approaches that treat reinforcement learning (RL) as a
 sequence modeling problem and utilize foundation models for state prediction,
 action selection, and task completion. We will organize our survey of these
@@ -413,14 +414,6 @@ trajectory subsequences, not individual time-steps. Prompting with sequences
 better enables the foundation model to apprehend the logic behind a policy.
 Trajectory subsequences consist of $(Obs_k, Act_k)$ pairs, randomly clipped from
 the $Recency$ most recent trajectories. More recent trajectories will, in
-general demonstrate higher performance, since they come from policies that have
-benefited from more rounds of improvement.
-
-In contrast to the other predictions, we condition the rollout policy on
-trajectory subsequences, not individual time-steps. Prompting with sequences
-better enables the foundation model to apprehend the logic behind a policy.
-Trajectory subsequences consist of $(Obs_k, Act_k)$ pairs, randomly clipped from
-the $Recency$ most recent trajectories. More recent trajectories will, in
 general, demonstrate higher performance, since they come from policies that have
 benefited from more rounds of improvement.
 
@@ -428,7 +421,7 @@ Finally, the Q-value estimate is simply the discounted sum of rewards for the
 simulated episode. Given this description of Q-value estimation, we now return
 to the concept of policy improvement.
 
-=== Policy-Improvement
+=== Policy-Improvement <para:policy-improvement>
 The $arg max$ (line 5 of @algo:train) drives policy improvement in Algorithm.
 Critically this is not simply a one-step improvement but a mechanism that builds
 improvement on top of improvement. This occurs through a cycle in which the $arg max$
@@ -630,7 +623,7 @@ paddle and the ball as namedtuples `C(x, y)` and we represent actions as methods
 of the `paddle` object: `paddle.stay()`, `paddle.left()`, and `paddle.right()`.
 For the hint, we call out the location of the paddle's $x$-position, the ball's $x$-position,
 the relation between these positions (which is larger than which, or whether
-they are equal) and the ball's $y$-position. @tab:prompt-format in the appendix
+they are equal) and the ball's $y$-position. @tab:prompt-format
 provides an example. We also include the text `ball.descend()` to account for
 the change in the ball's position between states.
 
@@ -693,7 +686,7 @@ implementation is available at https://github.com/ethanabrooks/icpi.
 #figure(
   image("figures/policy-iteration/algorithm.png"),
   caption: [
-    Comparison of ICPI with three baselines.
+    Comparison of ICPI with three baselines. Note that all other figures use `code-davinci-002` for ICPI.
     // , "No ArgMax," "Tabular Q," and "Nearest
     // Neighbor." The $y$-axis depicts regret (normalized between 0 and 1), computed
     // relative to an optimal return with a discount-factor of 0.8. The $x$-axis
@@ -763,9 +756,9 @@ example,
 $Buffer_Rew$ is allowed to contain a mixture of terminal and non-terminal
 time-steps (regardless of the model's termination prediction). Finally, "$Recency=16$" baseline prompts the rollout
 policy with the last 16 trajectories (instead of the last 8, as in
-ICPI). We find that while some ablations match ICPI's
-performance in several domains, none match its performance on all six.
+ICPI).
 
+In general, the ablations are responsible exhibit a moderate drop in performance. However the two most significant are "No Hints" and "c=16." The poor performance of the "No Hints" model suggests that in several settings, Codex is unable to infer the salient parts of the observations without domain-specific hints. Our hope is that the necessity for hints of this kind will diminish as language models mature. On the other hand, the poor performance of the "c=16" model is reassuring, as it demonstrates that the recency mechanism works as intended: excluding older trajectories from the prompt helps the action model approximate the _current_ policy, as opposed to older policies. This mechanism is necessary for the policy improvement properties described in <para:policy-improvement> to hold.
 
 === Comparison of Different Language Models
  While our lab lacks the
@@ -821,7 +814,7 @@ using these models.
 
 
 == Conclusion
-Our main contribution in this chapter is a method for implementing policy iteration algorithm
+Our main contribution in this chapter is a method for implementing the policy iteration algorithm
 using Large Language Models and the mechanism of in-context learning. The
 algorithm uses a foundation model as both a world model and policy to compute
 Q-values via rollouts. Although we presented the method here as text-based, it

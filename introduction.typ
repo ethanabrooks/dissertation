@@ -3,10 +3,10 @@
 == The Importance of Rapid Adaptation
 Deep neural networks optimized by gradient descent have defined the most
 pioneering techniques of the last decade of machine learning research. While
-other architectures may provide stronger stronger guarantees, they often require
-certain assumptions such as linearity, convexity, and smoothness that are not
-present in reality. As a result, researchers have turned to general-purpose
-algorithms that make few assumptions about the functions they approximate.
+other architectures may provide stronger guarantees, they often require certain
+assumptions such as linearity, convexity, and smoothness that are not present in
+reality. As a result, researchers have turned to general-purpose algorithms that
+make few assumptions about the functions they approximate.
 
 However, these algorithms' generality comes at a cost: they learn slowly and
 require thousands or millions of gradient updates to converge. This contrasts
@@ -93,8 +93,8 @@ One of the difficulties inherent in this form of meta-learning is the coupling
 of the inner- and outer-loop optimizations. This causes instability in the
 learning process and forces the meta-learning algorithm to search not only the
 space of task solutions, but also the space of learning algorithms that might
-produce each solution. When learning signal is sparse or the task space is
-large, the outer loop will often fail to make progress.
+produce each solution. When signal is sparse or the task space is large, the
+outer loop will often fail to make progress.
 
 Meta-RL algorithms are also susceptible to a local minimum in which they fail to
 recognize that the information yielded from exploration can inform an efficient

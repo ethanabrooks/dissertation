@@ -37,6 +37,7 @@
 #counter(page).update(1)
 
 #include "abstract.typ"
+#counter(heading).update(0)
 #include "introduction.typ"
 #include "policy-iteration.typ"
 #include "adpp.typ"
