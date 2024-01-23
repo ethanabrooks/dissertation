@@ -368,6 +368,7 @@ Taking the greedy ($arg max$) actions with respect to $Q^(pi_t)$ implements a
 new and improved policy.
 
 === Computing Q-values <para:q-values>
+
 This section provides details on the prompts that we use in our computation of
 Q-values (see @algo:q pseudocode & @fig:q rollout). During training, we
 maintain a buffer $Buffer$ of transitions experienced by the agent. To compute
@@ -418,8 +419,43 @@ general, demonstrate higher performance, since they come from policies that have
 benefited from more rounds of improvement.
 
 Finally, the Q-value estimate is simply the discounted sum of rewards for the
-simulated episode. Given this description of Q-value estimation, we now return
+simulated episode. For examples of these prompts, see @fig:prompts. Given this description of Q-value estimation, we now return
 to the concept of policy improvement.
+
+#figure(
+  grid(
+    columns: (auto, auto, auto, auto),
+    [#figure(
+        [#box(image("figures/policy-iteration/reward-model.png", height: 100pt))],
+        // caption: [
+        //   Evaluation on the "Sparse-Point" environment.
+        // ],
+      )],
+    [#figure(
+        [#box(image("figures/policy-iteration/transition-model.png", height: 100pt))],
+        // caption: [
+        //   Evaluation on the "Half-Cheetah Direction" domain.
+        // ],
+      )],
+    [#figure(
+        [#box(image("figures/policy-iteration/termination-model.png", height: 100pt))],
+        // caption: [
+        //   Evaluation on the "Half-Cheetah Velocity" domain.
+        // ],
+      )],
+    [#figure(
+        [#box(image("figures/policy-iteration/policy-model.png", height: 100pt))],
+        // caption: [
+        //   Evaluation on the "Half-Cheetah Velocity" domain.
+        // ],
+      )],
+  ),
+  placement: top,
+  caption: [
+    Illustration of prompts used to elicit the four models: from left to right, the
+    reward model, the transition model, the termination model, and the policy model.
+  ],
+) <fig:prompts>
 
 === Policy-Improvement <para:policy-improvement>
 The $arg max$ (line 5 of @algo:train) drives policy improvement in Algorithm.
@@ -430,7 +466,24 @@ then used to condition the rollout policy. This improves the returns generated
 by the LLM during planning rollouts. These improved rollouts improve the
 Q-estimates for each action. Completing the cycle, this improves the actions
 chosen by the $arg max$. Because this process feeds into itself, it can drive
-improvement without bound until optimality is achieved.
+improvement without bound until optimality is achieved. See @fig:policy-improvement
+for an illustration of this cycle.
+
+#figure(
+  image("figures/policy-iteration/policy-improvement.png"),
+  caption: [
+    Diagram of the policy improvement cycle. The replay buffer is fed by a behavior
+    policy. Next we sample the trajectories used in the policy prompt from recent
+    episodes in the buffer. By sampling recent episodes only, we try to keep the
+    prompt policy close to the behavior policy. Next, we rely on the language model
+    to infer the distribution of actions in the prompt and yield a similarly
+    distributed action for our rollout policy. Therefore the rollout policy
+    approximates the prompt policy. Finally, by choosing actions greedily with
+    respect to our value estimates, we implement a new behavior policy that improves
+    the rollout policy.
+  ],
+  placement: top,
+) <fig:policy-improvement>
 
 Note that this process takes advantage of properties specific to in-context
 learning. In particular, it relies on the assumption that the rollout policy,
@@ -466,7 +519,7 @@ policy improvement that works without any use of gradients.
   },
   caption: [Table of models and training data.],
   supplement: "Table",
-  placement: top,
+  placement: bottom,
 ) <tab:llms>
 
 === Prompt-Format <para:prompt-format>
@@ -570,6 +623,51 @@ and InCoder). We next describe the six domains and their associated prompt
 formats, and then describe the experimental methodology and results.
 
 === Domains and prompt format <sec:domains-and-prompt-format>
+For a visual illustration of each domain, see @fig:domains.
+#figure(
+  grid(
+    columns: (auto, auto, auto, auto, auto),
+    column-gutter: 10pt,
+    [#figure(
+        [#box(image("figures/policy-iteration/chain.png", height: 30pt))],
+        caption: [
+          Chain
+        ],
+        supplement: none,
+      )],
+    [#figure(
+        [#box(image("figures/policy-iteration/maze.png", height: 30pt))],
+        caption: [
+          Maze
+        ],
+        supplement: none,
+      )],
+    [#figure(
+        [#box(image("figures/policy-iteration/catch.png", height: 30pt))],
+        caption: [
+          Mini-Catch
+        ],
+        supplement: none,
+      )],
+    [#figure(
+        [#box(image("figures/policy-iteration/mini-invaders.png", height: 30pt))],
+        caption: [
+          Mini-Invaders
+        ],
+        supplement: none,
+      )],
+    [#figure(
+        [#box(image("figures/policy-iteration/point-mass.png", height: 30pt))],
+        caption: [
+          Point-Mass
+        ],
+        supplement: none,
+      )],
+  ),
+  caption: [Illustration of the five of the domains used in our experiments.
+    Distractor-Chain is omitted for brevity.],
+  placement: top,
+) <fig:domains>
 
 *Chain:*
 In this environment, the agent occupies an 8-state chain. The agent has three
@@ -666,7 +764,7 @@ of `pos` to $-2$ and $+2$ and whether or not `vel == 0`.
 The hint includes identification of the aliens' and the ship's $x$-positions
 as well as a comparison between them.
 
-== Methodology and Evaluation <para:methodology>
+=== Methodology and Evaluation <para:methodology>
 
 For the results, we record the agent's regret over the course of training
 relative to an optimal policy computed with a discount factor of 0.8. For all
@@ -686,7 +784,7 @@ implementation is available at https://github.com/ethanabrooks/icpi.
 #figure(
   image("figures/policy-iteration/algorithm.png"),
   caption: [
-    Comparison of ICPI with three baselines. Note that all other figures use `code-davinci-002` for ICPI.
+    Comparison of ICPI with three baselines.
     // , "No ArgMax," "Tabular Q," and "Nearest
     // Neighbor." The $y$-axis depicts regret (normalized between 0 and 1), computed
     // relative to an optimal return with a discount-factor of 0.8. The $x$-axis
@@ -758,7 +856,7 @@ time-steps (regardless of the model's termination prediction). Finally, "$Recenc
 policy with the last 16 trajectories (instead of the last 8, as in
 ICPI).
 
-In general, the ablations are responsible exhibit a moderate drop in performance. However the two most significant are "No Hints" and "c=16." The poor performance of the "No Hints" model suggests that in several settings, Codex is unable to infer the salient parts of the observations without domain-specific hints. Our hope is that the necessity for hints of this kind will diminish as language models mature. On the other hand, the poor performance of the "c=16" model is reassuring, as it demonstrates that the recency mechanism works as intended: excluding older trajectories from the prompt helps the action model approximate the _current_ policy, as opposed to older policies. This mechanism is necessary for the policy improvement properties described in <para:policy-improvement> to hold.
+In general, the ablations to ICPI exhibit a moderate drop in performance. However the two most significant are "No Hints" and "c=16." The poor performance of the "No Hints" model suggests that in several settings, Codex is unable to infer the salient parts of the observations without domain-specific hints. Our hope is that the necessity for hints of this kind will diminish as language models mature. On the other hand, the poor performance of the "c=16" model is reassuring, as it demonstrates that the recency mechanism works as intended: excluding older trajectories from the prompt helps the action model approximate the _current_ policy, as opposed to older policies. This mechanism is necessary for the policy improvement properties described in <para:policy-improvement> to hold.
 
 === Comparison of Different Language Models
  While our lab lacks the
@@ -786,11 +884,12 @@ comparable improvements in performance over our Codex model.
 === Limitations <para:limitations>
 ICPI can theoretically work on any control task with discrete actions, due to the
 guarantees associated with policy iteration.
-However, since our implementation uses Codex, the domains in our paper were limited by the ability to encode states as text and to fit these encodings in the model's context window. Moreover, Codex demonstrated a limited ability to
-predict transitions and actions in more complex domains. As sequence models
-mature, we anticipate that more domains will become tractable for ICPI. We also
-note that reliance on the proprietary OpenAPI API limits exact reproduction of these
-results.
+However, there are two limitations worth noting. First ICPI requires observations to be encoded as text.
+While any observation can in principle be encoded numerically and therefore in text, some might be very difficult for a language model to interpret. For example, a language model would be likely fail to extract meaning from an array of RGB pixels.
+Such an array would also have quite a verbose representation in text, preventing us from fitting the large number of transitions into the context window, necessary for ICPI to infer the dynamics of the environment.
+A second limitation is the requirement for all information about the environment to be conveyed through the context.
+For some environments with complex dynamics, it might be difficult for a model to infer them accurately based only on example transitions.
+Also, the stochastic nature of the prompt can produce unstable behavior. So in summary, we want to use a model that is somewhat specialized to its domain in order to encode some useful priors in the weights and diminish the reliance on context.
 
 
 === Societal Impacts <para:impacts>
@@ -803,7 +902,7 @@ using these models.
 
 #figure(
   image("figures/policy-iteration/language-model.png"),
-  caption: [Comparison of different language models used to implement ICPI.
+  caption: [Comparison of different language models used to implement ICPI. Note that all other figures in this chapter use `code-davinci-002` for ICPI.
   // The $y$-axis depicts
   //   regret (normalized between 0 and 1), computed relative to an optimal
   //   return with a discount-factor of 0.8. The $x$-axis depicts time-steps of

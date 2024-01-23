@@ -148,7 +148,18 @@ component of the tuple embedded and the embeddings concatenated. For the other
 predictions $Prob_theta (Rew^n_t, Ter^n_t, Obs^n_(t+1) | History^n_t, Act^n_t)$,
 we use the same procedure but rotate each tuple such that index $i$
 corresponds to
-$Rew^n_(i-1) Ter^n_(i-1) Obs^n_(i-1) Act^n_i$.
+$Rew^n_(i-1) Ter^n_(i-1) Obs^n_(i-1) Act^n_i$. See @fig:adpi-architecture for a
+schematic illustrating the inputs and outputs of the architecture.
+
+#figure(
+  image("figures/adpp/architecture.png", height: 100pt),
+  caption: [
+    Diagram of inputs and outputs for the ADPI architecture. For succinctness, we
+    omit the superscripts for the inputs. However, note that each of these
+    transitions is sampled from the same task and learning history.
+  ],
+  placement: top,
+) <fig:adpi-architecture>
 
 == Downstream Evaluation
 <sec:downstream-evaluation>
@@ -230,6 +241,24 @@ $Policy^(n+1)$ is at least as good as $Policy^n$. Using the same reasoning, $Pol
 be at least as good as
 $Policy^(n+1)$, and so on. Note that in our implementation, we perform the $arg max$ at
 each step, rather than first collecting a full trajectory with a single policy.
+See
+
+#figure(
+  image("figures/adpp/policy-improvement.png"),
+  caption: [
+    Diagram of the policy improvement cycle. The behavior policy $Policy$ generates
+    new actions and the environment generates new transitions which are appended to
+    the front of the context window. By retaining only the most recent transitions
+    in the context window, we ensure that the policy represented in the context
+    approximates the behavior policy. Next, we rely on the policy improvement
+    operator learned by the transformer to infer the distribution of actions in the
+    context and yield an _improved_ action for our rollout policy. Therefore the
+    rollout policy approximates the prompt policy. Finally, by choosing actions
+    greedily with respect to our value estimates, we implement a new behavior policy $Policy'$ that
+    improves the rollout policy.
+  ],
+  placement: top,
+) <fig:adpi-policy-improvement>
 
 ==== Algorithm Distillation
 Our setting is almost identical to Algorithm Distillation (AD)
@@ -326,7 +355,18 @@ receives a reward of 1 for visiting the key location and then a reward of 1 for
 visiting the door. The agent observes only its own position and must infer the
 positions of the key and the door from the history of interactions which the
 transformer prompt contains. The episode terminates when the agent visits the
-door, or after 25 time-steps.
+door, or after 25 time-steps. See @fig:grid-world for a visualization of the
+grid-world environment.
+
+#figure(
+  image("figures/adpp/grid-world.png", height: 100pt),
+  caption: [
+    Top-down view of the grid-world environment. The agent must first visit the key
+    and then the door. Note that in many of our experiments, unseen walls are added
+    to the interstices between grid cells.
+  ],
+  placement: top,
+) <fig:grid-world>
 
 ==== Baselines
 <baselines>

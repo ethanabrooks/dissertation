@@ -136,6 +136,14 @@ Act_(t-1), Rew_(t-1), Ter_(t-1), Obs_t, )
 \
 $ <eq:loss>
 
+#figure(
+  image("figures/bellman-update-networks/inputs-outputs.png", height: 100pt),
+  caption: [
+    Sketch of inputs and outputs for the Bellman Network Architecture architecture.
+  ],
+  placement: top,
+) <fig:inputs-outputs>
+
 We call a model $P_theta$ that minimizes this loss a Bellman Update Network
 (BUN). Initially, we may set $QValue_0$ to any value. By feeding this initial
 input into the network and then auto-regressively feeding the outputs back in,
@@ -144,7 +152,9 @@ the context values $QValue_(k-1) (Obs_(t-Recency+1), dot.c),..., QValue_(k-1) (O
 By conditioning predictions of $QValue_k$ on a context containing estimates of $QValue_(k-1)$,
 we gain many of the benefits of the context proposed in
 @eq:history-bellman-network, in terms of promoting in-context learning over
-in-weights learning, without privileged access to ground-truth values.
+in-weights learning, without privileged access to ground-truth values. For a
+visualization of the inputs and outputs of the proposed architecture, see
+@fig:inputs-outputs.
 
 This approach entails a tradeoff. By training on $k < infinity$, we
 significantly increase the space of inputs for which the model must learn good
@@ -154,54 +164,53 @@ of better generalization to unseen settings.
 
 === Architecture <sec:architecture>
 
-#figure(placement: top, {
-  set text(font: "PT Sans", size: 10pt)
+// #figure(placement: top, {
+//   set text(font: "PT Sans", size: 10pt)
 
-  canvas(length: 1cm, {
-    import draw: *
-    let plusOne(t) = {
-      if type(t) == "integer" {
-        t + 1
-      } else if type(t) == "string" {
-        $#t + 1$
-      } else {
-        type(t)
-      }
-    }
-    let transition(t) = {
-      let t1 = plusOne(t)
-      (
-        $Act_#t$,
-        $Policy(dot.c, Obs_#t)$,
-        $Rew_#t$,
-        $Ter_#t$,
-        $Obs_(#t1)$,
-        $Value_k (Obs_#t1)$,
-      )
-    }
-    let cell(content, .. args) = box(
-      height: 1cm,
-      radius: .1cm,
-      stroke: black,
-      ..args,
-      align(center + horizon, content),
-    )
-    // grid((0, 0), (15, 8), stroke: (paint: gray, dash: "dotted"))
-    content((7.0, 1.5), $dots.c$)
-    content((7.0, 4.5), $dots.c$)
-    for (t, start) in ((0, 0), ("t", 9)) {
-      for (i, component) in transition(t).enumerate(start: start) {
-        content((i, .25), $component$)
-        line((i, .5), (i, 1), mark: (end: ">"))
-      }
-      line((start + 2.5, 2), (start + 2.5, 2.5), mark: (end: ">"))
-      content((start + 2.5, 1.5), cell(width: 6cm, fill: red, "GRU"))
-      line((start + 2.5, 3.5), (start + 2.5, 4), mark: (end: ">"))
-      content((start + 2.5, 4.5), $QValue_(k+1)(Obs_#plusOne(t), dot.c)$)
-    }
-    content((7, 3), cell(width: 15cm, fill: orange, [Transformer]))
-  })
-}, caption: [Architecture diagram for the Bellman Update Network.])<fig:architecture>
+//   canvas(length: 1cm, {
+//     import draw: *
+//     let plusOne(t) = {
+//       if type(t) == "integer" {
+//         t + 1
+//       } else if type(t) == "string" {
+//         $#t + 1$
+//       } else {
+//         type(t)
+//       }
+//     }
+//     let transition(t) = {
+//       let t1 = plusOne(t)
+//       (
+//         $Act_#t$,
+//         $Policy(dot.c, Obs_#t)$,
+//         $Rew_#t$,
+//         $Ter_#t$,
+//         $Obs_(#t1)$,
+//         $Value_k (Obs_#t1)$,
+//       )
+//     }
+//     let cell(content, .. args) = box(
+//       height: 1cm,
+//       radius: .1cm,
+//       stroke: black,
+//       ..args,
+//       align(center + horizon, content),
+//     )
+//     // grid((0, 0), (15, 8), stroke: (paint: gray, dash: "dotted"))
+//     content((7.0, 1.5), $dots.c$)
+//     content((7.0, 4.5), $dots.c$)
+//     for (t, start) in ((0, 0), ("t", 9)) {
+//       for (i, component) in transition(t).enumerate(start: start) {
+//         content((i, .25), $component$)
+//         line((i, .5), (i, 1), mark: (end: ">"))
+//       }
+//       line((start + 2.5, 2), (start + 2.5, 2.5), mark: (end: ">"))
+//       content((start + 2.5, 1.5), cell(width: 6cm, fill: red, "GRU"))
+//       line((start + 2.5, 3.5), (start + 2.5, 4), mark: (end: ">"))
+//       content((start + 2.5, 4.5), $QValue_(k+1)(Obs_#plusOne(t), dot.c)$)
+//     }
+//     content((7, 3), cell(width: 15cm, fill: orange, [Transformer]))
+//   })
 
 // #figure(placement: top, {
 //   set text(font: "PT Sans", size: 10pt)
@@ -255,6 +264,10 @@ and policy logits $Policy(dot.c|Obs)$. We also assume that we have estimates of
 value at different numbers of Bellman updates $k$, although we defer the
 explanation of how to acquire these to @sec:train-bellman-network.
 
+#figure(image("figures/bellman-update-networks/architecture.png"), caption: [
+  Diagram of the Bellman Update Network architecture.
+], placement: top) <fig:architecture>
+
 As @fig:architecture illustrates, the inputs to the network are a sequence of
 transitions from the dataset. In principle, these transitions need not be
 chronological, except in a partially observed setting. Importantly, the
@@ -285,7 +298,35 @@ a target Q value computed using bootstrapping (details in
 @sec:train-bellman-network). This loss is equivalent to @eq:loss when $Prob_theta$ is
 normally distributed with fixed standard deviation.
 
+=== Value Estimation <sec:value-estimation>
+As we alluded in @sec:bellman-network-method, in order to estimate values using
+the Bellman Update Network, we auto-regressively pass the outputs of the network
+back into it, repeating this procedure a fixed number of steps, or until the
+estimates converge. One detail is that the network receives values as inputs and
+produces _Q-values_ as outputs. Therefore, the output Q-values must be
+recombined into values before feeding them back into the network. To achieve
+this, we simply take the dot product of the output Q-values and the input policy
+logits. See @fig:iteration for a visualization.
+
+#figure(
+  image("figures/bellman-update-networks/iteration.png"),
+  caption: [
+    Diagram showing how Q-value estimates output by the Bellman Update Network are
+    converted back into value estimates and fed back into the network.
+  ],
+  placement: top,
+) <fig:iteration>
+
 === Training procedure <sec:train-bellman-network>
+
+#figure(
+  image("figures/bellman-update-networks/training.png", height: 150pt),
+  caption: [
+    Visualization of the first three curriculum stages for training the Bellman
+    Update Network.
+  ],
+  placement: bottom,
+) <fig:training>
 
 Here we describe a practical procedure for computing values to serve as inputs
 and targets to the network, and for training the network. For all values of $k$ greater
@@ -294,7 +335,8 @@ curriculum. Each approach introduces a different form of non-stationarity into
 the training procedure. We favor the latter, since it avoids training the
 network on targets before they are mostly accurate.
 
-Our curriculum initially trains
+For a visual sketch of the training procedure, see @fig:training. Our curriculum
+initially trains
 $QValue_1$ bootstrapped from $QValue_0$, which we set to *$0$*. We proceed
 iteratively through higher order values until $QValue_K approx QValue_(K-1)$. At
 each step in the curriculum, we continue to train $QValue_k$ for all values of $k
@@ -381,6 +423,16 @@ targets for higher values of $k$ (see @line:bootstrap).
 ) <alg:train-bellman-network>
 
 === Implementation Details <sec:implementation>
+
+#figure(
+  image("figures/bellman-update-networks/causal-masking.png", height: 150pt),
+  caption: [
+    How causal masking prevents the model from attending to the action corresponding
+    to the target Q-value.
+  ],
+  placement: top,
+) <fig:causal-masking>
+
 We implement the Bellman Update Network as a causal transformer, using the GPT2 #cite(<radford2019language>)
 implementation from #link("https://huggingface.co/", [www.huggingface.co]). Why
 is causal masking necessary, given that the target does not appear in the input
@@ -398,7 +450,9 @@ the action that appears in the dataset, but not for the other actions in the
 action space. To prevent this degenerate outcome, we use masking to prevent the
 model from observing $Act_t$ when conditioning on $Obs_t$. This is also why we
 offset the observations and value predictions by one index, as in
-@fig:architecture.
+@fig:architecture. See @fig:causal-masking for an illustration of how causal
+masking occludes the action corresponding to the target Q-value for each input
+transition.
 
 One consequence of masking is that predictions for values early in the sequence
 are poor in comparison to predictions later in the sequence, since they benefit
@@ -508,7 +562,17 @@ vary $delta$ between 1 and the maximum number of iterations $delta_max$. We
 inversely vary $K$, the number of iterations in our evaluation (@line:iterate of
 @alg:eval-tabular), so that $delta times k =delta_max$. Thus when $delta = delta_max$,
 we perform $k=1$ iterations, reducing the algorithm to the "naive" method
-described in @sec:naive.
+described in @sec:naive. See @fig:delta-iteration for a visualization of the
+relationship between the number of iterations and the value of $delta$.
+
+#figure(
+  image("figures/bellman-update-networks/delta-iteration.png", height: 75pt),
+  caption: [
+    How the number of applications of the Bellman Update Network varies inversely
+    with the value of $delta$.
+  ],
+  placement: top,
+) <fig:delta-iteration>
 
 == Related Work <sec:related-work-bellman-networks>
 An earlier work that anticipates many of the ideas used by Bellman Update
