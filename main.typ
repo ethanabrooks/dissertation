@@ -5,7 +5,7 @@
   author: "Ethan Brooks",
   department: "Computer Science and Engineering",
   date: datetime(year: 2024, month: 1, day: 11),
-  email: link("ethanbro@umich.edu"),
+  email: "ethanbro@umich.edu",
   orcid: "0000-0003-2557-4994",
   committee: (
     "Professor Satinder Singh, Chair",
@@ -26,18 +26,20 @@
   depth: 2,
   indent: 0.25in,
 )
+= List of Figures
 #outline(
-  title: [#formatHeader(body: "List of Figures")],
+  title: none, // [#formatHeader(body: "List of Figures")],
   target: figure.where(kind: image),
 )
 
 #include "acronyms.typ"
+#include "abstract.typ"
 
 #set page(numbering: "1")
 #counter(page).update(1)
 
-#include "abstract.typ"
 #counter(heading).update(0)
+#set heading(numbering: "1.1")
 #include "introduction.typ"
 #include "policy-iteration.typ"
 #include "adpp.typ"

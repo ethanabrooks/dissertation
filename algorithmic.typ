@@ -44,7 +44,7 @@
 
 #let render-comment(comment) = {
   if comment != none {
-    set text(size: .7em, fill: gray)
+    set text(size: .7em, fill: luma(100))
     h(.001fr)
     sym.triangle.stroked.r + sym.space + comment
   }

@@ -25,12 +25,12 @@
   set page(margin: (x: 1in))
   set align(center)
   set text(font: "New Computer Modern", size: 12pt)
-  set heading(numbering: "1.1")
-  set heading(numbering: (..n) => {
-    if n.pos().len() > 1 {
-      numbering("1.1", ..n)
-    }
-  })
+  // set heading(numbering: "1.1")
+  // set heading(numbering: (..n) => {
+  //   if n.pos().len() > 1 {
+  //     numbering("1.1", ..n)
+  //   }
+  // })
   show heading.where(level: 1): it => pagebreak(weak: true) + v(1in) + formatHeader(body: it)
 
   show link: underline

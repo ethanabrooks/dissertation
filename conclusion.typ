@@ -25,7 +25,7 @@ favor:
 We will begin by describing the ways in which attitudes towards these concerns
 have changed, and make the case for their continued relevance.
 
-=== Reinforcement Learning as a Method of Exploration and Discovery
+== Reinforcement Learning as a Method of Exploration and Discovery
 Reinforcement learning remains a component of some state-of-the-art AI systems,
 but it's role has fundamentally changed from what its pioneers envisioned. Early
 deep RL researchers imagined agents that would explore their world with very
@@ -99,7 +99,7 @@ _optimal_ credit assignment, but this framework does not empirically work in
 realistic language settings. Of course, an unprincipled solution that works is
 better than a principled solution that doesn't.
 
-=== Generalization and Memorization
+== Generalization and Memorization
 Another significant shift in thinking is the attitude toward memorization, once
 thought to be synonymous with generalization. Classical frameworks like the
 bias-variance tradeoff #cite(<franklin2005elements>) imply that modeling noise
@@ -188,7 +188,7 @@ transfer this specialized intelligence to other domains, domains which are not
 captured by any dataset since they potentially lie beyond the limits of current
 human understanding.
 
-=== Foundation models for reinforcement learning
+== Foundation models for reinforcement learning
 A consequence of these reflections is that foundation models for RL will not
 look the same as foundation models for language. "LeCake" provides a sketch that
 may still apply --- surely, RL agents can benefit from data beyond their

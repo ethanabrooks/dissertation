@@ -1,4 +1,4 @@
-= Acronyms
+= List of Acronyms
 
 #[
   #set par(first-line-indent: 0pt)
